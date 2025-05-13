@@ -1,4 +1,5 @@
-import { Text, View } from "tamagui";
+import { Check } from '@tamagui/lucide-icons';
+import { Checkbox, Text, View } from 'tamagui';
 
 export default function ProfileScreen() {
   return (

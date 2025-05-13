@@ -12,13 +12,18 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "test": "jest --watchAll"
+    "test": "jest --watchAll",
+    "lint": "expo lint",
+    "lint:fix": "expo lint --fix",
+    "format": "prettier --write \"app/**/*.tsx\" \"*.js\" \"*.json\""
   },
   "jest": {
     "preset": "jest-expo"
   },
   "dependencies": {
     "@react-navigation/native": "^6.1.17",
+    "@tamagui/button": "^1.126.12",
+    "@tamagui/checkbox": "^1.126.12",
     "@tamagui/config": "^1.126.12",
     "@tamagui/lucide-icons": "^1.126.12",
     "@tamagui/toast": "^1.126.12",
@@ -52,6 +57,11 @@
     "@tamagui/metro-plugin": "^1.126.12",
     "@types/react": "~19.0.10",
     "@types/react-native": "^0.73.0",
+    "eslint": "^9.0.0",
+    "eslint-config-expo": "~9.2.0",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-prettier": "^5.4.0",
+    "prettier": "^3.5.3",
     "typescript": "~5.8.3"
   }
 }
