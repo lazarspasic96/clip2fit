@@ -1,6 +1,6 @@
-import { Link, Stack } from 'expo-router';
-import { StyleSheet } from 'react-native';
-import { View, Text } from 'tamagui';
+import { Link, Stack } from 'expo-router'
+import { StyleSheet } from 'react-native'
+import { View, Text } from 'tamagui'
 
 export default function NotFoundScreen() {
   return (
@@ -8,12 +8,12 @@ export default function NotFoundScreen() {
       <Stack.Screen options={{ title: 'Oops!' }} />
       <View m={10}>
         <Text>This screen doesn&apos;t exist.</Text>
-        <Link href="/" style={styles.link}>
+        <Link href="../" style={styles.link}>
           <Text style={styles.linkText}>Go to home screen!</Text>
         </Link>
       </View>
     </>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -35,4 +35,4 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#2e78b7',
   },
-});
+})

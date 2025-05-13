@@ -1,9 +1,9 @@
-import { Link, Tabs } from 'expo-router';
-import { Button, Checkbox, useTheme } from 'tamagui';
-import { Atom, AudioWaveform, Check } from '@tamagui/lucide-icons';
+import { Link, Tabs } from 'expo-router'
+import { Button, useTheme } from 'tamagui'
+import { Atom, AudioWaveform } from '@tamagui/lucide-icons'
 
 export default function TabLayout() {
-  const theme = useTheme();
+  const theme = useTheme()
 
   return (
     <Tabs
@@ -21,12 +21,13 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="(home)/index"
+        name="(home)"
         options={{
+          headerShown: false,
           title: 'Home',
           tabBarIcon: ({ color }) => <Atom color={color as any} />,
           headerRight: () => (
-            <Link href="/modal" asChild>
+            <Link href="/" asChild>
               <Button mr="$4" bg="$green8" color="$green12">
                 Hello!
               </Button>
@@ -41,6 +42,13 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <AudioWaveform color={color as any} />,
         }}
       />
+      <Tabs.Screen
+        name="(settings)/settings"
+        options={{
+          title: 'Settings',
+          tabBarIcon: ({ color }) => <AudioWaveform color={color as any} />,
+        }}
+      />
     </Tabs>
-  );
+  )
 }
