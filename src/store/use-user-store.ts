@@ -9,6 +9,12 @@ interface UserState {
     username?: string
     email?: string
     name?: string
+    gender?: string
+    age?: number
+    height?: number
+    weight?: number
+    goal?: string
+    activityLevel?: string
   } | null
   isAuthenticated: boolean
 
