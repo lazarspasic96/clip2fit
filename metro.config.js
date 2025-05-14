@@ -10,6 +10,9 @@ const config = getDefaultConfig(__dirname, {
   isCSSEnabled: true,
 })
 
+// Previous workaround for Supabase WebSocket issue (supabase/realtime-js#415) is no longer needed
+// since we're now using @supabase/supabase-js@2.49.5-next.1 which fixes the issue
+
 config.resolver.sourceExts.push('mjs')
 
 module.exports = withTamagui(config, {
