@@ -1,6 +1,6 @@
 import { H2, Paragraph, Text, YStack } from 'tamagui'
 import { Link } from 'expo-router'
-import { ToastControl } from 'app/CurrentToast'
+import { ToastControl } from 'app/current-toast'
 import { useAppStore } from 'store'
 
 export default function HomeScreen() {

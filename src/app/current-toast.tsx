@@ -15,7 +15,7 @@ export function CurrentToast() {
       exitStyle={{ opacity: 0, scale: 1, y: -20 }}
       y={isWeb ? '$12' : 0}
       theme="accent"
-      rounded="$6"
+      rounded="$md"
       animation="quick"
     >
       <YStack items="center" p="$2" gap="$2">
