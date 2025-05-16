@@ -2,7 +2,6 @@
   "name": "clip2fit",
   "main": "expo-router/entry",
   "version": "1.0.0",
-
   "private": true,
   "scripts": {
     "upgrade:tamagui": "npm update '*tamagui*'@latest '@tamagui/*'@latest",

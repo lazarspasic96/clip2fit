@@ -5,10 +5,11 @@ export class HttpClient {
 
   constructor() {
     this.http = axios.create({
-      baseURL: 'https://api.example.com',
+      baseURL: 'https://api.clip2fit.app/api/transcript',
       responseType: 'json',
       headers: {
         'Content-Type': 'application/json',
+        'x-api-key': process.env.EXPO_PUBLIC_API_KEY,
       },
     })
     this.http.interceptors.response.use(

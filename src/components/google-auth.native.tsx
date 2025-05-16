@@ -8,8 +8,8 @@ import { Alert, ActivityIndicator, View, Platform } from 'react-native'
 import { supabase } from '../library/utils/supabase'
 import { User, Session } from '@supabase/supabase-js'
 
-const ANDROID_CLIENT_ID = '394113945262-qbpsq17rks2cisitgvbocg70sqqr9rvi.apps.googleusercontent.com'
-const IOS_CLIENT_ID = '394113945262-emlcslgh6p08coo8llup7nt8tn0igmkd.apps.googleusercontent.com'
+const ANDROID_CLIENT_ID = '394113945262-3gmh9f446bdu5q2g0e6m8mtghdofarva.apps.googleusercontent.com'
+const IOS_CLIENT_ID = '394113945262-6b8geti89qkt8k2s28avdhmf4fkllknk.apps.googleusercontent.com'
 
 type GoogleAuthProps = {
   onAuthSuccess?: (user: User, session: Session | null) => void
