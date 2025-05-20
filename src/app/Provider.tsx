@@ -1,15 +1,14 @@
-import { useColorScheme } from 'react-native'
 import { TamaguiProvider, type TamaguiProviderProps } from 'tamagui'
 import { ToastProvider, ToastViewport } from '@tamagui/toast'
 import { CurrentToast } from './current-toast'
-import config from '../../tamagui.config'
+import tamaguiConfig from '../../tamagui.config'
+import { useColorScheme } from 'react-native'
 
 export function Provider({ children, ...rest }: Omit<TamaguiProviderProps, 'config'>) {
   const colorScheme = useColorScheme()
-
   return (
     <TamaguiProvider
-      config={config}
+      config={tamaguiConfig}
       defaultTheme={colorScheme === 'dark' ? 'dark' : 'light'}
       {...rest}
     >

@@ -66,8 +66,8 @@ const Providers = ({ children }: { children: React.ReactNode }) => {
 
   // For testing - immediately redirect to login
   useEffect(() => {
-    router.replace('/login')
-  }, [])
+    router.replace('/')
+  }, [router])
   return (
     <Provider>
       {/* <AuthCheck>{children}</AuthCheck> */}
@@ -79,6 +79,10 @@ const Providers = ({ children }: { children: React.ReactNode }) => {
 function RootLayoutNav() {
   const colorScheme = useColorScheme()
   const theme = useTheme()
+
+  console.log(colorScheme, 'colorScheme')
+
+  //colorScheme === 'dark' ? DarkTheme : DefaultTheme
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
