@@ -1,13 +1,13 @@
 import { View, Text, KeyboardAvoidingView, Platform } from "react-native";
 import { Link } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { FormProvider } from "react-hook-form";
 import { z } from "zod";
 import { useState } from "react";
-import { AuthInput } from "@/components/auth/auth-input";
+import { FormInput } from "@/components/ui/form-input";
 import { AuthButton } from "@/components/auth/auth-button";
 import { useAuth } from "@/contexts/auth-context";
+import { useZodForm } from "@/hooks/use-zod-form";
 
 const signupSchema = z
   .object({
@@ -26,12 +26,8 @@ export default function SignupScreen() {
   const { signUp, loading } = useAuth();
   const [authError, setAuthError] = useState<string | null>(null);
 
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<SignupForm>({
-    resolver: zodResolver(signupSchema),
+  const form = useZodForm({
+    schema: signupSchema,
     defaultValues: { email: "", password: "", confirmPassword: "" },
   });
 
@@ -60,71 +56,49 @@ export default function SignupScreen() {
             Create account
           </Text>
 
-          <View className="gap-4">
-            <Controller
-              control={control}
-              name="email"
-              render={({ field: { onChange, onBlur, value } }) => (
-                <AuthInput
-                  label="Email"
-                  value={value}
-                  onChangeText={onChange}
-                  onBlur={onBlur}
-                  placeholder="you@example.com"
-                  error={errors.email?.message}
-                  keyboardType="email-address"
-                  autoComplete="email"
-                />
+          <FormProvider {...form}>
+            <View className="gap-4">
+              <FormInput
+                name="email"
+                label="Email"
+                placeholder="you@example.com"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoComplete="email"
+              />
+
+              <FormInput
+                name="password"
+                label="Password"
+                placeholder="At least 6 characters"
+                secureTextEntry
+                autoCapitalize="none"
+                autoComplete="password-new"
+              />
+
+              <FormInput
+                name="confirmPassword"
+                label="Confirm Password"
+                placeholder="Re-enter your password"
+                secureTextEntry
+                autoCapitalize="none"
+                autoComplete="password-new"
+              />
+
+              {authError && (
+                <Text className="text-sm font-inter text-content-badge-error">
+                  {authError}
+                </Text>
               )}
-            />
 
-            <Controller
-              control={control}
-              name="password"
-              render={({ field: { onChange, onBlur, value } }) => (
-                <AuthInput
-                  label="Password"
-                  value={value}
-                  onChangeText={onChange}
-                  onBlur={onBlur}
-                  placeholder="At least 6 characters"
-                  error={errors.password?.message}
-                  secureTextEntry
-                  autoComplete="password-new"
-                />
-              )}
-            />
-
-            <Controller
-              control={control}
-              name="confirmPassword"
-              render={({ field: { onChange, onBlur, value } }) => (
-                <AuthInput
-                  label="Confirm Password"
-                  value={value}
-                  onChangeText={onChange}
-                  onBlur={onBlur}
-                  placeholder="Re-enter your password"
-                  error={errors.confirmPassword?.message}
-                  secureTextEntry
-                  autoComplete="password-new"
-                />
-              )}
-            />
-
-            {authError && (
-              <Text className="text-sm font-inter text-content-badge-error">
-                {authError}
-              </Text>
-            )}
-
-            <AuthButton
-              onPress={handleSubmit(onSubmit)}
-              loading={loading}
-            >
-              Sign Up
-            </AuthButton>
-          </View>
+              <AuthButton
+                onPress={form.handleSubmit(onSubmit)}
+                loading={loading}
+              >
+                Sign Up
+              </AuthButton>
+            </View>
+          </FormProvider>
 
           <View className="flex-row justify-center mt-6">
             <Text className="text-sm font-inter text-content-secondary">

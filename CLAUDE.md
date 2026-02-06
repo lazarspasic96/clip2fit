@@ -75,6 +75,9 @@ npm run lint       # Run ESLint
 - `useColorScheme()` hook detects system preference
 - `useThemeColor()` hook resolves colors based on current theme
 
+### Code Style
+- Always use arrow functions for React components in `.tsx` files (e.g., `export const MyComponent = () => { ... }`)
+
 ### Path Aliases
 - `@/*` maps to project root (e.g., `@/components/...`, `@/hooks/...`)
 
