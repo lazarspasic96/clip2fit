@@ -1,49 +1,69 @@
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { FormInput } from '@/components/ui/form-input'
+import { FormRadioGroup } from '@/components/ui/form-radio-group'
+import { FormSegmentedControl } from '@/components/ui/form-segmented-control'
 import { Label } from '@/components/ui/label'
-import { RadioGroup } from '@/components/ui/radio-group'
-import { SegmentedControl } from '@/components/ui/segmented-control'
 import { useProfileForm } from '@/contexts/profile-form-context'
+import { useZodForm } from '@/hooks/use-zod-form'
 import type { Gender, HeightUnit, WeightUnit } from '@/types/profile'
 import { GENDERS } from '@/types/profile'
 import { useRouter } from 'expo-router'
-import { useState } from 'react'
+import { FormProvider } from 'react-hook-form'
 import { Text, View } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { z } from 'zod'
+
+const userInfoSchema = z.object({
+  fullName: z.string().optional().default(''),
+  gender: z.enum(['male', 'female', 'other', 'prefer_not_to_say']).optional(),
+  age: z.string().optional().default(''),
+  height: z.string().optional().default(''),
+  heightUnit: z.enum(['cm', 'ft']).default('cm'),
+  weight: z.string().optional().default(''),
+  weightUnit: z.enum(['kg', 'lbs']).default('kg'),
+})
+
+type UserInfoValues = z.infer<typeof userInfoSchema>
 
 export default function DemographicsScreen() {
   const router = useRouter()
   const { updateField } = useProfileForm()
   const insets = useSafeAreaInsets()
 
-  const [gender, setGender] = useState<Gender | undefined>()
-  const [age, setAge] = useState('')
-  const [height, setHeight] = useState('')
-  const [heightUnit, setHeightUnit] = useState<HeightUnit>('cm')
-  const [weight, setWeight] = useState('')
-  const [weightUnit, setWeightUnit] = useState<WeightUnit>('kg')
+  const form = useZodForm({
+    schema: userInfoSchema,
+    defaultValues: {
+      fullName: '',
+      gender: undefined,
+      age: '',
+      height: '',
+      heightUnit: 'cm' as HeightUnit,
+      weight: '',
+      weightUnit: 'kg' as WeightUnit,
+    },
+  })
 
-  const onContinue = () => {
-    if (gender) updateField('gender', gender)
-    if (age) updateField('age', parseInt(age, 10))
-    if (height) {
-      updateField('height', parseFloat(height))
-      updateField('heightUnit', heightUnit)
-    }
-    if (weight) {
-      updateField('weight', parseFloat(weight))
-      updateField('weightUnit', weightUnit)
-    }
-    router.push('/(protected)/onboarding/goal')
-  }
+  const heightUnit = form.watch('heightUnit') as HeightUnit
+  const weightUnit = form.watch('weightUnit') as WeightUnit
 
-  const onSkip = () => {
+  const onNext = (data: UserInfoValues) => {
+    if (data.fullName) updateField('fullName', data.fullName)
+    if (data.gender) updateField('gender', data.gender as Gender)
+    if (data.age) updateField('age', parseInt(data.age, 10))
+    if (data.height) {
+      updateField('height', parseFloat(data.height))
+      updateField('heightUnit', data.heightUnit as HeightUnit)
+    }
+    if (data.weight) {
+      updateField('weight', parseFloat(data.weight))
+      updateField('weightUnit', data.weightUnit as WeightUnit)
+    }
     router.push('/(protected)/onboarding/goal')
   }
 
   return (
-    <>
+    <FormProvider {...form}>
       <KeyboardAwareScrollView
         contentContainerStyle={{
           flexGrow: 1,
@@ -53,41 +73,39 @@ export default function DemographicsScreen() {
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="interactive"
       >
-        <Text className="text-2xl font-inter-bold text-content-primary mb-2">About you</Text>
-        <Text className="text-base font-inter text-content-secondary mb-8">
-          All fields are optional. This helps us tailor recommendations.
-        </Text>
+        <Text className="text-2xl font-inter-bold text-content-primary mb-8">Tell us about yourself</Text>
 
         <View className="gap-6">
-          <View className="gap-1.5">
-            <Label text="Gender" />
-            <RadioGroup options={GENDERS} value={gender} onChange={setGender} />
-          </View>
+          <FormInput
+            name="fullName"
+            label="Your name"
+            placeholder="Enter your full name"
+            autoCapitalize="words"
+            autoComplete="name"
+          />
 
-          <View className="gap-1.5">
-            <Label text="Age" />
-            <Input placeholder="e.g. 25" keyboardType="number-pad" value={age} onChangeText={setAge} />
-          </View>
+          <FormRadioGroup name="gender" label="Gender" options={GENDERS} />
+
+          <FormInput name="age" label="Age" placeholder="e.g. 25" keyboardType="number-pad" />
 
           <View className="gap-1.5">
             <Label text="Height" />
             <View className="flex-row gap-3">
               <View className="flex-1">
-                <Input
+                <FormInput
+                  name="height"
                   placeholder={heightUnit === 'cm' ? 'e.g. 175' : "e.g. 5'10"}
                   keyboardType="decimal-pad"
-                  value={height}
-                  onChangeText={setHeight}
+                  showError={false}
                 />
               </View>
               <View className="w-28">
-                <SegmentedControl
+                <FormSegmentedControl
+                  name="heightUnit"
                   options={[
-                    { label: 'cm', value: 'cm' as HeightUnit },
-                    { label: 'ft', value: 'ft' as HeightUnit },
+                    { label: 'cm', value: 'cm' },
+                    { label: 'ft', value: 'ft' },
                   ]}
-                  value={heightUnit}
-                  onChange={setHeightUnit}
                 />
               </View>
             </View>
@@ -97,21 +115,20 @@ export default function DemographicsScreen() {
             <Label text="Weight" />
             <View className="flex-row gap-3">
               <View className="flex-1">
-                <Input
+                <FormInput
+                  name="weight"
                   placeholder={weightUnit === 'kg' ? 'e.g. 70' : 'e.g. 154'}
                   keyboardType="decimal-pad"
-                  value={weight}
-                  onChangeText={setWeight}
+                  showError={false}
                 />
               </View>
               <View className="w-28">
-                <SegmentedControl
+                <FormSegmentedControl
+                  name="weightUnit"
                   options={[
-                    { label: 'kg', value: 'kg' as WeightUnit },
-                    { label: 'lbs', value: 'lbs' as WeightUnit },
+                    { label: 'kg', value: 'kg' },
+                    { label: 'lbs', value: 'lbs' },
                   ]}
-                  value={weightUnit}
-                  onChange={setWeightUnit}
                 />
               </View>
             </View>
@@ -119,12 +136,9 @@ export default function DemographicsScreen() {
         </View>
 
         <View className="mt-auto gap-3 pt-8" style={{ paddingBottom: Math.max(insets.bottom, 32) }}>
-          <Button onPress={onContinue}>Continue</Button>
-          <Button variant="ghost" onPress={onSkip}>
-            Skip
-          </Button>
+          <Button onPress={form.handleSubmit(onNext)}>Next</Button>
         </View>
       </KeyboardAwareScrollView>
-    </>
+    </FormProvider>
   )
 }

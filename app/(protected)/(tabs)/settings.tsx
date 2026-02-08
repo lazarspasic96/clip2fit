@@ -27,7 +27,7 @@ export default function SettingsScreen() {
         <View className="mt-6 gap-3">
           {!onboardingComplete && (
             <Pressable
-              onPress={() => router.push('/(protected)/onboarding/name')}
+              onPress={() => router.push('/(protected)/onboarding/demographics')}
               className="flex-row items-center justify-between bg-background-secondary rounded-md px-4 py-4"
             >
               <Text className="text-base font-inter text-content-primary">Complete Profile</Text>

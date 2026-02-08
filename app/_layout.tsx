@@ -33,7 +33,7 @@ function RootNavigator() {
   }
 
   if (initialized && session && !onboardingComplete && !inOnboarding) {
-    return <Redirect href="/(protected)/onboarding/name" />
+    return <Redirect href="/(protected)/onboarding/demographics" />
   }
 
   if (initialized && session && onboardingComplete && inAuthGroup) {
