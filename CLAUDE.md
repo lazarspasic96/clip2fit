@@ -11,6 +11,7 @@ No direct competitor exists in the fitness space — recipe apps (CookingGuru, V
 ## Tech Stack
 
 ### Mobile (this repo)
+
 - **Expo SDK**: 54 (New Architecture enabled)
 - **React/React Native**: 19.1.0 / 0.81.5
 - **Router**: Expo Router 6 (file-based routing)
@@ -19,12 +20,14 @@ No direct competitor exists in the fitness space — recipe apps (CookingGuru, V
 - **Experimental**: React Compiler enabled, Typed Routes
 
 ### Backend
+
 - **API**: Next.js App Router + tRPC
 - **Background Jobs**: Trigger.dev (long-running video processing pipeline)
 - **Database**: Supabase (PostgreSQL + Auth + Storage)
 - **Caching**: Redis (Upstash)
 
 ### Processing Pipeline
+
 - **Video Download**: yt-dlp (via Trigger.dev Python extension)
 - **Audio Processing**: FFmpeg (via Trigger.dev build extension)
 - **Transcription**: OpenAI Whisper API (`gpt-4o-transcribe`)
@@ -62,46 +65,70 @@ npm run lint       # Run ESLint
 ## Architecture
 
 ### File-Based Routing (`app/`)
+
 - `_layout.tsx` - Root layout with ThemeProvider (light/dark) + Stack navigator
 - `(tabs)/` - Tab group layout with Home and Explore screens
 - `modal.tsx` - Modal presentation screen
 
 ### Components (`components/`)
+
 - `themed-text.tsx`, `themed-view.tsx` - Theme-aware base components
 - `ui/` - Platform-specific primitives (IconSymbol uses SF Symbols on iOS, MaterialIcons on Android/web)
 
 ### Theming System
+
 - Colors defined in `constants/theme.ts` (Colors.light/dark)
 - `useColorScheme()` hook detects system preference
 - `useThemeColor()` hook resolves colors based on current theme
 
 ### Code Style
+
 - Always use arrow functions for React components in `.tsx` files (e.g., `export const MyComponent = () => { ... }`)
+- Always use `Image` from `expo-image` for images — never use `Image` or `ImageBackground` from `react-native`
+
+### Keyboard & Safe Area
+
+- **NEVER** use `SafeAreaView` component — use `useSafeAreaInsets()` hook (avoids flickering/jumpy animations)
+- Apply insets per-screen via `style={{ paddingTop: insets.top }}` etc.
+- Scrollable screens: apply insets via `contentContainerStyle`
+- Import `KeyboardAvoidingView` from `react-native-keyboard-controller` (NOT `react-native`)
+- `behavior`: `"padding"` on iOS, `undefined` on Android
+- Always set `keyboardVerticalOffset` — `insets.top` + fixed header height above screen
+- Dismiss on outside tap: `<Pressable onPress={Keyboard.dismiss}>` wrapper
+- Multi-input scrollable forms: use `KeyboardAwareScrollView` from `react-native-keyboard-controller`
+- `keyboardShouldPersistTaps="handled"` on all ScrollViews with interactive elements
+- `KeyboardProvider` wraps app at root (`app/_layout.tsx`)
+- Android: `softwareKeyboardLayoutMode: "pan"` in `app.json`
 
 ### Path Aliases
+
 - `@/*` maps to project root (e.g., `@/components/...`, `@/hooks/...`)
 
 ## MVP Phases
 
 ### Phase 1 — Core
+
 - React Native app with URL paste input
 - Next.js API + Trigger.dev pipeline (download → transcribe → extract)
 - Basic workout display screen
 - Supabase database + auth
 
 ### Phase 2 — UX Polish
+
 - Share extension (iOS + Android)
 - Real-time conversion status
 - Workout library (saved workouts)
 - Error handling and retry
 
 ### Phase 3 — Growth
+
 - Workout history / calendar view
 - Export to PDF
 - Exercise database with images
 - Push notifications
 
 ### Phase 4 — Advanced
+
 - Multimodal video analysis (on-screen text + visual exercises)
 - AI workout suggestions
 - Training program builder
