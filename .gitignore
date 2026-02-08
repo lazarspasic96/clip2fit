@@ -48,6 +48,10 @@ yarn-error.*
 
 app-example
 
+# Google OAuth configs
+client_*.plist
+client_*.json
+
 # generated native folders
 /ios
 /android

@@ -13,6 +13,7 @@
       "bundleIdentifier": "com.lazarspasic96.clip2fit"
     },
     "android": {
+      "softwareKeyboardLayoutMode": "pan",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -42,7 +43,13 @@
           }
         }
       ],
-      "expo-sqlite"
+      "expo-sqlite",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.911676643313-rq7ho5qv199r5ls7msvb7dma35idg300"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

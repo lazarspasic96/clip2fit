@@ -10,13 +10,7 @@ interface FormInputProps extends Omit<InputProps, 'value' | 'onChangeText' | 'er
   showError?: boolean
 }
 
-export function FormInput({
-  name,
-  label,
-  required,
-  showError = true,
-  ...inputProps
-}: FormInputProps) {
+export function FormInput({ name, label, required, showError = true, ...inputProps }: FormInputProps) {
   const {
     control,
     formState: { errors },
@@ -31,18 +25,10 @@ export function FormInput({
         control={control}
         name={name}
         render={({ field: { onChange, onBlur, value } }) => (
-          <Input
-            value={value}
-            onChangeText={onChange}
-            onBlur={onBlur}
-            error={!!errorMessage}
-            {...inputProps}
-          />
+          <Input value={value} onChangeText={onChange} onBlur={onBlur} error={!!errorMessage} {...inputProps} />
         )}
       />
-      {showError && errorMessage && (
-        <Text className="text-xs font-inter text-content-badge-error">{errorMessage}</Text>
-      )}
+      {showError && errorMessage && <Text className="text-xs font-inter text-content-badge-error">{errorMessage}</Text>}
     </View>
   )
 }
