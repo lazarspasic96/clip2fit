@@ -1,7 +1,7 @@
 import { Pressable, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { ChevronRight } from 'lucide-react-native'
+import { ChevronRight, X } from 'lucide-react-native'
 
 import { useAuth } from '@/contexts/auth-context'
 import { Button } from '@/components/ui/button'
@@ -16,9 +16,14 @@ export default function SettingsScreen() {
 
   return (
     <View className="flex-1 bg-background-primary" style={{ paddingTop: insets.top }}>
-      <View className="flex-1 px-6 pt-4">
-        <Text className="text-2xl font-inter-bold text-content-primary mb-8">Settings</Text>
+      <View className="flex-row items-center justify-between px-6 pt-4 pb-2">
+        <Text className="text-2xl font-inter-bold text-content-primary">Settings</Text>
+        <Pressable onPress={() => router.back()} hitSlop={12}>
+          <X size={24} color={Colors.content.primary} />
+        </Pressable>
+      </View>
 
+      <View className="flex-1 px-6 pt-4">
         <View>
           {displayName && <Text className="text-lg font-inter-semibold text-content-primary">{displayName}</Text>}
           <Text className="text-base font-inter text-content-secondary">{user?.email}</Text>

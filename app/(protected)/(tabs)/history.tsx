@@ -4,7 +4,7 @@ import { BookOpen } from 'lucide-react-native'
 
 import { Colors } from '@/constants/colors'
 
-export default function LibraryScreen() {
+export default function HistoryScreen() {
   const insets = useSafeAreaInsets()
 
   return (
