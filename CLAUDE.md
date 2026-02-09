@@ -83,8 +83,12 @@ npm run lint       # Run ESLint
 
 ### Code Style
 
-- Always use arrow functions for React components in `.tsx` files (e.g., `export const MyComponent = () => { ... }`)
+- Always use arrow functions for React components — never `export default function` or `export function`.
+- **Screens** (`app/` files): `const ScreenName = () => { ... }` with `export default ScreenName` at the bottom of the file.
+- **Components** (`components/` files): `export const ComponentName = () => { ... }` (named export inline, no default export).
+- One React component per file.
 - Always use `Image` from `expo-image` for images — never use `Image` or `ImageBackground` from `react-native`
+- Always add `pointerEvents="none"` to lucide-react-native icons inside Pressable/TouchableOpacity — SVG elements intercept touches otherwise
 
 ### Keyboard & Safe Area
 
