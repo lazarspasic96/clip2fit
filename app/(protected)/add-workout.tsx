@@ -1,0 +1,139 @@
+import { useState } from 'react'
+import { Alert, Pressable, Text, View } from 'react-native'
+import { Image } from 'expo-image'
+import * as ImagePicker from 'expo-image-picker'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useRouter } from 'expo-router'
+import { Download, Video, X } from 'lucide-react-native'
+
+import { Colors } from '@/constants/colors'
+import { Button } from '@/components/ui/button'
+
+export default function AddWorkoutScreen() {
+  const insets = useSafeAreaInsets()
+  const router = useRouter()
+
+  const [selectedVideo, setSelectedVideo] = useState<ImagePicker.ImagePickerAsset | null>(null)
+  const [processing, setProcessing] = useState(false)
+
+  const pickVideo = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
+    if (status !== 'granted') {
+      Alert.alert('Permission needed', 'Please grant camera roll access to import workout videos.')
+      return
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['videos'],
+      quality: 1,
+    })
+
+    if (!result.canceled && result.assets[0]) {
+      setSelectedVideo(result.assets[0])
+    }
+  }
+
+  const handleProcess = () => {
+    setProcessing(true)
+    setTimeout(() => {
+      setProcessing(false)
+      Alert.alert('Processing complete', 'Your workout has been processed.', [
+        { text: 'OK', onPress: () => router.back() },
+      ])
+    }, 2000)
+  }
+
+  if (selectedVideo) {
+    return (
+      <View className="flex-1 bg-background-primary" style={{ paddingTop: insets.top }}>
+        <View className="flex-row items-center justify-between px-6 pt-4 pb-2">
+          <Text className="text-2xl font-inter-bold text-content-primary">Add Workout</Text>
+          <Pressable onPress={() => router.back()} hitSlop={12}>
+            <X size={24} color={Colors.content.primary} />
+          </Pressable>
+        </View>
+
+        <View className="flex-1 px-6 pt-6">
+          <View className="bg-background-secondary rounded-2xl overflow-hidden">
+            <Image
+              source={{ uri: selectedVideo.uri }}
+              style={{ width: '100%', height: 240 }}
+              contentFit="cover"
+            />
+            <View className="p-4">
+              <Text className="text-sm font-inter text-content-secondary">
+                {Math.round((selectedVideo.duration ?? 0) / 1000)}s video selected
+              </Text>
+            </View>
+          </View>
+
+          <View className="mt-6">
+            <Button onPress={handleProcess} loading={processing}>
+              Process
+            </Button>
+          </View>
+
+          <Pressable
+            onPress={() => setSelectedVideo(null)}
+            className="items-center mt-4"
+          >
+            <Text className="text-sm font-inter text-content-secondary">Choose a different video</Text>
+          </Pressable>
+        </View>
+      </View>
+    )
+  }
+
+  return (
+    <View className="flex-1 bg-background-primary" style={{ paddingTop: insets.top }}>
+      <View className="flex-row items-center justify-between px-6 pt-4 pb-2">
+        <Text className="text-2xl font-inter-bold text-content-primary">Add Workout</Text>
+        <Pressable onPress={() => router.back()} hitSlop={12}>
+          <X size={24} color={Colors.content.primary} />
+        </Pressable>
+      </View>
+
+      <View className="flex-1 px-6 pt-6 gap-4">
+        <Text className="text-base font-inter text-content-secondary mb-2">
+          How would you like to add your workout?
+        </Text>
+
+        <Pressable
+          onPress={pickVideo}
+          className="bg-background-secondary rounded-2xl p-6 flex-row items-center gap-4"
+        >
+          <View
+            className="items-center justify-center rounded-full bg-brand-accent"
+            style={{ width: 52, height: 52 }}
+          >
+            <Video size={26} color={Colors.background.primary} />
+          </View>
+          <View className="flex-1">
+            <Text className="text-lg font-inter-bold text-content-primary">From Video</Text>
+            <Text className="text-sm font-inter text-content-secondary mt-1">
+              Pick a workout video from your camera roll
+            </Text>
+          </View>
+        </Pressable>
+
+        <Pressable
+          onPress={() => console.log('Manual entry')}
+          className="bg-background-secondary rounded-2xl p-6 flex-row items-center gap-4"
+        >
+          <View
+            className="items-center justify-center rounded-full bg-background-tertiary"
+            style={{ width: 52, height: 52 }}
+          >
+            <Download size={26} color={Colors.content.primary} />
+          </View>
+          <View className="flex-1">
+            <Text className="text-lg font-inter-bold text-content-primary">Manual Entry</Text>
+            <Text className="text-sm font-inter text-content-secondary mt-1">
+              Add exercises manually step by step
+            </Text>
+          </View>
+        </Pressable>
+      </View>
+    </View>
+  )
+}
