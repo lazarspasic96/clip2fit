@@ -1,7 +1,7 @@
 import { Link, Stack } from 'expo-router'
 import { Text, View } from 'react-native'
 
-export default function NotFoundScreen() {
+const NotFoundScreen = () => {
   return (
     <>
       <Stack.Screen options={{ title: 'Not Found' }} />
@@ -17,3 +17,5 @@ export default function NotFoundScreen() {
     </>
   )
 }
+
+export default NotFoundScreen

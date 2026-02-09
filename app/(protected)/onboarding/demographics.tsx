@@ -26,7 +26,7 @@ const userInfoSchema = z.object({
 
 type UserInfoValues = z.infer<typeof userInfoSchema>
 
-export default function DemographicsScreen() {
+const DemographicsScreen = () => {
   const router = useRouter()
   const { updateField } = useProfileForm()
   const insets = useSafeAreaInsets()
@@ -65,11 +65,7 @@ export default function DemographicsScreen() {
   return (
     <FormProvider {...form}>
       <KeyboardAwareScrollView
-        contentContainerStyle={{
-          flexGrow: 1,
-          paddingHorizontal: 24,
-          paddingTop: 32,
-        }}
+        className="bg-background-primary flex-grow px-6 pt-8"
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="interactive"
       >
@@ -142,3 +138,5 @@ export default function DemographicsScreen() {
     </FormProvider>
   )
 }
+
+export default DemographicsScreen

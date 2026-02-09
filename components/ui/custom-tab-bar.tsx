@@ -1,7 +1,7 @@
 import { type BottomTabBarProps } from '@react-navigation/bottom-tabs'
 import { BlurView } from 'expo-blur'
 import { useRouter } from 'expo-router'
-import { Dumbbell, History, Plus } from 'lucide-react-native'
+import { Dumbbell, House, Plus } from 'lucide-react-native'
 import { Pressable, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -9,8 +9,8 @@ import { Colors } from '@/constants/colors'
 import { TAB_BAR_HEIGHT } from '@/constants/layout'
 
 const TAB_CONFIG: Record<string, { icon: typeof Dumbbell; label: string }> = {
-  index: { icon: Dumbbell, label: 'My Workouts' },
-  history: { icon: History, label: 'History' },
+  index: { icon: House, label: 'Home' },
+  'my-workouts': { icon: Dumbbell, label: 'My Workouts' },
 }
 
 export const CustomTabBar = ({ state, navigation }: BottomTabBarProps) => {
@@ -31,7 +31,7 @@ export const CustomTabBar = ({ state, navigation }: BottomTabBarProps) => {
         className="items-center justify-center"
         style={{ flex: 1 }}
       >
-        <Icon size={24} color={color} />
+        <Icon size={24} color={color} pointerEvents="none" />
         <Text className="text-xs font-inter mt-1" style={{ color }}>
           {config.label}
         </Text>
@@ -58,7 +58,7 @@ export const CustomTabBar = ({ state, navigation }: BottomTabBarProps) => {
           className="items-center justify-center rounded-full bg-brand-accent"
           style={{ width: 56, height: 56, marginTop: -50 }}
         >
-          <Plus size={28} color={Colors.background.primary} strokeWidth={2.5} />
+          <Plus size={28} color={Colors.background.primary} strokeWidth={2.5} pointerEvents="none" />
         </Pressable>
 
         {/* Right tab */}

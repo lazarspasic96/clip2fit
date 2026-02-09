@@ -10,7 +10,7 @@ interface FormInputProps extends Omit<InputProps, 'value' | 'onChangeText' | 'er
   showError?: boolean
 }
 
-export function FormInput({ name, label, required, showError = true, ...inputProps }: FormInputProps) {
+export const FormInput = ({ name, label, required, showError = true, ...inputProps }: FormInputProps) => {
   const {
     control,
     formState: { errors },

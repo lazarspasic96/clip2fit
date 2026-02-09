@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Button } from '@/components/ui/button'
 import { Logo } from '@/components/ui/logo'
 
-export default function WelcomeScreen() {
+const WelcomeScreen = () => {
   const router = useRouter()
   const insets = useSafeAreaInsets()
 
@@ -45,3 +45,5 @@ export default function WelcomeScreen() {
     </View>
   )
 }
+
+export default WelcomeScreen

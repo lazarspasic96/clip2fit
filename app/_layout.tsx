@@ -19,7 +19,7 @@ export const unstable_settings = {
   anchor: '(protected)',
 }
 
-function RootNavigator() {
+const RootNavigator = () => {
   const { session, initialized, onboardingComplete } = useAuth()
   const segments = useSegments()
   const colorScheme = useColorScheme()
@@ -52,7 +52,7 @@ function RootNavigator() {
   )
 }
 
-export default function RootLayout() {
+const RootLayout = () => {
   const [fontsLoaded] = useFonts({
     Inter_400Regular,
     Inter_500Medium,
@@ -79,3 +79,5 @@ export default function RootLayout() {
     </KeyboardProvider>
   )
 }
+
+export default RootLayout

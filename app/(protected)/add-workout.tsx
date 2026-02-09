@@ -9,7 +9,7 @@ import { Download, Video, X } from 'lucide-react-native'
 import { Colors } from '@/constants/colors'
 import { Button } from '@/components/ui/button'
 
-export default function AddWorkoutScreen() {
+const AddWorkoutScreen = () => {
   const insets = useSafeAreaInsets()
   const router = useRouter()
 
@@ -49,7 +49,7 @@ export default function AddWorkoutScreen() {
         <View className="flex-row items-center justify-between px-6 pt-4 pb-2">
           <Text className="text-2xl font-inter-bold text-content-primary">Add Workout</Text>
           <Pressable onPress={() => router.back()} hitSlop={12}>
-            <X size={24} color={Colors.content.primary} />
+            <X size={24} color={Colors.content.primary} pointerEvents="none" />
           </Pressable>
         </View>
 
@@ -89,7 +89,7 @@ export default function AddWorkoutScreen() {
       <View className="flex-row items-center justify-between px-6 pt-4 pb-2">
         <Text className="text-2xl font-inter-bold text-content-primary">Add Workout</Text>
         <Pressable onPress={() => router.back()} hitSlop={12}>
-          <X size={24} color={Colors.content.primary} />
+          <X size={24} color={Colors.content.primary} pointerEvents="none" />
         </Pressable>
       </View>
 
@@ -106,7 +106,7 @@ export default function AddWorkoutScreen() {
             className="items-center justify-center rounded-full bg-brand-accent"
             style={{ width: 52, height: 52 }}
           >
-            <Video size={26} color={Colors.background.primary} />
+            <Video size={26} color={Colors.background.primary} pointerEvents="none" />
           </View>
           <View className="flex-1">
             <Text className="text-lg font-inter-bold text-content-primary">From Video</Text>
@@ -124,7 +124,7 @@ export default function AddWorkoutScreen() {
             className="items-center justify-center rounded-full bg-background-tertiary"
             style={{ width: 52, height: 52 }}
           >
-            <Download size={26} color={Colors.content.primary} />
+            <Download size={26} color={Colors.content.primary} pointerEvents="none" />
           </View>
           <View className="flex-1">
             <Text className="text-lg font-inter-bold text-content-primary">Manual Entry</Text>
@@ -137,3 +137,5 @@ export default function AddWorkoutScreen() {
     </View>
   )
 }
+
+export default AddWorkoutScreen

@@ -21,7 +21,7 @@ const loginSchema = z.object({
 
 type LoginForm = z.infer<typeof loginSchema>
 
-export default function LoginScreen() {
+const LoginScreen = () => {
   const { signIn, signInWithGoogle, loading } = useAuth()
   const [authError, setAuthError] = useState<string | null>(null)
   const insets = useSafeAreaInsets()
@@ -116,3 +116,5 @@ export default function LoginScreen() {
     </View>
   )
 }
+
+export default LoginScreen

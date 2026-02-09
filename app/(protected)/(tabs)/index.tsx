@@ -13,9 +13,9 @@ import { TAB_BAR_HEIGHT } from '@/constants/layout'
 import { MOCK_DATA, type HomeScreenState } from '@/utils/mock-data'
 
 // Change this to 'active' or 'rest' to preview other states
-const CURRENT_STATE: HomeScreenState = 'rest'
+const CURRENT_STATE: HomeScreenState = 'active'
 
-export default function HomeScreen() {
+const HomeScreen = () => {
   const insets = useSafeAreaInsets()
   const data = MOCK_DATA[CURRENT_STATE]
 
@@ -43,3 +43,5 @@ export default function HomeScreen() {
     </View>
   )
 }
+
+export default HomeScreen

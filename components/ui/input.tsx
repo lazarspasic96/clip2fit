@@ -12,7 +12,7 @@ interface InputProps extends Omit<TextInputProps, 'className'> {
 
 export type { InputProps }
 
-export function Input({ error, disabled, className, secureTextEntry, onFocus, onBlur, ...props }: InputProps) {
+export const Input = ({ error, disabled, className, secureTextEntry, onFocus, onBlur, ...props }: InputProps) => {
   const [isFocused, setIsFocused] = useState(false)
   const [isPasswordVisible, setIsPasswordVisible] = useState(false)
 
@@ -44,7 +44,7 @@ export function Input({ error, disabled, className, secureTextEntry, onFocus, on
       />
       {showToggle && (
         <Pressable onPress={() => setIsPasswordVisible((v) => !v)} hitSlop={8} disabled={disabled}>
-          {isPasswordVisible ? <EyeOff size={20} color={Colors.content.tertiary} /> : <Eye size={20} color={Colors.content.tertiary} />}
+          {isPasswordVisible ? <EyeOff size={20} color={Colors.content.tertiary} pointerEvents="none" /> : <Eye size={20} color={Colors.content.tertiary} pointerEvents="none" />}
         </Pressable>
       )}
     </View>

@@ -1,10 +1,10 @@
-import { Pressable, Text, View } from 'react-native'
 import { Image } from 'expo-image'
 import { useRouter } from 'expo-router'
 import { Settings } from 'lucide-react-native'
+import { Pressable, Text, View } from 'react-native'
 
-import { useAuth } from '@/contexts/auth-context'
 import { Colors } from '@/constants/colors'
+import { useAuth } from '@/contexts/auth-context'
 
 interface HomeHeaderProps {
   subtitle: string
@@ -28,10 +28,7 @@ export const HomeHeader = ({ subtitle }: HomeHeaderProps) => {
       <View className="flex-row items-center justify-between mb-1">
         <View className="flex-row items-center gap-3">
           {avatarUrl ? (
-            <Image
-              source={{ uri: avatarUrl }}
-              style={{ width: 40, height: 40, borderRadius: 20 }}
-            />
+            <Image source={{ uri: avatarUrl }} style={{ width: 40, height: 40, borderRadius: 20 }} />
           ) : (
             <View
               className="items-center justify-center rounded-full bg-background-tertiary"
@@ -45,8 +42,11 @@ export const HomeHeader = ({ subtitle }: HomeHeaderProps) => {
           </Text>
         </View>
 
-        <Pressable onPress={() => router.push('/(protected)/settings')} hitSlop={12}>
-          <Settings size={22} color={Colors.content.secondary} />
+        <Pressable
+          onPress={() => router.push('/(protected)/settings')}
+          hitSlop={12}
+        >
+          <Settings size={22} color={Colors.content.secondary} pointerEvents="none" />
         </Pressable>
       </View>
 

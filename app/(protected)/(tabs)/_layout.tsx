@@ -2,14 +2,16 @@ import { Tabs } from 'expo-router'
 
 import { CustomTabBar } from '@/components/ui/custom-tab-bar'
 
-export default function TabLayout() {
+const TabLayout = () => {
   return (
     <Tabs
       tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{ headerShown: false }}
     >
       <Tabs.Screen name="index" />
-      <Tabs.Screen name="history" />
+      <Tabs.Screen name="my-workouts" />
     </Tabs>
   )
 }
+
+export default TabLayout

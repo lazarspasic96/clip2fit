@@ -23,4 +23,21 @@ export const Colors = {
     primary: '#27272a',
     secondary: '#3f3f46',
   },
+  badge: {
+    success: {
+      content: '#bef264',
+      background: 'rgba(190,242,100,0.1)',
+    },
+    error: {
+      content: '#f87171',
+      background: 'rgba(248,113,113,0.1)',
+    },
+  },
+  status: {
+    completed: '#84cc16',
+    skipped: '#f87171',
+    active: '#fafafa',
+    future: '#a1a1aa',
+    rest: '#0284c7',
+  },
 } as const

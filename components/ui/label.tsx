@@ -7,7 +7,7 @@ interface LabelProps {
   className?: string
 }
 
-export function Label({ text, required, className }: LabelProps) {
+export const Label = ({ text, required, className }: LabelProps) => {
   return (
     <Text className={cn('text-sm font-inter-medium text-content-secondary', className)}>
       {text}

@@ -1,5 +1,5 @@
-import { Text, View } from 'react-native'
 import { Plus } from 'lucide-react-native'
+import { Text, View } from 'react-native'
 import Svg, { Path } from 'react-native-svg'
 
 import { Colors } from '@/constants/colors'
@@ -42,12 +42,9 @@ const XIcon = () => (
 
 export const ImportFromSocialsCard = () => {
   return (
-    <View className="mx-5 bg-background-secondary rounded-2xl p-4">
+    <View className="mx-5 bg-background-tertiary rounded-2xl p-4">
       <View className="flex-row items-center gap-4">
-        <View
-          className="items-center justify-center rounded-full bg-brand-accent"
-          style={{ width: 44, height: 44 }}
-        >
+        <View className="items-center justify-center rounded-full bg-brand-accent" style={{ width: 44, height: 44 }}>
           <Plus size={22} color={Colors.background.primary} strokeWidth={2.5} />
         </View>
 
@@ -67,8 +64,8 @@ export const ImportFromSocialsCard = () => {
         Only with{' '}
         <Text className="text-sm font-inter-semibold text-brand-accent bg-background-tertiary rounded px-1">
           Premium
-        </Text>
-        {' '}AI enhanced!
+        </Text>{' '}
+        AI enhanced!
       </Text>
     </View>
   )

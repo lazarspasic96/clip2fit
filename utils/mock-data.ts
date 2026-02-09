@@ -12,13 +12,13 @@ export type MockWorkout = {
   calories: number
 }
 
+export type DayStatus = 'completed' | 'skipped' | 'active' | 'activeRest' | 'future' | 'rest'
+
 export type WeekDay = {
   label: string
   date: number
   workoutLabel?: string
-  isRest: boolean
-  isToday: boolean
-  dotColors: string[]
+  status: DayStatus
 }
 
 export const MOCK_WORKOUT: MockWorkout = {
@@ -34,33 +34,33 @@ export const MOCK_WORKOUT: MockWorkout = {
 }
 
 const EMPTY_WEEK: WeekDay[] = [
-  { label: 'M', date: 15, isRest: false, isToday: true, dotColors: [] },
-  { label: 'T', date: 16, isRest: false, isToday: false, dotColors: [] },
-  { label: 'W', date: 17, isRest: false, isToday: false, dotColors: [] },
-  { label: 'T', date: 18, isRest: false, isToday: false, dotColors: [] },
-  { label: 'F', date: 19, isRest: false, isToday: false, dotColors: [] },
-  { label: 'S', date: 20, isRest: false, isToday: false, dotColors: [] },
-  { label: 'S', date: 21, isRest: false, isToday: false, dotColors: [] },
+  { label: 'M', date: 15, status: 'active' },
+  { label: 'T', date: 16, status: 'future' },
+  { label: 'W', date: 17, status: 'future' },
+  { label: 'T', date: 18, status: 'future' },
+  { label: 'F', date: 19, status: 'future' },
+  { label: 'S', date: 20, status: 'future' },
+  { label: 'S', date: 21, status: 'future' },
 ]
 
 const ACTIVE_WEEK: WeekDay[] = [
-  { label: 'M', date: 15, workoutLabel: 'Pull', isRest: false, isToday: false, dotColors: ['#84cc16', '#ef4444'] },
-  { label: 'T', date: 16, workoutLabel: 'Push', isRest: false, isToday: false, dotColors: ['#ef4444', '#84cc16'] },
-  { label: 'W', date: 17, workoutLabel: 'Full', isRest: false, isToday: true, dotColors: ['#3b82f6'] },
-  { label: 'T', date: 18, workoutLabel: 'Leg', isRest: false, isToday: false, dotColors: ['#a855f7'] },
-  { label: 'F', date: 19, isRest: true, isToday: false, dotColors: ['#60a5fa'] },
-  { label: 'S', date: 20, workoutLabel: 'Upper', isRest: false, isToday: false, dotColors: ['#84cc16'] },
-  { label: 'S', date: 21, isRest: true, isToday: false, dotColors: ['#60a5fa'] },
+  { label: 'M', date: 15, workoutLabel: 'Pull', status: 'completed' },
+  { label: 'T', date: 16, workoutLabel: 'Push', status: 'skipped' },
+  { label: 'W', date: 17, workoutLabel: 'Full', status: 'active' },
+  { label: 'T', date: 18, workoutLabel: 'Leg', status: 'future' },
+  { label: 'F', date: 19, status: 'rest' },
+  { label: 'S', date: 20, workoutLabel: 'Upper', status: 'future' },
+  { label: 'S', date: 21, status: 'rest' },
 ]
 
 const REST_WEEK: WeekDay[] = [
-  { label: 'M', date: 15, workoutLabel: 'Pull', isRest: false, isToday: false, dotColors: ['#84cc16'] },
-  { label: 'T', date: 16, workoutLabel: 'Push', isRest: false, isToday: false, dotColors: ['#84cc16', '#ef4444'] },
-  { label: 'W', date: 17, workoutLabel: 'Full', isRest: false, isToday: false, dotColors: ['#3b82f6'] },
-  { label: 'T', date: 18, workoutLabel: 'Leg', isRest: false, isToday: false, dotColors: ['#a855f7'] },
-  { label: 'F', date: 19, isRest: true, isToday: true, dotColors: ['#60a5fa'] },
-  { label: 'S', date: 20, workoutLabel: 'Upper', isRest: false, isToday: false, dotColors: ['#84cc16'] },
-  { label: 'S', date: 21, isRest: true, isToday: false, dotColors: ['#60a5fa'] },
+  { label: 'M', date: 15, workoutLabel: 'Pull', status: 'completed' },
+  { label: 'T', date: 16, workoutLabel: 'Push', status: 'completed' },
+  { label: 'W', date: 17, workoutLabel: 'Full', status: 'completed' },
+  { label: 'T', date: 18, workoutLabel: 'Leg', status: 'completed' },
+  { label: 'F', date: 19, status: 'activeRest' },
+  { label: 'S', date: 20, workoutLabel: 'Upper', status: 'future' },
+  { label: 'S', date: 21, status: 'rest' },
 ]
 
 export const MOCK_DATA = {

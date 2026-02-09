@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 const SCREENS = ['demographics', 'goal'] as const
 
-export default function ProfileLayout() {
+const ProfileLayout = () => {
   const segments = useSegments()
   const insets = useSafeAreaInsets()
   const currentScreen = segments[segments.length - 1] ?? 'demographics'
@@ -26,3 +26,5 @@ export default function ProfileLayout() {
     </ProfileFormProvider>
   )
 }
+
+export default ProfileLayout

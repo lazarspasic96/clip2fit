@@ -1,6 +1,6 @@
-import { Button } from '@/components/ui/button'
 import { AuthDivider } from '@/components/auth/auth-divider'
 import { GoogleSignInButton } from '@/components/auth/google-sign-in-button'
+import { Button } from '@/components/ui/button'
 import { FormInput } from '@/components/ui/form-input'
 import { Logo } from '@/components/ui/logo'
 import { useAuth } from '@/contexts/auth-context'
@@ -26,7 +26,7 @@ const signupSchema = z
 
 type SignupForm = z.infer<typeof signupSchema>
 
-export default function SignupScreen() {
+const SignupScreen = () => {
   const router = useRouter()
   const { signUp, signInWithGoogle, loading } = useAuth()
   const [authError, setAuthError] = useState<string | null>(null)
@@ -125,3 +125,5 @@ export default function SignupScreen() {
     </View>
   )
 }
+
+export default SignupScreen
