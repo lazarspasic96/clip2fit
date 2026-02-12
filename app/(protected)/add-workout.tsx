@@ -4,7 +4,7 @@ import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { Download, Video, X } from 'lucide-react-native'
+import { Download, Link2, Video, X } from 'lucide-react-native'
 
 import { Colors } from '@/constants/colors'
 import { Button } from '@/components/ui/button'
@@ -99,14 +99,35 @@ const AddWorkoutScreen = () => {
         </Text>
 
         <Pressable
-          onPress={pickVideo}
+          onPress={() => {
+            router.back()
+            setTimeout(() => router.push('/(protected)/process-url' as never), 300)
+          }}
           className="bg-background-secondary rounded-2xl p-6 flex-row items-center gap-4"
         >
           <View
             className="items-center justify-center rounded-full bg-brand-accent"
             style={{ width: 52, height: 52 }}
           >
-            <Video size={26} color={Colors.background.primary} pointerEvents="none" />
+            <Link2 size={26} color={Colors.background.primary} pointerEvents="none" />
+          </View>
+          <View className="flex-1">
+            <Text className="text-lg font-inter-bold text-content-primary">From URL</Text>
+            <Text className="text-sm font-inter text-content-secondary mt-1">
+              Paste a link from TikTok, Instagram, YouTube
+            </Text>
+          </View>
+        </Pressable>
+
+        <Pressable
+          onPress={pickVideo}
+          className="bg-background-secondary rounded-2xl p-6 flex-row items-center gap-4"
+        >
+          <View
+            className="items-center justify-center rounded-full bg-background-tertiary"
+            style={{ width: 52, height: 52 }}
+          >
+            <Video size={26} color={Colors.content.primary} pointerEvents="none" />
           </View>
           <View className="flex-1">
             <Text className="text-lg font-inter-bold text-content-primary">From Video</Text>
@@ -117,7 +138,7 @@ const AddWorkoutScreen = () => {
         </Pressable>
 
         <Pressable
-          onPress={() => console.log('Manual entry')}
+          onPress={() => {}}
           className="bg-background-secondary rounded-2xl p-6 flex-row items-center gap-4"
         >
           <View

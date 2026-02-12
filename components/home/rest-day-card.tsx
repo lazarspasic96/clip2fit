@@ -1,10 +1,13 @@
-import { Pressable, Text, View } from 'react-native'
 import { Image } from 'expo-image'
+import { useRouter } from 'expo-router'
 import { Info } from 'lucide-react-native'
+import { Pressable, Text, View } from 'react-native'
 
 import { Colors } from '@/constants/colors'
 
 export const RestDayCard = () => {
+  const router = useRouter()
+
   return (
     <View className="mx-5 bg-background-secondary rounded-2xl p-4 overflow-hidden">
       <View className="flex-row">
@@ -13,7 +16,7 @@ export const RestDayCard = () => {
           <Text className="text-sm font-inter text-content-secondary mt-1">No workout for today!</Text>
 
           <Pressable
-            onPress={() => console.log('Edit rest day')}
+            onPress={() => router.push('/(protected)/(tabs)/schedule')}
             className="bg-brand-accent rounded-md px-4 py-2 self-start mt-4"
           >
             <Text className="text-sm font-inter-semibold text-background-primary">Edit</Text>

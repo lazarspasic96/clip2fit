@@ -2,7 +2,7 @@ import { View } from 'react-native'
 import { Moon } from 'lucide-react-native'
 
 import { Colors } from '@/constants/colors'
-import { type DayStatus } from '@/utils/mock-data'
+import type { DayStatus } from '@/types/schedule'
 
 export const StatusIndicator = ({ status }: { status: DayStatus }) => {
   if (status === 'rest' || status === 'activeRest') {

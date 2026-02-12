@@ -1,4 +1,4 @@
-import { ScrollView, View } from 'react-native'
+import { ActivityIndicator, ScrollView, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { BottomActionButtons } from '@/components/home/bottom-action-buttons'
@@ -10,14 +10,34 @@ import { RestDayCard } from '@/components/home/rest-day-card'
 import { TodaysWorkoutCard } from '@/components/home/todays-workout-card'
 import { WeeklyTrainingPlan } from '@/components/home/weekly-training-plan'
 import { TAB_BAR_HEIGHT } from '@/constants/layout'
-import { MOCK_DATA, type HomeScreenState } from '@/utils/mock-data'
-
-// Change this to 'active' or 'rest' to preview other states
-const CURRENT_STATE: HomeScreenState = 'active'
+import { useWorkoutsQuery } from '@/hooks/use-api'
+import { useScheduleQuery } from '@/hooks/use-schedule'
+import { buildWeekDaysFromSchedule, getTodayDayOfWeek } from '@/utils/schedule'
 
 const HomeScreen = () => {
   const insets = useSafeAreaInsets()
-  const data = MOCK_DATA[CURRENT_STATE]
+  const { workouts, isLoading: loading } = useWorkoutsQuery()
+  const { schedule } = useScheduleQuery()
+
+  const hasWorkouts = workouts.length > 0
+  const weekDays = buildWeekDaysFromSchedule(schedule)
+  const todayEntry = schedule.entries[getTodayDayOfWeek()]
+  const todaysWorkout = todayEntry.workout
+
+  const subtitle = hasWorkouts
+    ? 'Keep the momentum going!'
+    : 'Turn your favorite influencer workouts into real training sessions.'
+  const streakText = hasWorkouts
+    ? `${workouts.length} workout${workouts.length === 1 ? '' : 's'} saved`
+    : 'No data. Start collecting!'
+
+  if (loading) {
+    return (
+      <View className="flex-1 bg-background-primary justify-center items-center">
+        <ActivityIndicator size="large" />
+      </View>
+    )
+  }
 
   return (
     <View className="flex-1 bg-background-primary">
@@ -29,14 +49,18 @@ const HomeScreen = () => {
         }}
         showsVerticalScrollIndicator={false}
       >
-        <HomeHeader subtitle={data.subtitle} />
+        <HomeHeader subtitle={subtitle} />
 
-        {CURRENT_STATE === 'empty' && <EmptyWorkoutCard />}
-        {CURRENT_STATE === 'active' && data.workout && <TodaysWorkoutCard workout={data.workout} />}
-        {CURRENT_STATE === 'rest' && <RestDayCard />}
+        {todaysWorkout !== null ? (
+          <TodaysWorkoutCard workout={todaysWorkout} />
+        ) : !hasWorkouts ? (
+          <EmptyWorkoutCard />
+        ) : (
+          <RestDayCard />
+        )}
 
-        <WeeklyTrainingPlan days={[...data.week]} />
-        <CurrentStreakCard text={data.streakText} />
+        <WeeklyTrainingPlan days={weekDays} />
+        <CurrentStreakCard text={streakText} />
         <ImportFromSocialsCard />
         <BottomActionButtons />
       </ScrollView>

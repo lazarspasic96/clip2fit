@@ -1,7 +1,7 @@
 import { Text, View } from 'react-native'
 
 import { cn } from '@/components/ui/cn'
-import { type DayStatus, type WeekDay } from '@/utils/mock-data'
+import type { DayStatus, WeekDay } from '@/types/schedule'
 
 import { StatusIndicator } from './status-indicator'
 
@@ -20,6 +20,10 @@ const STATUS_STYLES: Record<DayStatus, { card: string; text: string }> = {
   },
   activeRest: {
     card: 'bg-background-tertiary border-brand-logo',
+    text: 'text-content-primary',
+  },
+  scheduled: {
+    card: 'bg-background-tertiary border-brand-accent/40',
     text: 'text-content-primary',
   },
   future: {
