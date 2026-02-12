@@ -37,6 +37,7 @@ export const Colors = {
     completed: '#84cc16',
     skipped: '#f87171',
     active: '#fafafa',
+    scheduled: '#bef264',
     future: '#a1a1aa',
     rest: '#0284c7',
   },

@@ -7,6 +7,8 @@ import type {
   SignupCredentials,
 } from '@/types/auth'
 import type { UserProfile } from '@/types/profile'
+import { mapProfileToApi } from '@/types/api'
+import { apiPatch, ApiError } from '@/utils/api'
 import { supabase } from '@/utils/supabase'
 import { GoogleSignin, isErrorWithCode, statusCodes } from '@react-native-google-signin/google-signin'
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
@@ -142,8 +144,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const saveProfile = useCallback(async (profile: Partial<UserProfile>): Promise<AuthResult> => {
-    console.log('[Profile] Data to save when backend is ready:', profile)
-    return { success: true }
+    try {
+      await apiPatch('/api/profiles', mapProfileToApi(profile))
+      return { success: true }
+    } catch (error: unknown) {
+      const message = error instanceof ApiError ? error.message : 'Failed to save profile'
+      return { success: false, error: message }
+    }
   }, [])
 
   const completeOnboarding = useCallback(async (): Promise<AuthResult> => {

@@ -90,6 +90,29 @@ npm run lint       # Run ESLint
 - Always use `Image` from `expo-image` for images — never use `Image` or `ImageBackground` from `react-native`
 - Always add `pointerEvents="none"` to lucide-react-native icons inside Pressable/TouchableOpacity — SVG elements intercept touches otherwise
 
+### Code Rules
+
+#### TypeScript Strict Mode
+- No `any` types — use proper types or `unknown`
+- Catch unhandled promises — always `await` or `.catch()` async calls
+- Explicit truthiness checks — use `=== undefined`, `=== null`, `.length === 0` instead of `!value`
+- Proper naming conventions: `PascalCase` for components/types, `camelCase` for variables/functions, `SCREAMING_SNAKE_CASE` for constants
+
+#### Code Complexity
+- Max 4 nesting levels — extract helper functions or use early returns
+- Max 350 lines per file — split into smaller modules when exceeded
+- Max 6 function parameters — use an options object when more are needed
+
+#### React Best Practices
+- Hooks rules enforced — never call hooks conditionally or inside loops
+- All deps declared — every value used inside `useEffect`/`useCallback`/`useMemo` must be in the dependency array
+- No leaked renders — always clean up subscriptions, timers, listeners in `useEffect` return
+- Use React Native primitives only — never raw HTML elements (View, Text, Pressable, ScrollView, etc.)
+
+#### React Compiler
+- Auto-memoization enabled — do NOT add manual `useMemo`/`useCallback`/`React.memo` unless profiling proves it necessary
+- The compiler handles memoization automatically; manual wrapping adds noise
+
 ### Keyboard & Safe Area
 
 - **NEVER** use `SafeAreaView` component — use `useSafeAreaInsets()` hook (avoids flickering/jumpy animations)

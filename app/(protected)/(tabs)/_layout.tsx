@@ -9,6 +9,7 @@ const TabLayout = () => {
       screenOptions={{ headerShown: false }}
     >
       <Tabs.Screen name="index" />
+      <Tabs.Screen name="schedule" />
       <Tabs.Screen name="my-workouts" />
     </Tabs>
   )
