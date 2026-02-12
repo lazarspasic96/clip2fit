@@ -1,0 +1,119 @@
+{
+    "id": "f454729d-c6e1-497f-8932-7a96e8000bce",
+    "title": "Pull Day Workout",
+    "description": "A scientifically-backed pull day workout focusing on the back and biceps.",
+    "platform": "tiktok",
+    "creatorName": "Unknown",
+    "creatorHandle": "Unknown",
+    "sourceUrl": "https://vt.tiktok.com/ZSmNCoqXJ/",
+    "thumbnailUrl": null,
+    "estimatedDurationMinutes": null,
+    "difficulty": "intermediate",
+    "targetMuscles": [
+        "Back",
+        "Biceps"
+    ],
+    "equipment": [],
+    "createdAt": "2026-02-11T22:33:53.589Z",
+    "exercises": [
+        {
+            "id": "4f97579f-0772-4abc-b5c0-96b9b95b4f79",
+            "name": "Close Grip Lat Pulldown",
+            "sets": 3,
+            "reps": "8-10",
+            "targetWeight": null,
+            "restBetweenSets": "90 seconds",
+            "notes": "Keep torso vertical for a big stretch at the top and drive elbows down to engage lats.",
+            "order": 1,
+            "muscleGroups": [
+                "Lats"
+            ],
+            "isBodyweight": false
+        },
+        {
+            "id": "1cf8bdc1-6249-4925-b12c-3266099611c3",
+            "name": "Chest Supported Machine Row",
+            "sets": 3,
+            "reps": "8-10",
+            "targetWeight": null,
+            "restBetweenSets": "90 seconds",
+            "notes": "Keep elbows higher and flared, squeeze shoulder blades together at the top.",
+            "order": 2,
+            "muscleGroups": [
+                "Rhomboids",
+                "Mid Traps"
+            ],
+            "isBodyweight": false
+        },
+        {
+            "id": "61528bb9-e962-4197-8333-34d81d102ef5",
+            "name": "Close Grip Cable Row",
+            "sets": 3,
+            "reps": "to failure",
+            "targetWeight": null,
+            "restBetweenSets": "90 seconds",
+            "notes": "Engage lats with biomechanical shoulder extension from a horizontal angle. Use lengthened partials after failure.",
+            "order": 3,
+            "muscleGroups": [
+                "Lats"
+            ],
+            "isBodyweight": false
+        },
+        {
+            "id": "6e429072-a4a3-40d5-912e-4b4d9af4b5f8",
+            "name": "Reverse Cable Flyes",
+            "sets": 3,
+            "reps": "12-15",
+            "targetWeight": null,
+            "restBetweenSets": "90 seconds",
+            "notes": "Use lightweight and higher reps to prevent mid traps from taking over.",
+            "order": 4,
+            "muscleGroups": [
+                "Rear Delts"
+            ],
+            "isBodyweight": false
+        },
+        {
+            "id": "b18a71a1-c182-43fe-b944-da571ebe3bd0",
+            "name": "Shrugs",
+            "sets": 3,
+            "reps": "10-12",
+            "targetWeight": null,
+            "restBetweenSets": "90 seconds",
+            "notes": "Shrug up and in toward your ears to target upper traps.",
+            "order": 5,
+            "muscleGroups": [
+                "Upper Traps"
+            ],
+            "isBodyweight": false
+        },
+        {
+            "id": "24a35719-8320-412d-b346-853d97233dab",
+            "name": "Easy Bar Curl",
+            "sets": 3,
+            "reps": "8-10",
+            "targetWeight": null,
+            "restBetweenSets": "90 seconds",
+            "notes": "",
+            "order": 6,
+            "muscleGroups": [
+                "Biceps"
+            ],
+            "isBodyweight": false
+        },
+        {
+            "id": "f766c7f2-9514-45ff-b17b-7bd975cf4c2a",
+            "name": "Machine Preacher Curl",
+            "sets": 3,
+            "reps": "8-10",
+            "targetWeight": null,
+            "restBetweenSets": "90 seconds",
+            "notes": "",
+            "order": 7,
+            "muscleGroups": [
+                "Biceps"
+            ],
+            "isBodyweight": false
+        }
+    ]
+}
