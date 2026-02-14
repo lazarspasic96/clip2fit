@@ -1,25 +1,20 @@
-import { Image } from 'expo-image'
 import { useRouter } from 'expo-router'
+import { Image } from 'expo-image'
 import { Clock, Dumbbell, Flame } from 'lucide-react-native'
 import { Pressable, Text, View } from 'react-native'
 
 import { Colors } from '@/constants/colors'
+import { useActiveWorkout } from '@/contexts/active-workout-context'
 import type { WorkoutPlan } from '@/types/workout'
 
 interface TodaysWorkoutCardProps {
   workout: WorkoutPlan
 }
 
-const PLATFORM_ICONS: Record<string, string> = {
-  instagram:
-    'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Instagram_logo_2016.svg/132px-Instagram_logo_2016.svg.png',
-  tiktok: 'https://upload.wikimedia.org/wikipedia/en/thumb/a/a9/TikTok_logo.svg/100px-TikTok_logo.svg.png',
-  youtube:
-    'https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/YouTube_full-color_icon_%282017%29.svg/120px-YouTube_full-color_icon_%282017%29.svg.png',
-}
-
 export const TodaysWorkoutCard = ({ workout }: TodaysWorkoutCardProps) => {
   const router = useRouter()
+  const { activeWorkoutId } = useActiveWorkout()
+  const isActive = activeWorkoutId === workout.id
 
   return (
     <View className="mx-5 bg-background-tertiary rounded-2xl p-4 overflow-hidden">
@@ -30,12 +25,7 @@ export const TodaysWorkoutCard = ({ workout }: TodaysWorkoutCardProps) => {
             {workout.description}
           </Text>
 
-          <View className="flex-row items-center gap-1.5 mt-2">
-            {PLATFORM_ICONS[workout.platform] !== undefined && (
-              <Image source={{ uri: PLATFORM_ICONS[workout.platform] }} style={{ width: 16, height: 16 }} />
-            )}
-            <Text className="text-sm font-inter text-content-secondary">{workout.creatorHandle}</Text>
-          </View>
+          <Text className="text-sm font-inter text-content-secondary mt-2">{workout.creatorHandle}</Text>
         </View>
 
         {workout.thumbnailUrl !== '' && (
@@ -48,17 +38,30 @@ export const TodaysWorkoutCard = ({ workout }: TodaysWorkoutCardProps) => {
       </View>
 
       <View className="flex-row items-center gap-2 mt-4">
-        <Pressable onPress={() => router.push(`/(protected)/active-workout?id=${workout.id}`)} className="bg-brand-accent rounded-md px-4 py-2">
-          <Text className="text-sm font-inter-semibold text-background-primary">Start</Text>
-        </Pressable>
+        {isActive ? (
+          <Pressable
+            onPress={() => router.push(`/(protected)/(tabs)/(home)/active-workout?id=${workout.id}`)}
+            className="bg-brand-accent rounded-md px-4 py-2"
+          >
+            <Text className="text-sm font-inter-semibold text-background-primary">Continue</Text>
+          </Pressable>
+        ) : (
+          <>
+            <Pressable
+              onPress={() => router.push(`/(protected)/(tabs)/(home)/active-workout?id=${workout.id}`)}
+              className="bg-brand-accent rounded-md px-4 py-2"
+            >
+              <Text className="text-sm font-inter-semibold text-background-primary">Start Workout</Text>
+            </Pressable>
 
-        <Pressable onPress={() => router.push(`/(protected)/workout-detail?id=${workout.id}`)} className="rounded-md px-4 py-2">
-          <Text className="text-sm font-inter text-content-secondary">View</Text>
-        </Pressable>
-
-        <Pressable onPress={() => {}} className="rounded-md px-4 py-2">
-          <Text className="text-sm font-inter text-content-secondary">Rest</Text>
-        </Pressable>
+            <Pressable
+              onPress={() => router.push(`/(protected)/workout-detail?id=${workout.id}`)}
+              className="rounded-md px-4 py-2"
+            >
+              <Text className="text-sm font-inter text-content-secondary">View</Text>
+            </Pressable>
+          </>
+        )}
       </View>
 
       <View className="flex-row items-center gap-4 mt-3 pt-3 border-t border-border-primary">

@@ -5,7 +5,6 @@ import { ActivityIndicator, Alert, Linking, Pressable, ScrollView, Text, View } 
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { PlatformBadge } from '@/components/processing/platform-badge'
-import { Button } from '@/components/ui/button'
 import { DetailExerciseRow } from '@/components/workout-detail/detail-exercise-row'
 import { DetailHeader } from '@/components/workout-detail/detail-header'
 import { EditExerciseSheet } from '@/components/workout-detail/edit-exercise-sheet'
@@ -80,10 +79,6 @@ export const WorkoutDetailContent = () => {
     )
   }
 
-  const handleStartWorkout = () => {
-    router.push(`/(protected)/active-workout?id=${workout.id}`)
-  }
-
   const handleOpenSource = () => {
     if (workout.sourceUrl.length > 0) {
       Linking.openURL(workout.sourceUrl)
@@ -105,9 +100,8 @@ export const WorkoutDetailContent = () => {
 
   return (
     <View className="flex-1 bg-background-primary" style={{ paddingTop: insets.top }}>
-      <DetailHeader onBack={() => router.canGoBack() ? router.back() : router.replace('/(protected)/(tabs)')} />
-
-      <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 16 }} showsVerticalScrollIndicator={false}>
+      <DetailHeader onBack={() => router.canGoBack() ? router.back() : router.replace('/(protected)/(tabs)' as never)} />
+      <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 16) }} showsVerticalScrollIndicator={false}>
         {/* Hero section */}
         <View className="px-6 pb-4">
           <View className="flex-row items-center gap-3 mb-2">
@@ -183,11 +177,6 @@ export const WorkoutDetailContent = () => {
           />
         ))}
       </ScrollView>
-
-      {/* Sticky footer */}
-      <View className="px-6 pt-4 border-t border-border-primary" style={{ paddingBottom: Math.max(insets.bottom, 16) }}>
-        <Button onPress={handleStartWorkout}>Start Workout</Button>
-      </View>
 
       <EditExerciseSheet
         exercise={selectedExercise}

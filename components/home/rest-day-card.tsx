@@ -23,6 +23,7 @@ export const RestDayCard = () => {
           </Pressable>
         </View>
 
+        {/* TODO: Replace with local asset */}
         <Image
           source={{ uri: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=200&h=200&fit=crop' }}
           style={{ width: 100, height: 100, borderRadius: 12 }}

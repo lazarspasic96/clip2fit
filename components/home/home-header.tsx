@@ -5,6 +5,7 @@ import { Pressable, Text, View } from 'react-native'
 
 import { Colors } from '@/constants/colors'
 import { useAuth } from '@/contexts/auth-context'
+import { useProfileQuery } from '@/hooks/use-profile-query'
 
 interface HomeHeaderProps {
   subtitle: string
@@ -12,9 +13,10 @@ interface HomeHeaderProps {
 
 export const HomeHeader = ({ subtitle }: HomeHeaderProps) => {
   const { user } = useAuth()
+  const { profile } = useProfileQuery()
   const router = useRouter()
 
-  const displayName = (user?.user_metadata?.fullName as string) || 'there'
+  const displayName = profile?.fullName ?? 'there'
   const avatarUrl = user?.user_metadata?.avatar_url as string | undefined
   const initials = displayName
     .split(' ')

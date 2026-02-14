@@ -9,4 +9,7 @@ export const queryKeys = {
   schedule: {
     current: ['schedule'] as const,
   },
+  sessions: {
+    last: ['sessions', 'last'] as const,
+  },
 } as const

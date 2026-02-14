@@ -4,16 +4,24 @@ import { Pressable, Text, View } from 'react-native'
 
 import { Colors } from '@/constants/colors'
 
+interface ConfirmationSheetAction {
+  label: string
+  onPress: () => void
+  variant?: 'primary' | 'destructive'
+  loading?: boolean
+}
+
 interface ConfirmationSheetProps {
   visible: boolean
   title: string
   description: string
   cancelLabel?: string
-  confirmLabel: string
+  confirmLabel?: string
   onCancel: () => void
-  onConfirm: () => void
+  onConfirm?: () => void
   loading?: boolean
   error?: string | null
+  actions?: ConfirmationSheetAction[]
 }
 
 export const ConfirmationSheet = ({
@@ -26,6 +34,7 @@ export const ConfirmationSheet = ({
   onConfirm,
   loading = false,
   error = null,
+  actions,
 }: ConfirmationSheetProps) => {
   const bottomSheetRef = useRef<BottomSheetModal>(null)
 
@@ -58,14 +67,31 @@ export const ConfirmationSheet = ({
         )}
 
         <View className="flex-row gap-3 mt-6">
-          <Pressable onPress={onCancel} disabled={loading} className="flex-1 rounded-md py-2.5 bg-background-tertiary">
-            <Text className="text-sm font-inter-semibold text-content-primary text-center">{cancelLabel}</Text>
-          </Pressable>
-          <Pressable onPress={onConfirm} disabled={loading} className="flex-1 rounded-md py-2.5 bg-red-600">
-            <Text className="text-sm font-inter-semibold text-content-primary text-center">
-              {loading ? `${confirmLabel}...` : confirmLabel}
-            </Text>
-          </Pressable>
+          {actions !== undefined && actions.length > 0 ? (
+            actions.map((action) => (
+              <Pressable
+                key={action.label}
+                onPress={action.onPress}
+                disabled={action.loading === true}
+                className={`flex-1 rounded-md py-2.5 ${action.variant === 'destructive' ? 'bg-red-600' : 'bg-brand-accent'}`}
+              >
+                <Text className={`text-sm font-inter-semibold text-center ${action.variant === 'destructive' ? 'text-content-primary' : 'text-background-primary'}`}>
+                  {action.loading === true ? `${action.label}...` : action.label}
+                </Text>
+              </Pressable>
+            ))
+          ) : (
+            <>
+              <Pressable onPress={onCancel} disabled={loading} className="flex-1 rounded-md py-2.5 bg-background-tertiary">
+                <Text className="text-sm font-inter-semibold text-content-primary text-center">{cancelLabel}</Text>
+              </Pressable>
+              <Pressable onPress={onConfirm} disabled={loading} className="flex-1 rounded-md py-2.5 bg-red-600">
+                <Text className="text-sm font-inter-semibold text-content-primary text-center">
+                  {loading === true ? `${confirmLabel}...` : confirmLabel}
+                </Text>
+              </Pressable>
+            </>
+          )}
         </View>
       </BottomSheetView>
     </BottomSheetModal>

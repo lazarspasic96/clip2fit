@@ -48,7 +48,7 @@ const AddWorkoutScreen = () => {
       <View className="flex-1 bg-background-primary" style={{ paddingTop: insets.top }}>
         <View className="flex-row items-center justify-between px-6 pt-4 pb-2">
           <Text className="text-2xl font-inter-bold text-content-primary">Add Workout</Text>
-          <Pressable onPress={() => router.back()} hitSlop={12}>
+          <Pressable onPress={() => router.back()} hitSlop={12} className="p-1">
             <X size={24} color={Colors.content.primary} pointerEvents="none" />
           </Pressable>
         </View>
@@ -88,7 +88,7 @@ const AddWorkoutScreen = () => {
     <View className="flex-1 bg-background-primary" style={{ paddingTop: insets.top }}>
       <View className="flex-row items-center justify-between px-6 pt-4 pb-2">
         <Text className="text-2xl font-inter-bold text-content-primary">Add Workout</Text>
-        <Pressable onPress={() => router.back()} hitSlop={12}>
+        <Pressable onPress={() => router.back()} hitSlop={12} className="p-1">
           <X size={24} color={Colors.content.primary} pointerEvents="none" />
         </Pressable>
       </View>

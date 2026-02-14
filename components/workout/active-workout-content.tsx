@@ -1,32 +1,76 @@
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { useEffect, useState } from 'react'
-import { ActivityIndicator, Text, View } from 'react-native'
+import { useEffect, useRef } from 'react'
+import { ActivityIndicator, Alert, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { CommandCenterWorkout } from '@/components/workout/command-center/command-center-workout'
-import { ConfirmationSheet } from '@/components/ui/confirmation-sheet'
-import { FinishWorkoutOverlay } from '@/components/workout/finish-workout-overlay'
+import { DesignSwitcher } from '@/components/workout/design-switcher'
 import { useActiveWorkout } from '@/contexts/active-workout-context'
 import { useWorkoutQuery } from '@/hooks/use-api'
-import { MOCK_WORKOUT_PLAN } from '@/utils/mock-workout-session'
+import { mapApiWorkout } from '@/types/api'
 
 export const ActiveWorkoutContent = () => {
   const { id } = useLocalSearchParams<{ id?: string }>()
   const router = useRouter()
   const insets = useSafeAreaInsets()
-  const { session, startWorkout } = useActiveWorkout()
-  const [showDiscard, setShowDiscard] = useState(false)
+  const { session, startWorkout, clearSession } = useActiveWorkout()
+  const hasStarted = useRef(false)
 
-  const { workout, isLoading, error } = useWorkoutQuery(id ?? null)
-
-  // Use real workout if id provided, otherwise fall back to mock
-  const workoutPlan = id !== undefined ? workout : MOCK_WORKOUT_PLAN
+  const { rawWorkout, isLoading, error } = useWorkoutQuery(id ?? null)
 
   useEffect(() => {
-    if (workoutPlan !== null) {
-      startWorkout(workoutPlan)
+    if (id === undefined) {
+      if (router.canGoBack()) {
+        router.back()
+      } else {
+        router.replace('/(protected)/(tabs)')
+      }
+      return
     }
-  }, [workoutPlan, startWorkout])
+
+    if (hasStarted.current) return
+
+    // Already have an active session for this workout — resume
+    if (session !== null && session.plan.id === id) {
+      hasStarted.current = true
+      return
+    }
+
+    // Different workout active — prompt user
+    if (session !== null && session.plan.id !== id) {
+      Alert.alert(
+        'Active workout in progress',
+        'You have an active workout. Start a new one?',
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
+            onPress: () => {
+              if (router.canGoBack()) {
+                router.back()
+              } else {
+                router.replace('/(protected)/(tabs)')
+              }
+            },
+          },
+          {
+            text: 'Start new',
+            onPress: () => {
+              clearSession()
+              hasStarted.current = false
+            },
+          },
+        ],
+      )
+      return
+    }
+
+    // No session — normal startup
+    if (rawWorkout === null) return
+
+    hasStarted.current = true
+    const enrichedPlan = mapApiWorkout(rawWorkout)
+    startWorkout(enrichedPlan)
+  }, [id, rawWorkout, startWorkout, clearSession, session, router])
 
   if (isLoading && id !== undefined) {
     return (
@@ -47,38 +91,11 @@ export const ActiveWorkoutContent = () => {
 
   if (session === null) return null
 
-  const safeGoBack = () => {
-    if (router.canGoBack()) {
-      router.back()
-    } else {
-      router.replace('/(protected)/(tabs)')
-    }
-  }
-
-  const handleDiscard = () => {
-    setShowDiscard(false)
-    safeGoBack()
-  }
-
-  const handleDone = () => {
-    safeGoBack()
-  }
-
   return (
     <View className="flex-1 bg-background-primary">
       <View className="flex-1" style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}>
-        <CommandCenterWorkout onClose={() => setShowDiscard(true)} />
+        <DesignSwitcher onBack={() => router.back()} />
       </View>
-
-      <FinishWorkoutOverlay onDone={handleDone} />
-      <ConfirmationSheet
-        visible={showDiscard}
-        title="End workout?"
-        description="Progress won't be saved."
-        confirmLabel="End"
-        onCancel={() => setShowDiscard(false)}
-        onConfirm={handleDiscard}
-      />
     </View>
   )
 }

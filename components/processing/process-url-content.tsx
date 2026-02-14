@@ -3,12 +3,12 @@ import { Pressable, View } from 'react-native'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useShareIntentContext } from 'expo-share-intent'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { X } from 'lucide-react-native'
 
-import { Colors } from '@/constants/colors'
 import type { ProcessingStage, ProcessingState } from '@/types/processing'
 import type { SupportedPlatform } from '@/utils/url-validation'
 import { validateWorkoutUrl } from '@/utils/url-validation'
+import { X } from 'lucide-react-native'
+import { Colors } from '@/constants/colors'
 import { useConvertUrlMutation, useJobPolling, useWorkoutQuery } from '@/hooks/use-api'
 import { UrlInputSection } from '@/components/processing/url-input-section'
 import { ProcessingStages } from '@/components/processing/processing-stages'
@@ -196,7 +196,12 @@ export const ProcessUrlContent = () => {
 
   const handleSaved = () => {
     resetShareIntent()
-    router.replace('/(protected)/(tabs)/my-workouts')
+    // Dismiss the fullScreenModal first, then switch to the my-workouts tab.
+    // router.replace from a modal doesn't properly change the active tab.
+    if (router.canGoBack()) {
+      router.back()
+    }
+    router.navigate(`/(protected)/(tabs)/my-workouts?newWorkoutId=${workoutId}`)
   }
 
   const handleClose = () => {
@@ -208,13 +213,11 @@ export const ProcessUrlContent = () => {
 
   return (
     <View className="flex-1 bg-background-primary" style={{ paddingTop: insets.top }}>
-      {/* Header with close button */}
-      <View className="flex-row items-center justify-end px-6 pt-4 pb-2">
-        <Pressable onPress={handleClose} hitSlop={12}>
+      <View className="flex-row items-center justify-end px-4 py-3">
+        <Pressable onPress={handleClose} hitSlop={12} className="p-1">
           <X size={24} color={Colors.content.primary} pointerEvents="none" />
         </Pressable>
       </View>
-
       {screenState === 'input' && <UrlInputSection onSubmit={startProcessing} />}
 
       {screenState === 'processing' && processingState !== null && (

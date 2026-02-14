@@ -1,17 +1,28 @@
-import { Tabs } from 'expo-router'
+import { NativeTabs } from 'expo-router/unstable-native-tabs'
 
-import { CustomTabBar } from '@/components/ui/custom-tab-bar'
+import { Colors } from '@/constants/colors'
 
 const TabLayout = () => {
   return (
-    <Tabs
-      tabBar={(props) => <CustomTabBar {...props} />}
-      screenOptions={{ headerShown: false }}
+    <NativeTabs
+      tintColor={Colors.brand.accent}
+      minimizeBehavior="onScrollDown"
     >
-      <Tabs.Screen name="index" />
-      <Tabs.Screen name="schedule" />
-      <Tabs.Screen name="my-workouts" />
-    </Tabs>
+      <NativeTabs.Trigger name="(home)">
+        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf={{ default: 'house', selected: 'house.fill' }} />
+      </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="schedule">
+        <NativeTabs.Trigger.Label>Schedule</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf="calendar" />
+      </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="my-workouts">
+        <NativeTabs.Trigger.Label>Library</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf={{ default: 'dumbbell', selected: 'dumbbell.fill' }} />
+      </NativeTabs.Trigger>
+    </NativeTabs>
   )
 }
 

@@ -2,7 +2,7 @@ import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } f
 import { Onest_400Regular } from '@expo-google-fonts/onest'
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native'
 import { useFonts } from 'expo-font'
-import { Redirect, Stack, useRouter, useSegments } from 'expo-router'
+import { Stack, useRouter, useSegments } from 'expo-router'
 import { ShareIntentProvider, useShareIntentContext } from 'expo-share-intent'
 import * as SplashScreen from 'expo-splash-screen'
 import { StatusBar } from 'expo-status-bar'
@@ -27,29 +27,37 @@ const RootNavigator = () => {
   const { session, initialized, onboardingComplete } = useAuth()
   const { hasShareIntent } = useShareIntentContext()
   const segments = useSegments()
+  const router = useRouter()
   const colorScheme = useColorScheme()
 
-  const inAuthGroup = segments[0] === '(auth)'
-  const inOnboarding = segments.includes('onboarding' as never)
-  const inProcessUrl = segments.includes('process-url' as never)
+  useEffect(() => {
+    if (!initialized) return
 
-  // Redirect based on auth + onboarding state
-  if (initialized && !session && !inAuthGroup) {
-    return <Redirect href="/(auth)/welcome" />
-  }
+    const inAuthGroup = segments[0] === '(auth)'
+    const inOnboarding = segments.includes('onboarding' as never)
+    const inProcessUrl = segments.includes('process-url' as never)
 
-  if (initialized && session && !onboardingComplete && !inOnboarding) {
-    return <Redirect href="/(protected)/onboarding/demographics" />
-  }
+    if (!session && !inAuthGroup) {
+      router.replace('/(auth)/welcome')
+      return
+    }
 
-  if (initialized && session && onboardingComplete && inAuthGroup) {
-    return <Redirect href="/(protected)/(tabs)" />
-  }
+    if (session && !onboardingComplete && !inOnboarding) {
+      router.replace('/(protected)/onboarding/demographics')
+      return
+    }
 
-  // Redirect to process-url when a share intent arrives
-  if (initialized && session && onboardingComplete && hasShareIntent && !inProcessUrl) {
-    return <Redirect href={'/(protected)/process-url' as never} />
-  }
+    if (session && onboardingComplete && inAuthGroup) {
+      router.replace('/(protected)/(tabs)/(home)' as never)
+      return
+    }
+
+    if (session && onboardingComplete && hasShareIntent && !inProcessUrl) {
+      router.replace('/(protected)/process-url' as never)
+    }
+  }, [initialized, session, onboardingComplete, segments, hasShareIntent])
+
+  if (!initialized) return null
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
@@ -64,7 +72,6 @@ const RootNavigator = () => {
 }
 
 const RootLayout = () => {
-  const router = useRouter()
   const [fontsLoaded] = useFonts({
     Inter_400Regular,
     Inter_500Medium,
@@ -90,7 +97,7 @@ const RootLayout = () => {
           options={{
             debug: __DEV__,
             resetOnBackground: true,
-            onResetShareIntent: () => router.replace('/(protected)/(tabs)'),
+            onResetShareIntent: () => {},
           }}
         >
           <KeyboardProvider>

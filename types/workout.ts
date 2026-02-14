@@ -48,6 +48,6 @@ export interface WorkoutSession {
   plan: WorkoutPlan
   status: 'in_progress' | 'completed'
   startedAt: number
-  completedAt: number | null
+  completedAt?: number
   activeExerciseIndex: number
 }

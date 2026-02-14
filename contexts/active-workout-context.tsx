@@ -1,4 +1,5 @@
 import type { WorkoutExercise, WorkoutPlan, WorkoutSession } from '@/types/workout'
+import { clearPersistedSession, loadSession, saveSession } from '@/utils/session-storage'
 import { createContext, useContext, useState } from 'react'
 
 const isFinished = (item: { status: string }) =>
@@ -43,7 +44,6 @@ const buildInitialSession = (plan: WorkoutPlan): WorkoutSession => ({
   },
   status: 'in_progress',
   startedAt: Date.now(),
-  completedAt: null,
   activeExerciseIndex: 0,
 })
 
@@ -76,6 +76,23 @@ const applyCompleteSet = (
   return updateSession(state, advanced.exercises, advanced.activeIndex)
 }
 
+const applyEditSet = (
+  state: WorkoutSession,
+  exerciseId: string,
+  setId: string,
+  actualReps: number | null,
+  actualWeight: number | null
+): WorkoutSession => {
+  const exercises = state.plan.exercises.map((ex) => {
+    if (ex.id !== exerciseId) return ex
+    const sets = ex.sets.map((s) =>
+      s.id !== setId ? s : { ...s, actualReps, actualWeight }
+    )
+    return { ...ex, sets }
+  })
+  return updateSession(state, exercises, state.activeExerciseIndex)
+}
+
 const applySkipExercise = (
   state: WorkoutSession,
   exerciseId: string
@@ -102,52 +119,72 @@ const applyNavigateExercise = (
 
 interface WorkoutContextValue {
   session: WorkoutSession | null
+  activeWorkoutId: string | null
+  completedSession: WorkoutSession | null
   currentExercise: WorkoutExercise | null
   progress: { completed: number; total: number }
-  isWorkoutComplete: boolean
   startWorkout: (plan: WorkoutPlan) => void
   completeSet: (exerciseId: string, setId: string, actualReps: number | null, actualWeight: number | null) => void
+  editSet: (exerciseId: string, setId: string, actualReps: number | null, actualWeight: number | null) => void
   skipExercise: (exerciseId: string) => void
   navigateExercise: (index: number) => void
-  finishWorkout: () => void
+  finishSession: () => void
+  clearSession: () => void
 }
 
 const ActiveWorkoutContext = createContext<WorkoutContextValue | undefined>(undefined)
 
 export const ActiveWorkoutProvider = ({ children }: { children: React.ReactNode }) => {
-  const [session, setSession] = useState<WorkoutSession | null>(null)
+  const [session, setSession] = useState<WorkoutSession | null>(() => loadSession())
+
+  const updateAndPersist = (updater: (prev: WorkoutSession) => WorkoutSession) => {
+    setSession((prev) => {
+      if (prev === null) return prev
+      const next = updater(prev)
+      saveSession(next)
+      return next
+    })
+  }
 
   const startWorkout = (plan: WorkoutPlan) => {
-    setSession(buildInitialSession(plan))
+    const initial = buildInitialSession(plan)
+    saveSession(initial)
+    setSession(initial)
   }
 
   const completeSet = (exerciseId: string, setId: string, actualReps: number | null, actualWeight: number | null) => {
-    setSession((prev) => {
-      if (prev === null) return prev
-      return applyCompleteSet(prev, exerciseId, setId, actualReps, actualWeight)
-    })
+    updateAndPersist((prev) => applyCompleteSet(prev, exerciseId, setId, actualReps, actualWeight))
+  }
+
+  const editSet = (exerciseId: string, setId: string, actualReps: number | null, actualWeight: number | null) => {
+    updateAndPersist((prev) => applyEditSet(prev, exerciseId, setId, actualReps, actualWeight))
   }
 
   const skipExercise = (exerciseId: string) => {
-    setSession((prev) => {
-      if (prev === null) return prev
-      return applySkipExercise(prev, exerciseId)
-    })
+    updateAndPersist((prev) => applySkipExercise(prev, exerciseId))
   }
 
   const navigateExercise = (index: number) => {
+    updateAndPersist((prev) => applyNavigateExercise(prev, index))
+  }
+
+  const finishSession = () => {
     setSession((prev) => {
       if (prev === null) return prev
-      return applyNavigateExercise(prev, index)
+      const next: WorkoutSession = { ...prev, status: 'completed', completedAt: Date.now() }
+      saveSession(next)
+      return next
     })
   }
 
-  const finishWorkout = () => {
-    setSession((prev) => {
-      if (prev === null) return prev
-      return { ...prev, status: 'completed' as const, completedAt: Date.now() }
-    })
+  const clearSession = () => {
+    clearPersistedSession()
+    setSession(null)
   }
+
+  const activeWorkoutId = session?.status === 'in_progress' ? session.plan.id : null
+
+  const completedSession = session?.status === 'completed' ? session : null
 
   const currentExercise = session === null
     ? null
@@ -157,20 +194,19 @@ export const ActiveWorkoutProvider = ({ children }: { children: React.ReactNode 
     ? { completed: 0, total: 0 }
     : { completed: session.plan.exercises.filter(isFinished).length, total: session.plan.exercises.length }
 
-  const isWorkoutComplete = session === null
-    ? false
-    : session.plan.exercises.every(isFinished)
-
   const value: WorkoutContextValue = {
     session,
+    activeWorkoutId,
+    completedSession,
     currentExercise,
     progress,
-    isWorkoutComplete,
     startWorkout,
     completeSet,
+    editSet,
     skipExercise,
     navigateExercise,
-    finishWorkout,
+    finishSession,
+    clearSession,
   }
 
   return <ActiveWorkoutContext.Provider value={value}>{children}</ActiveWorkoutContext.Provider>

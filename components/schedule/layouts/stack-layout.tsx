@@ -1,7 +1,7 @@
 import { ScrollView } from 'react-native'
 
 import { ScheduleDayRow } from '@/components/schedule/schedule-day-row'
-import { TAB_BAR_HEIGHT } from '@/constants/layout'
+
 import type { DayOfWeek, WeeklySchedule } from '@/types/schedule'
 import { getTodayDayOfWeek } from '@/utils/schedule'
 
@@ -17,7 +17,7 @@ export const StackLayout = ({ schedule, onDayPress, checkmarkDay }: StackLayoutP
   return (
     <ScrollView
       className="flex-1"
-      contentContainerStyle={{ paddingTop: 16, paddingBottom: TAB_BAR_HEIGHT + 16 }}
+      contentContainerStyle={{ paddingTop: 16, paddingBottom: 16 }}
       showsVerticalScrollIndicator={false}
     >
       {schedule.entries.map((entry, i) => {

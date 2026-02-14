@@ -20,7 +20,7 @@ export const WorkoutCard = ({ workout }: WorkoutCardProps) => {
   const difficultyColor = DIFFICULTY_COLORS[workout.difficulty] ?? Colors.content.tertiary
 
   return (
-    <View className="bg-background-secondary p-4 flex-row">
+    <View style={{ borderRadius: 16, overflow: 'hidden', backgroundColor: Colors.background.secondary }} className="p-4 flex-row">
       {/* Left accent bar */}
       <View
         style={{

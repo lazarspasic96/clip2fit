@@ -1,23 +1,24 @@
-import type { ExerciseStatus } from '@/types/workout'
-import { View } from 'react-native'
+import { Pressable, View } from 'react-native'
 
 interface SegmentedProgressBarProps {
-  segments: { status: ExerciseStatus }[]
+  activeIndex: number
+  total: number
+  onPress?: (index: number) => void
 }
 
-const getSegmentBgClass = (status: ExerciseStatus): string => {
-  if (status === 'completed') return 'bg-brand-accent'
-  if (status === 'active') return 'bg-content-primary'
-  if (status === 'skipped') return 'bg-content-tertiary'
-  return 'bg-background-tertiary'
-}
-
-export const SegmentedProgressBar = ({ segments }: SegmentedProgressBarProps) => {
+export const SegmentedProgressBar = ({ activeIndex, total, onPress }: SegmentedProgressBarProps) => {
   return (
     <View className="flex-row gap-1">
-      {segments.map((seg, i) => {
-        const bgClass = getSegmentBgClass(seg.status)
-        return <View key={i} className={`flex-1 h-1.5 rounded-full ${bgClass}`} />
+      {Array.from({ length: total }, (_, i) => {
+        const isReached = i <= activeIndex
+        return (
+          <Pressable
+            key={i}
+            onPress={() => onPress?.(i)}
+            className={`flex-1 h-1.5 rounded-full ${isReached ? 'bg-brand-accent' : 'bg-content-primary'}`}
+            hitSlop={6}
+          />
+        )
       })}
     </View>
   )

@@ -1,4 +1,4 @@
-import type { UserProfile } from '@/types/profile'
+import type { FitnessGoal, Gender, UserProfile } from '@/types/profile'
 import type { WorkoutExercise, WorkoutPlan, WorkoutSet } from '@/types/workout'
 
 // --- API response shapes (match what the server returns) ---
@@ -60,15 +60,72 @@ export interface ApiProfilePayload {
   fitnessGoal?: string
 }
 
+export interface ApiProfileResponse {
+  id: string
+  fullName: string | null
+  gender: string | null
+  age: number | null
+  height: number | null
+  heightUnit: 'cm' | 'in' | null
+  weight: number | null
+  weightUnit: 'kg' | 'lb' | null
+  fitnessGoal: string | null
+  createdAt: string
+  updatedAt: string
+}
+
 export interface PatchWorkoutPayload {
   title?: string
   description?: string
   exercises: ApiExercise[]
 }
 
+// --- Session API types ---
+
+export interface ApiSessionSet {
+  set_number: number
+  target_reps: string | null
+  target_weight: number | null
+  actual_reps: number | null
+  actual_weight: number | null
+  status: 'completed' | 'skipped' | 'pending'
+}
+
+export interface ApiSessionExercise {
+  exercise_id: string
+  status: 'completed' | 'skipped' | 'pending'
+  order: number
+  sets: ApiSessionSet[]
+}
+
+export interface ApiSessionPayload {
+  workout_id: string
+  status: 'completed' | 'partial'
+  started_at: string
+  completed_at: string
+  exercises: ApiSessionExercise[]
+}
+
+export interface ApiPR {
+  exercise_name: string
+  exercise_id: string
+  catalog_exercise_id: string | null
+  new_weight: number
+  previous_weight: number | null
+}
+
+export interface ApiSessionResponse {
+  id: string
+  prs: ApiPR[]
+}
+
 // --- Mappers ---
 
-const buildSets = (count: number, reps: string, targetWeight: number | null): WorkoutSet[] =>
+const buildSets = (
+  count: number,
+  reps: string,
+  targetWeight: number | null,
+): WorkoutSet[] =>
   Array.from({ length: count }, (_, i) => ({
     id: `set-${i + 1}`,
     setNumber: i + 1,
@@ -119,7 +176,7 @@ export const mapApiWorkout = (api: ApiWorkout): WorkoutPlan => ({
   creatorHandle: api.creatorHandle ?? '',
   sourceUrl: api.sourceUrl,
   thumbnailUrl: api.thumbnailUrl ?? '',
-  exercises: api.exercises.map(mapExercise),
+  exercises: api.exercises.map((ex) => mapExercise(ex)),
   estimatedDurationMinutes: api.estimatedDurationMinutes ?? 0,
   difficulty: toDifficulty(api.difficulty),
   targetMuscles: api.targetMuscles ?? [],
@@ -147,4 +204,24 @@ export const mapProfileToApi = (profile: Partial<UserProfile>): ApiProfilePayloa
   }
 
   return payload
+}
+
+export const mapApiProfileToMobile = (api: ApiProfileResponse): UserProfile => {
+  const profile: UserProfile = {}
+
+  if (api.fullName !== null) profile.fullName = api.fullName
+  if (api.gender !== null) profile.gender = api.gender as Gender
+  if (api.age !== null) profile.age = api.age
+  if (api.height !== null) profile.height = api.height
+  if (api.weight !== null) profile.weight = api.weight
+  if (api.fitnessGoal !== null) profile.fitnessGoal = api.fitnessGoal as FitnessGoal
+
+  if (api.heightUnit !== null) {
+    profile.heightUnit = api.heightUnit === 'in' ? 'ft' : 'cm'
+  }
+  if (api.weightUnit !== null) {
+    profile.weightUnit = api.weightUnit === 'lb' ? 'lbs' : 'kg'
+  }
+
+  return profile
 }

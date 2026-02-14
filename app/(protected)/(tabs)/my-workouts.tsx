@@ -1,8 +1,15 @@
 import { Trash2 } from 'lucide-react-native'
-import { useRef, useState } from 'react'
-import { useRouter } from 'expo-router'
+import { useEffect, useRef, useState } from 'react'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, Text, View } from 'react-native'
-import Animated, { FadeInUp, LinearTransition } from 'react-native-reanimated'
+import Animated, {
+  FadeInUp,
+  LinearTransition,
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { WorkoutCard } from '@/components/my-workouts/workout-card'
@@ -10,7 +17,7 @@ import { EmptyState } from '@/components/my-workouts/empty-state'
 import { SwipeableRow } from '@/components/ui/swipeable-row'
 import { ConfirmationSheet } from '@/components/ui/confirmation-sheet'
 import { Colors } from '@/constants/colors'
-import { TAB_BAR_HEIGHT } from '@/constants/layout'
+
 import { useDeleteWorkoutMutation, useWorkoutsQuery } from '@/hooks/use-api'
 
 const DELETE_ACTION_WIDTH = 80
@@ -22,14 +29,69 @@ const DeleteAction = () => (
   </View>
 )
 
+const NewWorkoutHighlight = ({ children }: { children: React.ReactNode }) => {
+  const borderOpacity = useSharedValue(1)
+
+  useEffect(() => {
+    borderOpacity.value = withSequence(
+      withTiming(0.3, { duration: 500 }),
+      withTiming(1, { duration: 500 }),
+      withTiming(0.3, { duration: 500 }),
+      withTiming(1, { duration: 500 }),
+      withTiming(0.3, { duration: 500 }),
+      withTiming(0, { duration: 1000 }),
+    )
+  }, [borderOpacity])
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    borderWidth: 2,
+    borderColor: Colors.brand.accent,
+    borderRadius: 16,
+    opacity: borderOpacity.value,
+  }))
+
+  return (
+    <View>
+      {children}
+      <Animated.View
+        style={[
+          {
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            borderRadius: 16,
+            pointerEvents: 'none',
+          },
+          animatedStyle,
+        ]}
+      />
+    </View>
+  )
+}
+
 const MyWorkoutsScreen = () => {
   const insets = useSafeAreaInsets()
   const router = useRouter()
+  const { newWorkoutId } = useLocalSearchParams<{ newWorkoutId?: string }>()
   const { workouts, isLoading, isRefetching, refetch } = useWorkoutsQuery()
   const deleteMutation = useDeleteWorkoutMutation()
 
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
   const mountedRef = useRef(true)
+  const newWorkoutIdRef = useRef(newWorkoutId)
+
+  // Clear URL param after 4s so highlight doesn't persist on tab revisit
+  useEffect(() => {
+    if (newWorkoutId === undefined) return
+    newWorkoutIdRef.current = newWorkoutId
+    const timer = setTimeout(() => {
+      newWorkoutIdRef.current = undefined
+      router.replace('/(protected)/(tabs)/my-workouts')
+    }, 4000)
+    return () => clearTimeout(timer)
+  }, [newWorkoutId, router])
 
   const handleDeleteConfirm = () => {
     if (deleteTargetId === null) return
@@ -76,12 +138,15 @@ const MyWorkoutsScreen = () => {
         <FlatList
           data={workouts}
           keyExtractor={(item) => item.id}
-          renderItem={({ item, index }) => (
-            <Animated.View
-              entering={mountedRef.current ? FadeInUp.delay(index * 40).springify() : undefined}
-              layout={LinearTransition.springify()}
-              className="mx-5 mb-3"
-            >
+          renderItem={({ item, index }) => {
+            const isNew = item.id === newWorkoutIdRef.current
+            const entering = isNew
+              ? FadeInUp.duration(600).springify()
+              : mountedRef.current
+                ? FadeInUp.delay(index * 40).springify()
+                : undefined
+
+            const card = (
               <SwipeableRow
                 actionWidth={DELETE_ACTION_WIDTH}
                 actionContent={<DeleteAction />}
@@ -91,9 +156,19 @@ const MyWorkoutsScreen = () => {
                   <WorkoutCard workout={item} />
                 </Pressable>
               </SwipeableRow>
-            </Animated.View>
-          )}
-          contentContainerStyle={{ paddingBottom: TAB_BAR_HEIGHT + 16 }}
+            )
+
+            return (
+              <Animated.View
+                entering={entering}
+                layout={LinearTransition.springify()}
+                className="mx-5"
+              >
+                {isNew ? <NewWorkoutHighlight>{card}</NewWorkoutHighlight> : card}
+              </Animated.View>
+            )
+          }}
+          contentContainerStyle={{ paddingBottom: 16, gap: 12 }}
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={Colors.content.secondary} />

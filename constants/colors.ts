@@ -2,7 +2,7 @@
  * Color tokens for use in style props and component color props
  * where NativeWind/Tailwind classes can't be used.
  *
- * Source of truth: tailwind.config.js
+ * Source of truth: global.css (@theme)
  */
 export const Colors = {
   background: {

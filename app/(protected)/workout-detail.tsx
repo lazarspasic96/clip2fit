@@ -1,5 +1,7 @@
 import { WorkoutDetailContent } from '@/components/workout-detail/workout-detail-content'
 
-const WorkoutDetailScreen = () => <WorkoutDetailContent />
+const WorkoutDetailScreen = () => {
+  return <WorkoutDetailContent />
+}
 
 export default WorkoutDetailScreen

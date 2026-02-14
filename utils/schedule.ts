@@ -52,7 +52,10 @@ export const scheduleToPayload = (schedule: WeeklySchedule): UpsertSchedulePaylo
   })),
 })
 
-export const buildWeekDaysFromSchedule = (schedule: WeeklySchedule): WeekDay[] => {
+export const buildWeekDaysFromSchedule = (
+  schedule: WeeklySchedule,
+  completedWorkoutId?: string | null,
+): WeekDay[] => {
   const today = getTodayDayOfWeek()
   const now = new Date()
   // Get Monday of the current week
@@ -67,7 +70,14 @@ export const buildWeekDaysFromSchedule = (schedule: WeeklySchedule): WeekDay[] =
     dayDate.setDate(monday.getDate() + i)
 
     let status: DayStatus
-    if (dayOfWeek === today) {
+    if (
+      dayOfWeek === today &&
+      completedWorkoutId !== undefined &&
+      completedWorkoutId !== null &&
+      entry.workoutId === completedWorkoutId
+    ) {
+      status = 'completed'
+    } else if (dayOfWeek === today) {
       status = entry.workoutId !== null ? 'active' : 'activeRest'
     } else if (entry.workoutId !== null) {
       status = 'scheduled'

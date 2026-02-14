@@ -1,7 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-import type { ApiConvertResponse, ApiJob, ApiWorkout, PatchWorkoutPayload } from '@/types/api'
+import type {
+  ApiConvertResponse,
+  ApiJob,
+  ApiWorkout,
+  PatchWorkoutPayload,
+} from '@/types/api'
 import { mapApiWorkout, mapProfileToApi } from '@/types/api'
 import type { UserProfile } from '@/types/profile'
 import type { WorkoutPlan } from '@/types/workout'
@@ -132,10 +137,16 @@ export const useWorkoutsQuery = (): WorkoutsQueryResult => {
 
 // --- useSaveProfileMutation ---
 
-export const useSaveProfileMutation = () =>
-  useMutation({
+export const useSaveProfileMutation = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
     mutationFn: (profile: Partial<UserProfile>) => apiPatch('/api/profiles', mapProfileToApi(profile)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.profile.current })
+    },
   })
+}
 
 // --- useUpdateWorkoutMutation ---
 
@@ -171,3 +182,4 @@ export const useDeleteWorkoutMutation = () => {
     },
   })
 }
+
