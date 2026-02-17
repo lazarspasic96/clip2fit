@@ -64,77 +64,80 @@ const DemographicsScreen = () => {
 
   return (
     <FormProvider {...form}>
-      <KeyboardAwareScrollView
-        className="bg-background-primary flex-grow px-6 pt-8"
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode="interactive"
-      >
-        <Text className="text-2xl font-inter-bold text-content-primary mb-8">Tell us about yourself</Text>
+      <View className="flex-1 bg-background-primary">
+        <KeyboardAwareScrollView
+          className="flex-1"
+          contentContainerStyle={{ padding: 24 }}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="interactive"
+        >
+          <Text className="text-2xl font-inter-bold text-content-primary mb-8">Tell us about yourself</Text>
 
-        <View className="gap-6">
-          <FormInput
-            name="fullName"
-            label="Your name"
-            placeholder="Enter your full name"
-            autoCapitalize="words"
-            autoComplete="name"
-          />
+          <View className="gap-6">
+            <FormInput
+              name="fullName"
+              label="Your name"
+              placeholder="Enter your full name"
+              autoCapitalize="words"
+              autoComplete="name"
+            />
 
-          <FormRadioGroup name="gender" label="Gender" options={GENDERS} />
+            <FormRadioGroup name="gender" label="Gender" options={GENDERS} />
 
-          <FormInput name="age" label="Age" placeholder="e.g. 25" keyboardType="number-pad" />
+            <FormInput name="age" label="Age" placeholder="e.g. 25" keyboardType="number-pad" />
 
-          <View className="gap-1.5">
-            <Label text="Height" />
-            <View className="flex-row gap-3">
-              <View className="flex-1">
-                <FormInput
-                  name="height"
-                  placeholder={heightUnit === 'cm' ? 'e.g. 175' : "e.g. 5'10"}
-                  keyboardType="decimal-pad"
-                  showError={false}
-                />
+            <View className="gap-1.5">
+              <Label text="Height" />
+              <View className="flex-row gap-3">
+                <View className="flex-1">
+                  <FormInput
+                    name="height"
+                    placeholder={heightUnit === 'cm' ? 'e.g. 175' : "e.g. 5'10"}
+                    keyboardType="decimal-pad"
+                    showError={false}
+                  />
+                </View>
+                <View className="w-28">
+                  <FormSegmentedControl
+                    name="heightUnit"
+                    options={[
+                      { label: 'cm', value: 'cm' },
+                      { label: 'ft', value: 'ft' },
+                    ]}
+                  />
+                </View>
               </View>
-              <View className="w-28">
-                <FormSegmentedControl
-                  name="heightUnit"
-                  options={[
-                    { label: 'cm', value: 'cm' },
-                    { label: 'ft', value: 'ft' },
-                  ]}
-                />
+            </View>
+
+            <View className="gap-1.5">
+              <Label text="Weight" />
+              <View className="flex-row gap-3">
+                <View className="flex-1">
+                  <FormInput
+                    name="weight"
+                    placeholder={weightUnit === 'kg' ? 'e.g. 70' : 'e.g. 154'}
+                    keyboardType="decimal-pad"
+                    showError={false}
+                  />
+                </View>
+                <View className="w-28">
+                  <FormSegmentedControl
+                    name="weightUnit"
+                    options={[
+                      { label: 'kg', value: 'kg' },
+                      { label: 'lbs', value: 'lbs' },
+                    ]}
+                  />
+                </View>
               </View>
             </View>
           </View>
+        </KeyboardAwareScrollView>
 
-          <View className="gap-1.5">
-            <Label text="Weight" />
-            <View className="flex-row gap-3">
-              <View className="flex-1">
-                <FormInput
-                  name="weight"
-                  placeholder={weightUnit === 'kg' ? 'e.g. 70' : 'e.g. 154'}
-                  keyboardType="decimal-pad"
-                  showError={false}
-                />
-              </View>
-              <View className="w-28">
-                <FormSegmentedControl
-                  name="weightUnit"
-                  options={[
-                    { label: 'kg', value: 'kg' },
-                    { label: 'lbs', value: 'lbs' },
-                  ]}
-                />
-              </View>
-            </View>
-          </View>
-        </View>
-
-        <View className="mt-auto gap-3 pt-8" style={{ paddingBottom: Math.max(insets.bottom, 32) }}>
+        <View className="px-6 mb-6 gap-3" style={{ paddingBottom: Math.max(insets.bottom, 32) }}>
           <Button onPress={form.handleSubmit(onNext)}>Next</Button>
         </View>
-      </KeyboardAwareScrollView>
+      </View>
     </FormProvider>
   )
 }

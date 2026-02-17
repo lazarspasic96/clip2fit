@@ -68,6 +68,7 @@
     "eslint": "^9.25.0",
     "eslint-config-expo": "~55.0.0",
     "postcss": "^8.5.0",
+    "shadcn": "^3.8.5",
     "tailwindcss": "next",
     "typescript": "~5.9.2"
   },

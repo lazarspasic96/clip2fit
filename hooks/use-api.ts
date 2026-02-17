@@ -15,9 +15,19 @@ import { queryKeys } from '@/constants/query-keys'
 
 // --- useConvertUrlMutation ---
 
+const TAG = '[use-api]'
+
 export const useConvertUrlMutation = () =>
   useMutation({
-    mutationFn: (url: string) => apiPost<ApiConvertResponse>('/api/convert', { url }),
+    mutationFn: async (url: string) => {
+      console.log(TAG, 'convertMutation — calling /api/convert with url:', url)
+      const result = await apiPost<ApiConvertResponse>('/api/convert', { url })
+      console.log(TAG, 'convertMutation — response:', JSON.stringify(result))
+      return result
+    },
+    onError: (error) => {
+      console.error(TAG, 'convertMutation — onError:', error instanceof ApiError ? `ApiError(${error.status}): ${error.message}` : String(error))
+    },
   })
 
 // --- useJobPolling (stays imperative — not a good TQ fit) ---
@@ -40,6 +50,7 @@ export const useJobPolling = (jobId: string | null): UseJobPollingReturn => {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const stop = () => {
+    console.log(TAG, 'jobPolling — stop() called')
     if (intervalRef.current !== null) {
       clearInterval(intervalRef.current)
       intervalRef.current = null
@@ -47,28 +58,34 @@ export const useJobPolling = (jobId: string | null): UseJobPollingReturn => {
   }
 
   useEffect(() => {
+    console.log(TAG, 'jobPolling — effect fired, jobId:', jobId)
     if (jobId === null) return
 
     let active = true
 
     const poll = async () => {
       try {
+        console.log(TAG, `jobPolling — polling /api/jobs/${jobId}`)
         const job = await apiGet<ApiJob>(`/api/jobs/${jobId}`)
         if (!active) return
 
+        console.log(TAG, `jobPolling — status=${job.status}, progress=${job.progress}, workoutId=${job.workoutId}`)
         setStatus(job.status)
         setProgress(job.progress)
 
         if (job.status === 'completed' && job.workoutId !== null) {
+          console.log(TAG, 'jobPolling — completed! workoutId:', job.workoutId)
           setWorkoutId(job.workoutId)
           stop()
         } else if (job.status === 'failed') {
+          console.error(TAG, 'jobPolling — failed:', job.error)
           setError(job.error ?? 'Conversion failed')
           stop()
         }
       } catch (err: unknown) {
         if (!active) return
         const message = err instanceof ApiError ? err.message : 'Failed to check job status'
+        console.error(TAG, 'jobPolling — poll error:', message, err)
         setError(message)
         stop()
       }

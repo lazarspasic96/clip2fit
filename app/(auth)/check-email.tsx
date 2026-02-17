@@ -1,8 +1,10 @@
 import { Button } from '@/components/ui/button'
+import { Logo } from '@/components/ui/logo'
 import { useAuth } from '@/contexts/auth-context'
 import { useCountdown } from '@/hooks/use-countdown'
+import { Image } from 'expo-image'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { ArrowLeft } from 'lucide-react-native'
+import { ArrowLeft, Mail } from 'lucide-react-native'
 import { useState } from 'react'
 import { Linking, Pressable, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -46,44 +48,65 @@ const CheckEmailScreen = () => {
   }
 
   return (
-    <View className="flex-1 bg-background-primary" style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}>
-      <View className="px-6 pt-4">
-        <Pressable onPress={handleGoBack} hitSlop={8}>
-          <ArrowLeft size={24} color="#fafafa" />
-        </Pressable>
-      </View>
+    <View className="flex-1 bg-background-primary">
+      <Image
+        source={require('@/assets/images/auth-bg-pattern.png')}
+        contentFit="cover"
+        className="absolute inset-0 w-full h-full"
+      />
 
-      <View className="flex-1 px-6 pt-12">
-        <Text className="text-2xl font-inter-bold text-content-primary mb-3">Check your inbox</Text>
+      <View className="flex-1" style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}>
+        <View className="px-6 pt-4">
+          <Pressable onPress={handleGoBack} hitSlop={8}>
+            <ArrowLeft size={24} color="#fafafa" />
+          </Pressable>
+        </View>
 
-        <Text className="text-base font-inter text-content-secondary mb-8">
-          We{`'`}ve sent a link to <Text className="text-content-primary font-inter-semibold">{email}</Text>. Click on the
-          email to sign in.
-        </Text>
+        <View className="flex-1 items-center justify-center px-6">
+          <Logo size="md" className="mb-6" />
 
-        <Button onPress={handleOpenEmailApp}>Open email app</Button>
+          <View className="w-16 h-16 rounded-full bg-brand-accent/10 items-center justify-center mb-6">
+            <Mail size={28} color="#a3e635" strokeWidth={1.5} />
+          </View>
 
-        <Pressable onPress={handleGoBack} className="items-center mt-4">
-          <Text className="text-sm font-inter-semibold text-brand-accent">Change email</Text>
-        </Pressable>
+          <Text className="text-2xl font-inter-bold text-content-primary mb-2 text-center">
+            Check your inbox
+          </Text>
 
-        <View className="items-center mt-8">
-          {resendError && <Text className="text-sm font-inter text-content-badge-error mb-2">{resendError}</Text>}
-          {resendSuccess && !resendError && (
-            <Text className="text-sm font-inter text-content-badge-success mb-2">Email sent!</Text>
-          )}
+          <Text className="text-base font-inter text-content-secondary text-center mb-10 px-4">
+            We{`'`}ve sent a confirmation link to{'\n'}
+            <Text className="text-content-primary font-inter-semibold">{email}</Text>
+          </Text>
 
-          {isActive ? (
-            <Text className="text-sm font-inter text-content-tertiary">
-              Don{`'`}t see an email? Resend in {secondsLeft} sec
-            </Text>
-          ) : (
-            <Pressable onPress={handleResend} disabled={loading}>
-              <Text className="text-sm font-inter text-content-secondary">
-                Don{`'`}t see an email? <Text className="font-inter-semibold text-brand-accent">Resend</Text>
+          <View className="w-full">
+            <Button onPress={handleOpenEmailApp}>Open email app</Button>
+          </View>
+
+          <Pressable onPress={handleGoBack} className="mt-4">
+            <Text className="text-sm font-inter-semibold text-brand-accent">Change email</Text>
+          </Pressable>
+
+          <View className="items-center mt-10">
+            {resendError && (
+              <Text className="text-sm font-inter text-content-badge-error mb-2">{resendError}</Text>
+            )}
+            {resendSuccess && !resendError && (
+              <Text className="text-sm font-inter text-content-badge-success mb-2">Email sent!</Text>
+            )}
+
+            {isActive ? (
+              <Text className="text-sm font-inter text-content-tertiary">
+                Didn{`'`}t get it? Resend in {secondsLeft}s
               </Text>
-            </Pressable>
-          )}
+            ) : (
+              <Pressable onPress={handleResend} disabled={loading}>
+                <Text className="text-sm font-inter text-content-secondary">
+                  Didn{`'`}t get it?{' '}
+                  <Text className="font-inter-semibold text-brand-accent">Resend</Text>
+                </Text>
+              </Pressable>
+            )}
+          </View>
         </View>
       </View>
     </View>

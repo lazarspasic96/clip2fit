@@ -5,7 +5,7 @@ import { FormInput } from '@/components/ui/form-input'
 import { Logo } from '@/components/ui/logo'
 import { useAuth } from '@/contexts/auth-context'
 import { useZodForm } from '@/hooks/use-zod-form'
-import { Link, useRouter } from 'expo-router'
+import { useRouter } from 'expo-router'
 import { useState } from 'react'
 import { FormProvider } from 'react-hook-form'
 import { Keyboard, Platform, Pressable, Text, View } from 'react-native'
@@ -113,12 +113,11 @@ const SignupScreen = () => {
             <AuthDivider />
             <GoogleSignInButton onPress={onGoogleSignIn} loading={loading} />
 
-            <View className="flex-row justify-center mt-6">
-              <Text className="text-sm font-inter text-content-secondary">Already have an account? </Text>
-              <Link href="/(auth)/login" asChild>
-                <Text className="text-sm font-inter-semibold text-brand-accent">Sign in</Text>
-              </Link>
-            </View>
+            <Pressable className="self-center mt-4 p-2" onPress={() => router.push('/(auth)/login')}>
+              <Text className="text-sm font-inter text-content-secondary text-center">
+                Already have an account? <Text className="font-inter-semibold text-brand-accent">Sign in</Text>
+              </Text>
+            </Pressable>
           </View>
         </Pressable>
       </KeyboardAvoidingView>

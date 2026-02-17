@@ -1515,3 +1515,214 @@ Used for:
 2. **Catalog matching** — map user-entered exercise names to catalog entries for global PR tracking
 3. **Exercise details** — show muscle groups, equipment, and category in the UI
 4. **Autocomplete** — power a search-as-you-type exercise selector using the `?search=` param
+
+---
+
+## 14. GET /api/stats/summary
+
+Training summary with session counts, volume, streaks, weekly frequency, top exercises, and muscle group distribution. All stats are computed on-the-fly from existing session data.
+
+### Request
+
+```
+GET /api/stats/summary?timezone=<IANA>&weeks=<int>
+Authorization: Bearer <token>
+```
+
+**Query params:**
+
+| Param      | Type     | Required | Default | Validation                                      |
+| ---------- | -------- | -------- | ------- | ----------------------------------------------- |
+| `timezone` | `string` | Yes      | —       | IANA timezone format (e.g., `America/New_York`) |
+| `weeks`    | `number` | No       | 12      | Integer, 1-104                                  |
+
+### How It Works
+
+```
+Client sends: GET /api/stats/summary?timezone=America/New_York&weeks=12
+         │
+         ▼
+Step 1 — Auth + Validate params
+         │  getAuthUser() → userId
+         │  Validate timezone: required + IANA regex
+         │  Validate weeks: optional, parseInt, 1-104 range
+         │
+         ▼
+Step 2 — Run 4 parallel queries (Promise.all)
+         │
+         │  Q1: Session aggregates
+         │    SELECT count(*), count(completed), count(partial), avg(duration)
+         │    FROM workout_sessions WHERE userId = :user
+         │
+         │  Q2: Weekly frequency + volume (timezone-aware)
+         │    SELECT ISO week, count(distinct sessions), sum(weight * reps)
+         │    FROM workout_sessions → session_exercise_logs → session_set_logs
+         │    WHERE userId = :user AND started_at >= now() - :weeks weeks
+         │    GROUP BY ISO week (using AT TIME ZONE for correct week boundaries)
+         │
+         │  Q3: Top 10 exercises by session count
+         │    SELECT exercise name, count(distinct sessions)
+         │    FROM session_exercise_logs → exercises → exercise_catalog
+         │    WHERE userId = :user AND exercise status = 'completed'
+         │    GROUP BY exercise, ORDER BY count DESC, LIMIT 10
+         │
+         │  Q4: Muscle group distribution (JSONB unnest)
+         │    SELECT muscle_group, count(distinct sessions)
+         │    Unnests primary_muscle_groups from catalog (or muscle_groups from exercises)
+         │    WHERE userId = :user AND exercise status = 'completed'
+         │
+         ▼
+Step 3 — Compute streaks (JS)
+         │  From Q2 weekly data:
+         │    current_streak: walk backwards from current ISO week
+         │    best_streak: find longest consecutive run in all active weeks
+         │
+         ▼
+Step 4 — Return response
+```
+
+**Key detail: volume excludes bodyweight exercises.** Only sets with `actual_weight > 0` and `status = 'completed'` count toward volume, consistent with PR detection.
+
+**Key detail: timezone affects week boundaries.** `date_trunc('week', started_at AT TIME ZONE $tz)` ensures sessions are grouped into the correct ISO week for the user's timezone.
+
+**Key detail: total_volume is scoped to the weeks window.** Computed from the weekly frequency data, not a separate all-time query.
+
+### Response
+
+**200 — Summary stats**
+
+```json
+{
+  "total_sessions": 42,
+  "completed_sessions": 38,
+  "partial_sessions": 4,
+  "avg_duration_seconds": 3450,
+  "total_volume": 185000,
+  "current_streak_weeks": 3,
+  "best_streak_weeks": 8,
+  "weekly_frequency": [{ "week": "2026-W05", "sessions": 3, "volume": 12500 }],
+  "top_exercises": [{ "catalog_exercise_id": "uuid|null", "exercise_name": "Bench Press", "session_count": 15 }],
+  "muscle_group_distribution": [{ "muscle_group": "chest", "session_count": 12 }]
+}
+```
+
+**400 — Missing/invalid params**
+
+```json
+{ "error": "timezone is required" }
+{ "error": "Invalid timezone" }
+{ "error": "weeks must be an integer between 1 and 104" }
+```
+
+### Logging
+
+Tag: `[clip2fit:stats]`
+
+Logs: userId, weeks.
+
+### Client Use Case
+
+Renders the "Stats/Progress" screen. Shows total sessions, completion rate, average duration, training streaks, a weekly frequency chart, top exercises list, and muscle group distribution breakdown.
+
+---
+
+## 15. GET /api/stats/prs
+
+Full PR (personal record) history for all exercises, with a timeline of every PR-breaking session. Optionally filtered to a single catalog exercise.
+
+### Request
+
+```
+GET /api/stats/prs
+GET /api/stats/prs?catalog_exercise_id=<uuid>
+Authorization: Bearer <token>
+```
+
+**Query params:**
+
+| Param                 | Type     | Required | Validation             |
+| --------------------- | -------- | -------- | ---------------------- |
+| `catalog_exercise_id` | `string` | No       | UUID format if present |
+
+### How It Works
+
+```
+Client sends: GET /api/stats/prs
+         │
+         ▼
+Step 1 — Auth + Validate
+         │  getAuthUser() → userId
+         │  Optional catalog_exercise_id → UUID regex if present
+         │
+         ▼
+Step 2 — CTE query with window functions
+         │
+         │  CTE 1: set_data
+         │    For each session × exercise, find the best set (highest weight, then reps)
+         │    Uses ROW_NUMBER() OVER (PARTITION BY session, exercise_key ORDER BY weight DESC, reps DESC)
+         │    exercise_key = catalog_exercise_id if mapped, else exercise_id (same as POST /api/sessions)
+         │    Filters: userId, completed sets, actual_weight > 0
+         │
+         │  CTE 2: session_maxes
+         │    Picks the top set per session per exercise (rn = 1)
+         │
+         │  CTE 3: with_running_max
+         │    Computes running MAX(weight) for each exercise across all previous sessions
+         │    Uses window function: MAX(max_weight) OVER (PARTITION BY exercise_key ORDER BY started_at ROWS UNBOUNDED PRECEDING TO 1 PRECEDING)
+         │
+         │  Final SELECT: rows where max_weight > previous best (= PR sessions)
+         │
+         ▼
+Step 3 — Group by exercise in JS
+         │  For each exercise_key:
+         │    current_pr = last entry's weight
+         │    pr_timeline = chronological list of all PR entries
+         │    total_pr_count = sum of all timeline lengths
+         │
+         ▼
+Step 4 — Return response
+```
+
+**Key detail: PR grouping is consistent with POST /api/sessions.** Catalog-mapped exercises use `catalog_exercise_id` as the key (global across all workouts). Unmapped exercises use `exercise_id` (local to that workout). This means the PR history here matches exactly what was detected during session logging.
+
+**Key detail: the query finds all PR-breaking moments.** Not just the current PR, but every session where the user set a new all-time high for that exercise. This enables a "PR progression chart" on mobile.
+
+**Key detail: previous_weight is null for first-ever PR.** The first time an exercise is logged with weight, it's always a PR with no previous weight to compare against.
+
+### Response
+
+**200 — PR history**
+
+```json
+{
+  "exercises": [
+    {
+      "catalog_exercise_id": "uuid|null",
+      "exercise_name": "Bench Press",
+      "current_pr": 100,
+      "pr_timeline": [
+        { "date": "2026-01-15", "weight": 80, "reps": 5, "previous_weight": null, "session_id": "uuid" },
+        { "date": "2026-02-01", "weight": 90, "reps": 3, "previous_weight": 80, "session_id": "uuid" },
+        { "date": "2026-02-14", "weight": 100, "reps": 1, "previous_weight": 90, "session_id": "uuid" }
+      ]
+    }
+  ],
+  "total_pr_count": 15
+}
+```
+
+**400 — Invalid filter**
+
+```json
+{ "error": "Invalid catalog_exercise_id" }
+```
+
+### Logging
+
+Tag: `[clip2fit:stats]`
+
+Logs: userId, exerciseCount, prCount.
+
+### Client Use Case
+
+Renders the PR history screen. Shows a list of exercises with their current PR weight and a timeline/chart of PR progression over time. The `catalog_exercise_id` filter is used when the user taps a specific exercise to see its PR history in detail.

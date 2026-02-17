@@ -1,18 +1,18 @@
-import { useEffect, useRef, useState } from 'react'
-import { Pressable, View } from 'react-native'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useShareIntentContext } from 'expo-share-intent'
+import { useEffect, useRef, useState } from 'react'
+import { Pressable, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
+import { ProcessingStages } from '@/components/processing/processing-stages'
+import { UrlInputSection } from '@/components/processing/url-input-section'
+import { WorkoutProposal } from '@/components/proposal/workout-proposal'
+import { Colors } from '@/constants/colors'
+import { useConvertUrlMutation, useJobPolling, useWorkoutQuery } from '@/hooks/use-api'
 import type { ProcessingStage, ProcessingState } from '@/types/processing'
 import type { SupportedPlatform } from '@/utils/url-validation'
 import { validateWorkoutUrl } from '@/utils/url-validation'
 import { X } from 'lucide-react-native'
-import { Colors } from '@/constants/colors'
-import { useConvertUrlMutation, useJobPolling, useWorkoutQuery } from '@/hooks/use-api'
-import { UrlInputSection } from '@/components/processing/url-input-section'
-import { ProcessingStages } from '@/components/processing/processing-stages'
-import { WorkoutProposal } from '@/components/proposal/workout-proposal'
 
 type ScreenState = 'input' | 'processing' | 'preview' | 'error'
 
@@ -124,7 +124,6 @@ export const ProcessUrlContent = () => {
 
     sourceRef.current = { url: validation.cleanUrl, platform: validation.platform }
 
-    // Show initial processing state
     setProcessingState({
       stage: 'validating',
       progress: 5,
@@ -149,12 +148,13 @@ export const ProcessUrlContent = () => {
       if (response.jobId !== undefined) {
         setJobId(response.jobId)
       }
-    } catch {
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : String(err)
       setProcessingState({
         stage: 'error',
         progress: 0,
         message: 'Failed to start conversion',
-        error: 'Failed to start conversion',
+        error: errMsg,
         result: null,
         sourceUrl: validation.cleanUrl,
         platform: validation.platform,
@@ -171,14 +171,14 @@ export const ProcessUrlContent = () => {
       hasStartedRef.current = true
       startProcessing(sharedUrl)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- guarded by hasStartedRef, React Compiler handles memoization
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- guarded by hasStartedRef, React Compiler handles memoization
   }, [shareIntent, params.url, screenState])
 
   const safeGoBack = () => {
     if (router.canGoBack()) {
       router.back()
     } else {
-      router.replace('/(protected)/(tabs)')
+      router.replace('/')
     }
   }
 
@@ -225,15 +225,15 @@ export const ProcessUrlContent = () => {
       )}
 
       {screenState === 'preview' && workoutId !== null && (
-        <WorkoutProposal
-          workoutId={workoutId}
-          onSaved={handleSaved}
-          onDiscard={handleDismiss}
-        />
+        <WorkoutProposal workoutId={workoutId} onSaved={handleSaved} onDiscard={handleDismiss} />
       )}
 
       {screenState === 'error' && (
-        <UrlInputSection onSubmit={startProcessing} />
+        <UrlInputSection
+          onSubmit={startProcessing}
+          errorMessage={processingState?.error ?? undefined}
+          initialUrl={processingState?.sourceUrl}
+        />
       )}
     </View>
   )

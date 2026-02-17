@@ -1,12 +1,14 @@
 import { Button } from '@/components/ui/button'
 import { RadioGroup } from '@/components/ui/radio-group'
+import { Colors } from '@/constants/colors'
 import { useAuth } from '@/contexts/auth-context'
 import { useProfileForm } from '@/contexts/profile-form-context'
 import type { FitnessGoal } from '@/types/profile'
 import { FITNESS_GOALS } from '@/types/profile'
 import { useRouter } from 'expo-router'
+import { ChevronLeft } from 'lucide-react-native'
 import { useState } from 'react'
-import { Alert, ScrollView, Text, View } from 'react-native'
+import { Alert, Pressable, ScrollView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 const GoalScreen = () => {
@@ -23,7 +25,7 @@ const GoalScreen = () => {
     const result = await completeOnboarding()
     if (result.success) {
       resetData()
-      router.replace('/(protected)/(tabs)')
+      router.replace('/(protected)/(tabs)' as never)
     } else {
       Alert.alert('Error', result.error ?? 'Failed to complete onboarding')
     }
@@ -37,7 +39,7 @@ const GoalScreen = () => {
     const result = await completeOnboarding()
     if (result.success) {
       resetData()
-      router.replace('/(protected)/(tabs)')
+      router.replace('/(protected)/(tabs)' as never)
     } else {
       Alert.alert('Error', result.error ?? 'Failed to complete onboarding')
     }
@@ -45,7 +47,11 @@ const GoalScreen = () => {
 
   return (
     <View className="flex-1 bg-background-primary">
-      <ScrollView className="flex-1" contentContainerClassName="px-6 pt-8 pb-8" keyboardShouldPersistTaps="handled">
+      <ScrollView className="flex-1" contentContainerStyle={{ padding: 24 }} keyboardShouldPersistTaps="handled">
+        <Pressable onPress={() => router.back()} hitSlop={12} className="p-1 self-start mb-4">
+          <ChevronLeft size={24} color={Colors.content.primary} pointerEvents="none" />
+        </Pressable>
+
         <Text className="text-2xl font-inter-bold text-content-primary mb-2">What&apos;s your goal?</Text>
         <Text className="text-base font-inter text-content-secondary mb-8">
           Choose what best describes your fitness goal.
@@ -54,7 +60,7 @@ const GoalScreen = () => {
         <RadioGroup options={FITNESS_GOALS} value={goal} onChange={setGoal} />
       </ScrollView>
 
-      <View className="px-6 gap-3" style={{ paddingBottom: Math.max(insets.bottom, 32) }}>
+      <View className="px-6 mb-6 gap-3" style={{ paddingBottom: Math.max(insets.bottom, 32) }}>
         <Button onPress={saveAndNavigate} loading={loading}>
           Complete
         </Button>

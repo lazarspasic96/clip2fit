@@ -16,10 +16,12 @@ import { validateWorkoutUrl } from '@/utils/url-validation'
 
 interface UrlInputSectionProps {
   onSubmit: (url: string) => void
+  errorMessage?: string
+  initialUrl?: string
 }
 
-export const UrlInputSection = ({ onSubmit }: UrlInputSectionProps) => {
-  const [url, setUrl] = useState('')
+export const UrlInputSection = ({ onSubmit, errorMessage, initialUrl }: UrlInputSectionProps) => {
+  const [url, setUrl] = useState(initialUrl ?? '')
   const [hasAttemptedValidation, setHasAttemptedValidation] = useState(false)
 
   const validation = validateWorkoutUrl(url)
@@ -42,6 +44,13 @@ export const UrlInputSection = ({ onSubmit }: UrlInputSectionProps) => {
 
   return (
     <View className="flex-1 px-6 pt-8">
+      {errorMessage !== undefined && (
+        <View className="flex-row items-center gap-3 bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 mb-6">
+          <AlertCircle size={20} color={Colors.badge.error.content} pointerEvents="none" />
+          <Text className="flex-1 text-sm font-inter text-red-400">{errorMessage}</Text>
+        </View>
+      )}
+
       <Text className="text-2xl font-inter-bold text-content-primary mb-2">
         Paste a workout URL
       </Text>

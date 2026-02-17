@@ -1,4 +1,4 @@
-import { ActivityIndicator, Pressable, Text, type ViewStyle } from 'react-native'
+import { ActivityIndicator, Pressable, Text } from 'react-native'
 
 import { cn } from './cn'
 
@@ -11,19 +11,6 @@ interface ButtonProps {
   children: string
   variant?: ButtonVariant
   className?: string
-  style?: ViewStyle
-}
-
-const VARIANT_CLASSES: Record<ButtonVariant, string> = {
-  primary: 'bg-background-button-primary',
-  secondary: 'bg-background-button-secondary border border-border-primary',
-  ghost: 'bg-transparent',
-}
-
-const TEXT_CLASSES: Record<ButtonVariant, string> = {
-  primary: 'text-content-button-primary',
-  secondary: 'text-content-primary',
-  ghost: 'text-content-secondary',
 }
 
 const SPINNER_COLORS: Record<ButtonVariant, string> = {
@@ -39,7 +26,6 @@ export const Button = ({
   children,
   variant = 'primary',
   className,
-  style,
 }: ButtonProps) => {
   const isDisabled = disabled || loading
 
@@ -49,16 +35,26 @@ export const Button = ({
       disabled={isDisabled}
       className={cn(
         'items-center justify-center rounded-md py-3.5',
-        VARIANT_CLASSES[variant],
+        variant === 'primary' && 'bg-background-button-primary',
+        variant === 'secondary' && 'bg-background-button-secondary border border-border-primary',
+        variant === 'ghost' && 'bg-transparent',
         isDisabled && 'opacity-50',
         className,
       )}
-      style={style}
     >
       {loading ? (
         <ActivityIndicator color={SPINNER_COLORS[variant]} />
       ) : (
-        <Text className={cn('text-base font-inter-semibold', TEXT_CLASSES[variant])}>{children}</Text>
+        <Text
+          className={cn(
+            'text-base font-inter-semibold',
+            variant === 'primary' && 'text-content-button-primary',
+            variant === 'secondary' && 'text-content-primary',
+            variant === 'ghost' && 'text-content-secondary',
+          )}
+        >
+          {children}
+        </Text>
       )}
     </Pressable>
   )
