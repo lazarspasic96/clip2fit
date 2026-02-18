@@ -1,8 +1,7 @@
 import { supabase } from '@/utils/supabase'
+import { extractTimezoneMeta, observeTimezoneResolution } from '@/utils/timezone-observability'
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL
-
-const TAG = '[API]'
 
 export class ApiError extends Error {
   status: number
@@ -14,18 +13,63 @@ export class ApiError extends Error {
   }
 }
 
+const METHOD_COLORS: Record<string, string> = {
+  GET: '🔵',
+  POST: '🟢',
+  PUT: '🟡',
+  PATCH: '🟠',
+  DELETE: '🔴',
+}
+
+const logRequest = (method: string, path: string, body?: unknown) => {
+  const icon = METHOD_COLORS[method] ?? '⚪'
+  console.log(
+    `\n${icon} ━━━ ${method} ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+    `\n📍 ${API_BASE_URL}${path}`,
+    body !== undefined ? `\n📦 Body:\n${JSON.stringify(body, null, 2)}` : '',
+  )
+}
+
+const logResponse = (method: string, path: string, status: number, duration: number, data: unknown) => {
+  const ok = status >= 200 && status < 300
+  const icon = ok ? '✅' : '❌'
+  const statusLabel = ok ? 'SUCCESS' : 'FAILED'
+  console.log(
+    `\n${icon} ━━━ ${method} ${statusLabel} ━━━━━━━━━━━━━━━━━━━━`,
+    `\n📍 ${API_BASE_URL}${path}`,
+    `\n📊 Status: ${status} | ⏱️ ${duration}ms`,
+    `\n📄 Response:\n${JSON.stringify(data, null, 2)}`,
+    `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`,
+  )
+}
+
+const logError = (method: string, path: string, duration: number, error: unknown) => {
+  const message = error instanceof Error ? error.message : String(error)
+  const status = error instanceof ApiError ? error.status : 'N/A'
+  console.log(
+    `\n💥 ━━━ ${method} ERROR ━━━━━━━━━━━━━━━━━━━━━━━`,
+    `\n📍 ${API_BASE_URL}${path}`,
+    `\n📊 Status: ${status} | ⏱️ ${duration}ms`,
+    `\n🚨 ${message}`,
+    `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`,
+  )
+}
+
+const maybeLogTimezoneResolution = (path: string, data: unknown) => {
+  const { timezoneUsed, timezoneSource } = extractTimezoneMeta(data)
+  if (timezoneUsed === null && timezoneSource === null) return
+  observeTimezoneResolution(path, data)
+}
+
 const getAuthHeaders = async (): Promise<HeadersInit> => {
-  console.log(TAG, 'getAuthHeaders — fetching session…')
   const { data, error } = await supabase.auth.getSession()
   if (error) {
-    console.error(TAG, 'getAuthHeaders — supabase error:', error.message)
+    console.error('🔑 Auth error:', error.message)
   }
   const token = data.session?.access_token
   if (!token) {
-    console.error(TAG, 'getAuthHeaders — no access_token, session:', data.session === null ? 'null' : 'exists-but-no-token')
     throw new ApiError(401, 'No active session')
   }
-  console.log(TAG, 'getAuthHeaders — token obtained (first 10 chars):', token.slice(0, 10))
   return {
     Authorization: `Bearer ${token}`,
     'Content-Type': 'application/json',
@@ -33,14 +77,11 @@ const getAuthHeaders = async (): Promise<HeadersInit> => {
 }
 
 const handleResponse = async <T>(response: Response): Promise<T> => {
-  console.log(TAG, `handleResponse — status=${response.status}, ok=${response.ok}, url=${response.url}`)
-
   if (response.status === 204) {
     return undefined as T
   }
 
   if (response.status === 401) {
-    console.error(TAG, 'handleResponse — 401 received, signing out')
     await supabase.auth.signOut()
     throw new ApiError(401, 'Session expired')
   }
@@ -48,54 +89,55 @@ const handleResponse = async <T>(response: Response): Promise<T> => {
   const body = await response.json()
 
   if (!response.ok) {
-    console.error(TAG, `handleResponse — error ${response.status}:`, JSON.stringify(body))
     throw new ApiError(response.status, body.error ?? 'Request failed')
   }
 
-  console.log(TAG, 'handleResponse — success body:', JSON.stringify(body).slice(0, 200))
   return body as T
 }
 
+const request = async <T>(method: string, path: string, body?: unknown): Promise<T> => {
+  logRequest(method, path, body)
+  const start = Date.now()
+
+  try {
+    const headers = await getAuthHeaders()
+    const options: RequestInit = { method, headers }
+    if (body !== undefined) {
+      options.body = JSON.stringify(body)
+    }
+
+    const response = await fetch(`${API_BASE_URL}${path}`, options)
+    const duration = Date.now() - start
+
+    // Clone status before handleResponse potentially throws
+    const status = response.status
+    const data = await handleResponse<T>(response)
+    maybeLogTimezoneResolution(path, data)
+
+    logResponse(method, path, status, duration, data)
+    return data
+  } catch (error) {
+    logError(method, path, Date.now() - start, error)
+    throw error
+  }
+}
+
 export const apiGet = async <T>(path: string): Promise<T> => {
-  console.log(TAG, `GET ${API_BASE_URL}${path}`)
-  const headers = await getAuthHeaders()
-  const response = await fetch(`${API_BASE_URL}${path}`, { method: 'GET', headers })
-  return handleResponse<T>(response)
+  return request<T>('GET', path)
 }
 
 export const apiPost = async <T>(path: string, body: unknown): Promise<T> => {
-  console.log(TAG, `POST ${API_BASE_URL}${path}`, JSON.stringify(body).slice(0, 200))
-  const headers = await getAuthHeaders()
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(body),
-  })
-  return handleResponse<T>(response)
+  return request<T>('POST', path, body)
 }
 
 export const apiPatch = async <T>(path: string, body: unknown): Promise<T> => {
-  const headers = await getAuthHeaders()
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method: 'PATCH',
-    headers,
-    body: JSON.stringify(body),
-  })
-  return handleResponse<T>(response)
+  return request<T>('PATCH', path, body)
 }
 
 export const apiPut = async <T>(path: string, body: unknown): Promise<T> => {
-  const headers = await getAuthHeaders()
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method: 'PUT',
-    headers,
-    body: JSON.stringify(body),
-  })
-  return handleResponse<T>(response)
+  return request<T>('PUT', path, body)
 }
 
 export const apiDelete = async (path: string): Promise<void> => {
-  const headers = await getAuthHeaders()
-  const response = await fetch(`${API_BASE_URL}${path}`, { method: 'DELETE', headers })
-  return handleResponse<void>(response)
+  return request<void>('DELETE', path)
 }

@@ -19,6 +19,7 @@ export interface UserProfile {
   weight?: number
   weightUnit?: WeightUnit
   fitnessGoal?: FitnessGoal
+  timezone?: string
 }
 
 export const FITNESS_GOALS: { label: string; value: FitnessGoal }[] = [

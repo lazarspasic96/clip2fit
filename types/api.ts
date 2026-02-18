@@ -58,6 +58,7 @@ export interface ApiProfilePayload {
   weight?: number
   weightUnit?: 'kg' | 'lb'
   fitnessGoal?: string
+  timezone?: string
 }
 
 export interface ApiProfileResponse {
@@ -70,6 +71,7 @@ export interface ApiProfileResponse {
   weight: number | null
   weightUnit: 'kg' | 'lb' | null
   fitnessGoal: string | null
+  timezone: string | null
   createdAt: string
   updatedAt: string
 }
@@ -194,6 +196,7 @@ export const mapProfileToApi = (profile: Partial<UserProfile>): ApiProfilePayloa
   if (profile.height !== undefined) payload.height = profile.height
   if (profile.weight !== undefined) payload.weight = profile.weight
   if (profile.fitnessGoal !== undefined) payload.fitnessGoal = profile.fitnessGoal
+  if (profile.timezone !== undefined) payload.timezone = profile.timezone
 
   // Map mobile unit names to API unit names
   if (profile.heightUnit !== undefined) {
@@ -215,6 +218,7 @@ export const mapApiProfileToMobile = (api: ApiProfileResponse): UserProfile => {
   if (api.height !== null) profile.height = api.height
   if (api.weight !== null) profile.weight = api.weight
   if (api.fitnessGoal !== null) profile.fitnessGoal = api.fitnessGoal as FitnessGoal
+  if (api.timezone !== null) profile.timezone = api.timezone
 
   if (api.heightUnit !== null) {
     profile.heightUnit = api.heightUnit === 'in' ? 'ft' : 'cm'
