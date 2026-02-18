@@ -22,6 +22,11 @@ const TabLayout = () => {
         <NativeTabs.Trigger.Label>Library</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf={{ default: 'dumbbell', selected: 'dumbbell.fill' }} />
       </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="stats">
+        <NativeTabs.Trigger.Label>Stats</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf={{ default: 'chart.bar', selected: 'chart.bar.fill' }} />
+      </NativeTabs.Trigger>
     </NativeTabs>
   )
 }

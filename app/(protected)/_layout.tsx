@@ -27,6 +27,12 @@ const ProtectedLayout = () => {
           }}
         />
         <Stack.Screen
+          name="exercise-history"
+          options={{
+            presentation: 'card',
+          }}
+        />
+        <Stack.Screen
           name="process-url"
           options={{
             presentation: 'fullScreenModal',
