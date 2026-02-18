@@ -16,7 +16,13 @@ const DELETE_ACTION_WIDTH = 72
 const DeleteAction = () => (
   <View
     className="items-center justify-center"
-    style={{ width: DELETE_ACTION_WIDTH, height: '100%', backgroundColor: '#dc2626', borderTopRightRadius: 16, borderBottomRightRadius: 16 }}
+    style={{
+      width: DELETE_ACTION_WIDTH,
+      height: '100%',
+      backgroundColor: '#dc2626',
+      borderTopRightRadius: 16,
+      borderBottomRightRadius: 16,
+    }}
   >
     <Trash2 size={18} color="#fff" pointerEvents="none" />
     <Text className="text-xs font-inter-semibold text-white mt-0.5">Delete</Text>
@@ -24,12 +30,8 @@ const DeleteAction = () => (
 )
 
 export const DetailExerciseRow = ({ exercise, onEdit, onDelete }: DetailExerciseRowProps) => (
-  <View className="mx-6 mb-3">
-    <SwipeableRow
-      actionWidth={DELETE_ACTION_WIDTH}
-      actionContent={<DeleteAction />}
-      onAction={onDelete}
-    >
+  <View className="mx-5 mb-3">
+    <SwipeableRow actionWidth={DELETE_ACTION_WIDTH} actionContent={<DeleteAction />} onAction={onDelete}>
       <View className="bg-background-secondary p-4">
         <View className="flex-row items-center mb-1">
           <Text className="text-sm font-inter-bold text-content-tertiary w-7">{exercise.order}</Text>
@@ -56,9 +58,7 @@ export const DetailExerciseRow = ({ exercise, onEdit, onDelete }: DetailExercise
             {exercise.sets} x {exercise.reps}
           </Text>
           {exercise.targetWeight !== null && (
-            <Text className="text-sm font-inter text-content-tertiary">
-              {exercise.targetWeight} kg
-            </Text>
+            <Text className="text-sm font-inter text-content-tertiary">{exercise.targetWeight} kg</Text>
           )}
         </View>
 

@@ -32,9 +32,15 @@ export const WorkoutDetailContent = () => {
 
   if (error !== null || workout === null || rawWorkout === null) {
     return (
-      <View className="flex-1 bg-background-primary justify-center items-center px-6" style={{ paddingTop: insets.top }}>
+      <View
+        className="flex-1 bg-background-primary justify-center items-center px-5"
+        style={{ paddingTop: insets.top }}
+      >
         <Text className="text-base font-inter text-content-secondary text-center">{error ?? 'Workout not found'}</Text>
-        <Pressable onPress={() => router.canGoBack() ? router.back() : router.replace('/(protected)/(tabs)')} className="mt-4">
+        <Pressable
+          onPress={() => (router.canGoBack() ? router.back() : router.replace('/(protected)/(tabs)' as never))}
+          className="mt-4"
+        >
           <Text className="text-base font-inter-semibold text-brand-accent">Go back</Text>
         </Pressable>
       </View>
@@ -59,9 +65,7 @@ export const WorkoutDetailContent = () => {
         text: 'Delete',
         style: 'destructive',
         onPress: () => {
-          const updated = exercises
-            .filter((_, i) => i !== index)
-            .map((ex, i) => ({ ...ex, order: i + 1 }))
+          const updated = exercises.filter((_, i) => i !== index).map((ex, i) => ({ ...ex, order: i + 1 }))
           updateMutation.mutate(
             { id: workout.id, payload: { exercises: updated } },
             { onSuccess: navigateToForkIfNeeded },
@@ -85,9 +89,8 @@ export const WorkoutDetailContent = () => {
     }
   }
 
-  const creatorDisplay = workout.creatorName !== null
-    ? `${workout.creatorName} (${workout.creatorHandle})`
-    : workout.creatorHandle
+  const creatorDisplay =
+    workout.creatorName !== null ? `${workout.creatorName} (${workout.creatorHandle})` : workout.creatorHandle
 
   const difficultyColor =
     workout.difficulty === 'beginner'
@@ -96,14 +99,20 @@ export const WorkoutDetailContent = () => {
         ? 'text-yellow-400'
         : 'text-red-400'
 
-  const selectedExercise = selectedExerciseIndex !== null ? exercises[selectedExerciseIndex] ?? null : null
+  const selectedExercise = selectedExerciseIndex !== null ? (exercises[selectedExerciseIndex] ?? null) : null
 
   return (
     <View className="flex-1 bg-background-primary" style={{ paddingTop: insets.top }}>
-      <DetailHeader onBack={() => router.canGoBack() ? router.back() : router.replace('/(protected)/(tabs)' as never)} />
-      <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 16) }} showsVerticalScrollIndicator={false}>
+      <DetailHeader
+        onBack={() => (router.canGoBack() ? router.back() : router.replace('/(protected)/(tabs)' as never))}
+      />
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 16) }}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Hero section */}
-        <View className="px-6 pb-4">
+        <View className="px-5 pb-4">
           <View className="flex-row items-center gap-3 mb-2">
             <PlatformBadge platform={workout.platform} size={36} />
             <View className="flex-1">
@@ -145,7 +154,9 @@ export const WorkoutDetailContent = () => {
             {workout.estimatedDurationMinutes > 0 && (
               <View className="flex-row items-center gap-1.5">
                 <Clock size={14} color={Colors.content.secondary} pointerEvents="none" />
-                <Text className="text-sm font-inter text-content-secondary">{workout.estimatedDurationMinutes} min</Text>
+                <Text className="text-sm font-inter text-content-secondary">
+                  {workout.estimatedDurationMinutes} min
+                </Text>
               </View>
             )}
             <View className="flex-row items-center gap-1.5">
@@ -167,7 +178,7 @@ export const WorkoutDetailContent = () => {
         </View>
 
         {/* Exercises */}
-        <Text className="text-base font-inter-semibold text-content-primary px-6 mb-3">Exercises</Text>
+        <Text className="text-base font-inter-semibold text-content-primary px-5 mb-3">Exercises</Text>
         {exercises.map((exercise, index) => (
           <DetailExerciseRow
             key={exercise.id}

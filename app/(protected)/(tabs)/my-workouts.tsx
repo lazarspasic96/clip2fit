@@ -1,6 +1,6 @@
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Trash2 } from 'lucide-react-native'
 import { useEffect, useRef, useState } from 'react'
-import { useLocalSearchParams, useRouter } from 'expo-router'
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, Text, View } from 'react-native'
 import Animated, {
   FadeInUp,
@@ -12,10 +12,10 @@ import Animated, {
 } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { WorkoutCard } from '@/components/my-workouts/workout-card'
 import { EmptyState } from '@/components/my-workouts/empty-state'
-import { SwipeableRow } from '@/components/ui/swipeable-row'
+import { WorkoutCard } from '@/components/my-workouts/workout-card'
 import { ConfirmationSheet } from '@/components/ui/confirmation-sheet'
+import { SwipeableRow } from '@/components/ui/swipeable-row'
 import { Colors } from '@/constants/colors'
 
 import { useDeleteWorkoutMutation, useWorkoutsQuery } from '@/hooks/use-api'
@@ -23,7 +23,16 @@ import { useDeleteWorkoutMutation, useWorkoutsQuery } from '@/hooks/use-api'
 const DELETE_ACTION_WIDTH = 80
 
 const DeleteAction = () => (
-  <View className="items-center justify-center" style={{ width: DELETE_ACTION_WIDTH, height: '100%', backgroundColor: '#dc2626', borderTopRightRadius: 16, borderBottomRightRadius: 16 }}>
+  <View
+    className="items-center justify-center"
+    style={{
+      width: DELETE_ACTION_WIDTH,
+      height: '100%',
+      backgroundColor: '#dc2626',
+      borderTopRightRadius: 16,
+      borderBottomRightRadius: 16,
+    }}
+  >
     <Trash2 size={20} color="#fff" pointerEvents="none" />
     <Text className="text-xs font-inter-semibold text-white mt-1">Delete</Text>
   </View>
@@ -102,21 +111,20 @@ const MyWorkoutsScreen = () => {
     })
   }
 
-  const deleteTarget = deleteTargetId !== null
-    ? workouts.find((w) => w.id === deleteTargetId) ?? null
-    : null
+  const deleteTarget = deleteTargetId !== null ? (workouts.find((w) => w.id === deleteTargetId) ?? null) : null
 
-  const deleteTitle = deleteTarget?.isPersonalCopy
-    ? 'Delete workout?'
-    : 'Remove from library?'
+  const deleteTitle = deleteTarget?.isPersonalCopy ? 'Delete workout?' : 'Remove from library?'
 
   const deleteDescription = deleteTarget?.isPersonalCopy
     ? 'This will permanently delete your personal copy. This cannot be undone.'
     : 'This workout will be removed from your library. You can add it back by converting the same video.'
 
-  const deleteError = deleteMutation.error !== null
-    ? (deleteMutation.error instanceof Error ? deleteMutation.error.message : 'Failed to delete')
-    : null
+  const deleteError =
+    deleteMutation.error !== null
+      ? deleteMutation.error instanceof Error
+        ? deleteMutation.error.message
+        : 'Failed to delete'
+      : null
 
   if (isLoading && workouts.length === 0) {
     return (
@@ -127,11 +135,11 @@ const MyWorkoutsScreen = () => {
   }
 
   return (
-    <View className="flex-1 bg-background-primary" style={{ paddingTop: insets.top }}>
-      <View className="px-5 pt-4 pb-3">
-        <Text className="text-2xl font-inter-bold text-content-primary">My Workouts</Text>
+    <View className="flex-1 bg-background-primary px-5" style={{ paddingTop: insets.top }}>
+      {/* Header */}
+      <View className="px-5 pt-4 pb-2">
+        <Text className="text-2xl font-inter-bold text-content-primary">My Schedule</Text>
       </View>
-
       {workouts.length === 0 ? (
         <EmptyState />
       ) : (
@@ -159,11 +167,7 @@ const MyWorkoutsScreen = () => {
             )
 
             return (
-              <Animated.View
-                entering={entering}
-                layout={LinearTransition.springify()}
-                className="mx-5"
-              >
+              <Animated.View entering={entering} layout={LinearTransition.springify()} className="mx-5">
                 {isNew ? <NewWorkoutHighlight>{card}</NewWorkoutHighlight> : card}
               </Animated.View>
             )
