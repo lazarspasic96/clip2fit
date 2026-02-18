@@ -17,6 +17,31 @@ Every route returns these errors when applicable:
 
 ---
 
+## Timezone Behavior (Shared)
+
+Timezone-sensitive endpoints (`/api/stats/*` and `/api/sessions/last`) follow this contract:
+
+1. **Event instants are always UTC ISO timestamps (`...Z`)** in API responses.
+2. **Resolved timezone is used only for calendar semantics**:
+   - week/day bucketing
+   - streak calculations
+   - `completed_today` checks
+3. **Timezone resolution precedence**:
+   1. query `tz` (canonical override)
+   2. query `timezone` (legacy alias, deprecated)
+   3. `profiles.timezone`
+   4. `Etc/UTC`
+4. **Response metadata**:
+   - `meta.timezone_used`
+   - `meta.timezone_source` (`query_tz | query_timezone | profile | default_utc`)
+5. **Important**: Passing `tz` or `timezone` changes calendar semantics only. Event instant timestamps (`...Z`) remain the same absolute moments.
+
+### Deprecation Timeline
+
+`timezone` query alias is deprecated on **February 18, 2026** and will be removed after two stable mobile releases (target removal window starts **May 2026**). New clients should use `tz` only for explicit debug overrides and otherwise rely on profile fallback.
+
+---
+
 ## 1. POST /api/convert
 
 Start a video-to-workout conversion. Uses a 4-tier deduplication strategy before dispatching a Trigger.dev background job.
@@ -298,7 +323,7 @@ Step 2 — Query
          ▼
 Step 3 — Format + return
          │  formatProfile() strips internal fields, returns:
-         │  { id, fullName, gender, age, height, heightUnit,
+         │  { id, fullName, timezone, gender, age, height, heightUnit,
          │    weight, weightUnit, fitnessGoal, createdAt, updatedAt }
 ```
 
@@ -312,6 +337,7 @@ Step 3 — Format + return
 {
   "id": "uuid",
   "fullName": "John Doe",
+  "timezone": "Europe/Belgrade",
   "gender": "male",
   "age": 28,
   "height": 180,
@@ -359,6 +385,7 @@ Content-Type: application/json
 | Field         | Type     | Validation                                                   |
 | ------------- | -------- | ------------------------------------------------------------ |
 | `fullName`    | `string` | 1-100 chars                                                  |
+| `timezone`    | `string` | Valid IANA timezone (e.g., `Europe/Belgrade`)                |
 | `gender`      | `string` | `"male"` \| `"female"` \| `"other"` \| `"prefer_not_to_say"` |
 | `age`         | `number` | Integer, 13-120                                              |
 | `height`      | `number` | Positive, max 300                                            |
@@ -388,10 +415,10 @@ Step 1 — Auth + Validate
          │
          ▼
 Step 2 — Upsert (single query)
-         │  INSERT INTO profiles (id, fullName, age, updatedAt)
-         │  VALUES (:userId, 'John Doe', 28, now())
+         │  INSERT INTO profiles (id, fullName, timezone, age, updatedAt)
+         │  VALUES (:userId, 'John Doe', 'Europe/Belgrade', 28, now())
          │  ON CONFLICT (id) DO UPDATE SET
-         │    fullName = 'John Doe', age = 28, updatedAt = now()
+         │    fullName = 'John Doe', timezone = 'Europe/Belgrade', age = 28, updatedAt = now()
          │  RETURNING *
          │
          │  Row exists?  → updates only the provided fields, leaves others untouched
@@ -741,9 +768,9 @@ Step 3 — Compute duration
          │  Else: durationSeconds = null
          │
          ▼
-Step 4 — Fetch exercise names (for PR response)
-         │  SELECT id, name FROM exercises WHERE id IN (:exerciseIds)
-         │  Build map: { exerciseId → "Bench Press" }
+Step 4 — Prepare PR detection context
+         │  detectPRs() loads exercise metadata (name + catalog mapping)
+         │  and computes PR deltas for response payload
          │
          ▼
 Step 5 — Transaction: insert session → exercise logs → set logs
@@ -819,6 +846,8 @@ Step 7 — Return session ID + PRs
 
 **Key detail: only completed sets with weight > 0 count.** Skipped sets, pending sets, and bodyweight exercises (weight=0 or null) are ignored for PR detection.
 
+**Key detail: additional schema rules are enforced.** `exercises` must contain at least 1 item, duplicate `exercise_id` entries are rejected, `completed_at` is required when `status="completed"`, and `completed_at` must be greater than or equal to `started_at`.
+
 ### Response
 
 **201 — Session logged**
@@ -860,32 +889,44 @@ User finishes a workout session. The app sends all logged sets/reps/weights. On 
 
 ## 8. GET /api/sessions/last
 
-Get the most recent session for a workout, plus whether the workout was completed today.
+Get the most recent session for a workout, plus whether any session was logged today for that workout.
+
+**Date field contract for this route**
+
+- UTC event instants: `session.started_at`, `session.completed_at`
+- Calendar artifacts: `completed_today` (resolved timezone day comparison)
 
 ### Request
 
 ```
-GET /api/sessions/last?workoutId=<uuid>&timezone=<IANA>
+GET /api/sessions/last?workoutId=<uuid>
+GET /api/sessions/last?workoutId=<uuid>&tz=America/New_York
 Authorization: Bearer <token>
 ```
 
 **Query params:**
 
-| Param       | Type     | Required | Validation                                                                          |
-| ----------- | -------- | -------- | ----------------------------------------------------------------------------------- |
-| `workoutId` | `string` | Yes      | UUID format                                                                         |
-| `timezone`  | `string` | Yes      | IANA timezone format (e.g., `America/New_York`) — regex: `^[A-Za-z_]+/[A-Za-z_/]+$` |
+| Param       | Type     | Required | Validation                                     |
+| ----------- | -------- | -------- | ---------------------------------------------- |
+| `workoutId` | `string` | Yes      | UUID format                                    |
+| `tz`        | `string` | No       | Valid IANA timezone                            |
+| `timezone`  | `string` | No       | Valid IANA timezone (legacy alias, deprecated) |
 
 ### How It Works
 
 ```
-Client sends: GET /api/sessions/last?workoutId=abc&timezone=America/New_York
+Client sends: GET /api/sessions/last?workoutId=<uuid>
          │
          ▼
 Step 1 — Auth + Validate params
          │  getAuthUser() → userId
          │  Validate workoutId: required + UUID regex
-         │  Validate timezone: required + IANA regex (e.g., "America/New_York")
+         │  Resolve timezone precedence:
+         │    1) query `tz`
+         │    2) query `timezone` (legacy alias)
+         │    3) profiles.timezone
+         │    4) Etc/UTC
+         │  If query timezone is invalid → 400 Validation failed
          │
          ▼
 Step 2 — Verify workout ownership
@@ -907,10 +948,10 @@ Step 3 — Fetch last session with nested data
 Step 4 — Check "completed today" (timezone-aware)
          │  SELECT COUNT(*) FROM workout_sessions
          │  WHERE userId = :user AND workoutId = :workoutId
-         │    AND (created_at AT TIME ZONE 'America/New_York')::date
-         │      = (now() AT TIME ZONE 'America/New_York')::date
+         │    AND (created_at AT TIME ZONE :resolved_timezone)::date
+         │      = (now() AT TIME ZONE :resolved_timezone)::date
          │
-         │  count > 0 → completedToday = true
+         │  count > 0 → completedToday = true (at least one session logged today)
          │
          ▼
 Step 5 — Filter and return
@@ -922,7 +963,7 @@ Step 5 — Filter and return
          │  No session?     → { session: null, completed_today: false }
 ```
 
-**Key detail: timezone-aware "today" check.** The query converts both `created_at` and `now()` to the user's timezone before comparing dates. A session logged at 11pm EST on Monday won't show as "completed today" on Tuesday morning EST, even though it's still Tuesday in UTC.
+**Key detail: timezone-aware "today" check.** The query converts both `created_at` and `now()` to the resolved timezone before comparing dates. A session logged at 11pm EST on Monday won't show as "today" on Tuesday morning EST, even though it's still Tuesday in UTC.
 
 **Key detail: pending items filtered out.** The response only includes exercises and sets the user actually interacted with (completed or skipped). Pending items are stripped so the app doesn't show unfinished data from a partial session.
 
@@ -958,7 +999,11 @@ Step 5 — Filter and return
       }
     ]
   },
-  "completed_today": true
+  "completed_today": true,
+  "meta": {
+    "timezone_used": "America/New_York",
+    "timezone_source": "query_tz"
+  }
 }
 ```
 
@@ -967,7 +1012,11 @@ Step 5 — Filter and return
 ```json
 {
   "session": null,
-  "completed_today": false
+  "completed_today": false,
+  "meta": {
+    "timezone_used": "Etc/UTC",
+    "timezone_source": "default_utc"
+  }
 }
 ```
 
@@ -976,8 +1025,8 @@ Step 5 — Filter and return
 ```json
 { "error": "workoutId is required" }
 { "error": "Invalid workoutId" }
-{ "error": "timezone is required" }
-{ "error": "Invalid timezone" }
+{ "error": "Validation failed", "details": { "tz": ["Invalid IANA timezone"] } }
+{ "error": "Validation failed", "details": { "timezone": ["Invalid IANA timezone"] } }
 { "error": "Workout not in your library" }
 ```
 
@@ -985,7 +1034,7 @@ Step 5 — Filter and return
 
 Tag: `[clip2fit:sessions]`
 
-Logs: userId, workoutId, sessionId, completedToday.
+Logs: userId, workoutId, sessionId, completedToday, timezone_used, timezone_source.
 
 ### Client Use Case
 
@@ -1142,8 +1191,6 @@ Step 3 — Fetch full workout
          │  SELECT workouts.* WITH exercises (ordered by order ASC)
          │  WHERE workouts.id = :id
          │
-         │  (includes rawTranscript — not excluded like in the list endpoint)
-         │
          ▼
 Step 4 — Format + return
          │  formatWorkoutResponse(workout) → full workout object with exercises
@@ -1151,7 +1198,7 @@ Step 4 — Format + return
 
 **Key detail: 404, not 403.** If the workout exists but doesn't belong to the user, it returns the same 404 as a non-existent workout. This prevents enumeration attacks — you can't probe UUIDs to discover what exists.
 
-**Key detail: two-query access check.** First checks the junction table (does user have access?), then fetches the workout data. This is `findAccessibleWorkout()` — a shared helper used by GET, PATCH, and DELETE.
+**Key detail: two-query access check.** First checks the junction table (does user have access?), then fetches the workout data. This logic is implemented in `findAccessibleWorkout()` for the GET handler.
 
 ### Response
 
@@ -1520,129 +1567,157 @@ Used for:
 
 ## 14. GET /api/stats/summary
 
-Training summary with session counts, volume, streaks, weekly frequency, top exercises, and muscle group distribution. All stats are computed on-the-fly from existing session data.
+Dashboard overview of training activity: session counts, volume, streaks, top exercises, and muscle group distribution.
+
+**Date field contract for this route**
+
+- UTC event instants: `period.from`, `period.to`, `best_session.date`
+- Calendar artifacts (timezone-derived): `weekly_frequency[].week`, `streaks.*`
 
 ### Request
 
 ```
-GET /api/stats/summary?timezone=<IANA>&weeks=<int>
+GET /api/stats/summary?period=90d
+GET /api/stats/summary?period=90d&tz=America/New_York
 Authorization: Bearer <token>
 ```
 
 **Query params:**
 
-| Param      | Type     | Required | Default | Validation                                      |
-| ---------- | -------- | -------- | ------- | ----------------------------------------------- |
-| `timezone` | `string` | Yes      | —       | IANA timezone format (e.g., `America/New_York`) |
-| `weeks`    | `number` | No       | 12      | Integer, 1-104                                  |
+| Param      | Type     | Required | Default | Validation                                     |
+| ---------- | -------- | -------- | ------- | ---------------------------------------------- |
+| `period`   | `string` | No       | `90d`   | `30d` \| `90d` \| `6m` \| `1y` \| `all`        |
+| `tz`       | `string` | No       | —       | Valid IANA timezone                            |
+| `timezone` | `string` | No       | —       | Valid IANA timezone (legacy alias, deprecated) |
 
 ### How It Works
 
 ```
-Client sends: GET /api/stats/summary?timezone=America/New_York&weeks=12
+Client sends: GET /api/stats/summary?period=90d
          │
          ▼
-Step 1 — Auth + Validate params
+Step 1 — Auth + Validate
          │  getAuthUser() → userId
-         │  Validate timezone: required + IANA regex
-         │  Validate weeks: optional, parseInt, 1-104 range
+         │  Zod validates period enum
+         │  Resolve timezone precedence:
+         │    1) query `tz`
+         │    2) query `timezone` (legacy alias)
+         │    3) profiles.timezone
+         │    4) Etc/UTC
+         │  Invalid query timezone -> 400 Validation failed
          │
          ▼
-Step 2 — Run 4 parallel queries (Promise.all)
-         │
-         │  Q1: Session aggregates
-         │    SELECT count(*), count(completed), count(partial), avg(duration)
-         │    FROM workout_sessions WHERE userId = :user
-         │
-         │  Q2: Weekly frequency + volume (timezone-aware)
-         │    SELECT ISO week, count(distinct sessions), sum(weight * reps)
-         │    FROM workout_sessions → session_exercise_logs → session_set_logs
-         │    WHERE userId = :user AND started_at >= now() - :weeks weeks
-         │    GROUP BY ISO week (using AT TIME ZONE for correct week boundaries)
-         │
-         │  Q3: Top 10 exercises by session count
-         │    SELECT exercise name, count(distinct sessions)
-         │    FROM session_exercise_logs → exercises → exercise_catalog
-         │    WHERE userId = :user AND exercise status = 'completed'
-         │    GROUP BY exercise, ORDER BY count DESC, LIMIT 10
-         │
-         │  Q4: Muscle group distribution (JSONB unnest)
-         │    SELECT muscle_group, count(distinct sessions)
-         │    Unnests primary_muscle_groups from catalog (or muscle_groups from exercises)
-         │    WHERE userId = :user AND exercise status = 'completed'
+Step 2 — Convert period to date range
+         │  periodToDateRange("90d") → { from: 90 days ago, to: now }
          │
          ▼
-Step 3 — Compute streaks (JS)
-         │  From Q2 weekly data:
-         │    current_streak: walk backwards from current ISO week
-         │    best_streak: find longest consecutive run in all active weeks
+Step 3 — Run 5 parallel queries
+         │  Q1: Session aggregates (total, completed, partial, avg/total duration)
+         │  Q2: Weekly frequency + volume (timezone-aware, grouped by ISO week)
+         │  Q3: Best session (highest total volume in period)
+         │  Q4: Top 10 exercises (by session count)
+         │  Q5: Muscle group distribution (JSONB unnest of exercise muscle groups)
          │
          ▼
-Step 4 — Return response
+Step 4 — Post-processing (JS)
+         │  Fill zero-weeks: insert {sessions: 0, volume: 0} for missing weeks
+         │  Compute streaks: walk ISO weeks to find current + best consecutive
+         │  Compute muscle group percentages: round(count / total * 100)
+         │  Compute avg_per_week, avg_per_session_kg (guard div-by-zero)
+         │  Convert duration_seconds → duration_minutes
+         │
+         ▼
+Step 5 — Return formatted response
 ```
 
-**Key detail: volume excludes bodyweight exercises.** Only sets with `actual_weight > 0` and `status = 'completed'` count toward volume, consistent with PR detection.
+**Key detail: zero-week filling.** Weeks with no sessions appear as explicit `{sessions: 0, volume_kg: 0}` entries. Chart libraries need these to render gaps correctly.
 
-**Key detail: timezone affects week boundaries.** `date_trunc('week', started_at AT TIME ZONE $tz)` ensures sessions are grouped into the correct ISO week for the user's timezone.
+**Key detail: partial sessions excluded from avg_duration.** Postgres `avg()` ignores nulls naturally.
 
-**Key detail: total_volume is scoped to the weeks window.** Computed from the weekly frequency data, not a separate all-time query.
+**Key detail: muscle group distribution.** Counts distinct sessions per muscle group by unnesting JSONB from exercise catalog.
 
 ### Response
 
-**200 — Summary stats**
+**200 — Summary data**
 
 ```json
 {
-  "total_sessions": 42,
-  "completed_sessions": 38,
-  "partial_sessions": 4,
-  "avg_duration_seconds": 3450,
-  "total_volume": 185000,
-  "current_streak_weeks": 3,
-  "best_streak_weeks": 8,
-  "weekly_frequency": [{ "week": "2026-W05", "sessions": 3, "volume": 12500 }],
-  "top_exercises": [{ "catalog_exercise_id": "uuid|null", "exercise_name": "Bench Press", "session_count": 15 }],
-  "muscle_group_distribution": [{ "muscle_group": "chest", "session_count": 12 }]
+  "meta": {
+    "timezone_used": "America/New_York",
+    "timezone_source": "query_tz"
+  },
+  "period": { "from": "2025-11-19T00:00:00Z", "to": "2026-02-17T00:00:00Z", "label": "90d" },
+  "sessions": {
+    "total": 45,
+    "completed": 40,
+    "partial": 5,
+    "avg_duration_minutes": 52,
+    "total_duration_minutes": 2340,
+    "avg_per_week": 3.5
+  },
+  "volume": { "total_kg": 125000, "avg_per_session_kg": 2778 },
+  "streaks": { "currentWeeks": 4, "bestWeeks": 8 },
+  "best_session": {
+    "id": "uuid",
+    "date": "2026-01-20T18:30:00.000Z",
+    "duration_minutes": 65,
+    "volume_kg": 4500,
+    "workout_title": "Upper Body Push"
+  },
+  "weekly_frequency": [
+    { "week": "2025-W48", "sessions": 3, "volume_kg": 8500 },
+    { "week": "2025-W49", "sessions": 0, "volume_kg": 0 }
+  ],
+  "top_exercises": [{ "catalog_exercise_id": "uuid", "name": "Barbell Bench Press", "session_count": 20 }],
+  "muscle_group_distribution": [{ "muscle_group": "chest", "session_count": 12, "percentage": 25 }]
 }
 ```
 
-**400 — Missing/invalid params**
+**Empty state:** Counts are 0, `best_session` is `null`, and non-weekly arrays are empty. `weekly_frequency` remains chart-friendly with zero-filled week entries for the selected range.
+
+**400 — Invalid timezone query**
 
 ```json
-{ "error": "timezone is required" }
-{ "error": "Invalid timezone" }
-{ "error": "weeks must be an integer between 1 and 104" }
+{ "error": "Validation failed", "details": { "tz": ["Invalid IANA timezone"] } }
 ```
 
 ### Logging
 
 Tag: `[clip2fit:stats]`
 
-Logs: userId, weeks.
+Logs: userId, period, session count, timezone_used, timezone_source.
 
 ### Client Use Case
 
-Renders the "Stats/Progress" screen. Shows total sessions, completion rate, average duration, training streaks, a weekly frequency chart, top exercises list, and muscle group distribution breakdown.
+Renders the "Stats" dashboard. Weekly frequency powers a bar chart. Muscle group distribution powers a pie chart. Streaks and best_session are motivational highlights.
 
 ---
 
 ## 15. GET /api/stats/prs
 
-Full PR (personal record) history for all exercises, with a timeline of every PR-breaking session. Optionally filtered to a single catalog exercise.
+List all personal records for catalog-mapped exercises, sorted by most recent PR date. Entry point to the PR history chart.
+
+**Date field contract for this route**
+
+- UTC event instants: `prs[].current_pr.date`, `prs[].first_recorded.date`
+- Calendar artifacts: none in payload (aside from `meta.timezone_*`)
 
 ### Request
 
 ```
 GET /api/stats/prs
-GET /api/stats/prs?catalog_exercise_id=<uuid>
+GET /api/stats/prs?catalog_exercise_id=uuid
+GET /api/stats/prs?tz=America/New_York
 Authorization: Bearer <token>
 ```
 
 **Query params:**
 
-| Param                 | Type     | Required | Validation             |
-| --------------------- | -------- | -------- | ---------------------- |
-| `catalog_exercise_id` | `string` | No       | UUID format if present |
+| Param                 | Type     | Required | Validation                                     |
+| --------------------- | -------- | -------- | ---------------------------------------------- |
+| `catalog_exercise_id` | `string` | No       | UUID format (filters to one exercise)          |
+| `tz`                  | `string` | No       | Valid IANA timezone                            |
+| `timezone`            | `string` | No       | Valid IANA timezone (legacy alias, deprecated) |
 
 ### How It Works
 
@@ -1651,43 +1726,120 @@ Client sends: GET /api/stats/prs
          │
          ▼
 Step 1 — Auth + Validate
-         │  getAuthUser() → userId
-         │  Optional catalog_exercise_id → UUID regex if present
+         │  Resolve timezone with shared precedence
          │
          ▼
-Step 2 — CTE query with window functions
-         │
-         │  CTE 1: set_data
-         │    For each session × exercise, find the best set (highest weight, then reps)
-         │    Uses ROW_NUMBER() OVER (PARTITION BY session, exercise_key ORDER BY weight DESC, reps DESC)
-         │    exercise_key = catalog_exercise_id if mapped, else exercise_id (same as POST /api/sessions)
-         │    Filters: userId, completed sets, actual_weight > 0
-         │
-         │  CTE 2: session_maxes
-         │    Picks the top set per session per exercise (rn = 1)
-         │
-         │  CTE 3: with_running_max
-         │    Computes running MAX(weight) for each exercise across all previous sessions
-         │    Uses window function: MAX(max_weight) OVER (PARTITION BY exercise_key ORDER BY started_at ROWS UNBOUNDED PRECEDING TO 1 PRECEDING)
-         │
-         │  Final SELECT: rows where max_weight > previous best (= PR sessions)
+Step 2 — CTE query: find all PR milestones
+         │  set_data → session_maxes → with_running_max → filter new PRs
+         │  Only catalog-mapped exercises, completed sets, weight > 0
          │
          ▼
-Step 3 — Group by exercise in JS
-         │  For each exercise_key:
-         │    current_pr = last entry's weight
-         │    pr_timeline = chronological list of all PR entries
-         │    total_pr_count = sum of all timeline lengths
+Step 3 — Group by catalog_exercise_id in JS
+         │  Sort by most recent PR date (descending)
          │
          ▼
-Step 4 — Return response
+Step 4 — Return formatted response
 ```
 
-**Key detail: PR grouping is consistent with POST /api/sessions.** Catalog-mapped exercises use `catalog_exercise_id` as the key (global across all workouts). Unmapped exercises use `exercise_id` (local to that workout). This means the PR history here matches exactly what was detected during session logging.
+**Key detail: catalog-mapped only.** Unmapped exercises excluded.
 
-**Key detail: the query finds all PR-breaking moments.** Not just the current PR, but every session where the user set a new all-time high for that exercise. This enables a "PR progression chart" on mobile.
+**Key detail: e1RM.** Epley formula: `weight * (1 + reps / 30)`.
 
-**Key detail: previous_weight is null for first-ever PR.** The first time an exercise is logged with weight, it's always a PR with no previous weight to compare against.
+### Response
+
+**200 — PR list**
+
+```json
+{
+  "meta": {
+    "timezone_used": "America/New_York",
+    "timezone_source": "query_tz"
+  },
+  "prs": [
+    {
+      "catalog_exercise_id": "uuid",
+      "exercise_name": "Barbell Bench Press",
+      "current_pr": {
+        "weight": 150,
+        "reps": 1,
+        "e1rm": 155.0,
+        "date": "2026-02-10T17:30:00.000Z",
+        "session_id": "uuid"
+      },
+      "first_recorded": { "weight": 80, "date": "2025-04-01T16:00:00.000Z" },
+      "improvement_kg": 70,
+      "pr_count": 8
+    }
+  ],
+  "total_pr_count": 42
+}
+```
+
+**Empty state:** `{ prs: [], total_pr_count: 0 }`.
+
+### Logging
+
+Tag: `[clip2fit:stats]`
+
+Logs: userId, exercise count, PR count, optional filter, timezone_used, timezone_source.
+
+### Client Use Case
+
+Renders "My PRs" list. Tapping a row navigates to `GET /api/stats/prs/[catalogExerciseId]/history`.
+
+---
+
+## 16. GET /api/stats/prs/[catalogExerciseId]/history
+
+PR timeline for a single exercise — chart-ready data with running PR detection.
+
+**Date field contract for this route**
+
+- UTC event instants: `history[].date`, `all_time_pr.date`
+- Calendar artifacts: none in payload (aside from `meta.timezone_*`)
+
+### Request
+
+```
+GET /api/stats/prs/:catalogExerciseId/history?period=1y
+GET /api/stats/prs/:catalogExerciseId/history?period=1y&tz=America/New_York
+Authorization: Bearer <token>
+```
+
+**Path params:**
+
+| Param               | Type     | Validation  |
+| ------------------- | -------- | ----------- |
+| `catalogExerciseId` | `string` | UUID format |
+
+**Query params:**
+
+| Param      | Type     | Required | Default | Validation                                     |
+| ---------- | -------- | -------- | ------- | ---------------------------------------------- |
+| `period`   | `string` | No       | `1y`    | `30d` \| `90d` \| `6m` \| `1y` \| `all`        |
+| `tz`       | `string` | No       | —       | Valid IANA timezone                            |
+| `timezone` | `string` | No       | —       | Valid IANA timezone (legacy alias, deprecated) |
+
+### How It Works
+
+```
+Step 1 — Auth + Validate (UUID + period)
+         Resolve timezone with shared precedence
+Step 2 — Convert period to date range
+Step 3 — 4 parallel queries:
+         Q1: Exercise info (404 if not found)
+         Q2: Session data points (period-filtered)
+         Q3: All-time PR (ignores period)
+         Q4: Prior all-time max before selected period
+Step 4 — Running max computation in JS (seeded with prior all-time max)
+Step 5 — Return chart-ready response
+```
+
+**Key detail: all_time_pr ignores period filter.** Motivational reference point.
+
+**Key detail: is_new_pr is all-time aware.** A point is marked `is_new_pr: true` only if it exceeds the user's best weight across all history up to that session, not just within the selected period.
+
+**Key detail: same-day sessions both returned** with full ISO timestamps.
 
 ### Response
 
@@ -1695,34 +1847,117 @@ Step 4 — Return response
 
 ```json
 {
-  "exercises": [
+  "meta": {
+    "timezone_used": "America/New_York",
+    "timezone_source": "query_tz"
+  },
+  "exercise": { "catalog_exercise_id": "uuid", "name": "Barbell Bench Press", "category": "chest" },
+  "history": [
     {
-      "catalog_exercise_id": "uuid|null",
-      "exercise_name": "Bench Press",
-      "current_pr": 100,
-      "pr_timeline": [
-        { "date": "2026-01-15", "weight": 80, "reps": 5, "previous_weight": null, "session_id": "uuid" },
-        { "date": "2026-02-01", "weight": 90, "reps": 3, "previous_weight": 80, "session_id": "uuid" },
-        { "date": "2026-02-14", "weight": 100, "reps": 1, "previous_weight": 90, "session_id": "uuid" }
-      ]
+      "date": "2025-03-15T17:00:00.000Z",
+      "max_weight": 80,
+      "reps_at_max": 8,
+      "best_e1rm": 101.3,
+      "is_new_pr": true,
+      "session_id": "uuid"
     }
   ],
-  "total_pr_count": 15
+  "all_time_pr": { "weight": 150, "e1rm": 155.0, "date": "2026-01-29T06:45:00.000Z" }
 }
 ```
 
-**400 — Invalid filter**
-
-```json
-{ "error": "Invalid catalog_exercise_id" }
-```
+**400** — Invalid catalogExerciseId. **404** — Exercise not in catalog. **Empty state:** empty history, `all_time_pr: null`.
 
 ### Logging
 
 Tag: `[clip2fit:stats]`
 
-Logs: userId, exerciseCount, prCount.
+Logs: userId, catalogExerciseId, period, data point count, timezone_used, timezone_source.
 
 ### Client Use Case
 
-Renders the PR history screen. Shows a list of exercises with their current PR weight and a timeline/chart of PR progression over time. The `catalog_exercise_id` filter is used when the user taps a specific exercise to see its PR history in detail.
+Line chart: X=date, Y=max_weight (toggle to e1rm). Highlight `is_new_pr` points. all_time_pr as reference line.
+
+---
+
+## 17. GET /api/stats/sessions
+
+Paginated session history with per-session metrics and best session across the entire period.
+
+**Date field contract for this route**
+
+- UTC event instants: `sessions[].date`, `best_session.date`
+- Calendar artifacts: none in payload (aside from `meta.timezone_*`)
+
+### Request
+
+```
+GET /api/stats/sessions?period=90d&limit=50&offset=0
+GET /api/stats/sessions?period=90d&tz=America/New_York&limit=50&offset=0
+Authorization: Bearer <token>
+```
+
+**Query params:**
+
+| Param      | Type     | Required | Default | Validation                                     |
+| ---------- | -------- | -------- | ------- | ---------------------------------------------- |
+| `period`   | `string` | No       | `90d`   | `30d` \| `90d` \| `6m` \| `1y` \| `all`        |
+| `tz`       | `string` | No       | —       | Valid IANA timezone                            |
+| `timezone` | `string` | No       | —       | Valid IANA timezone (legacy alias, deprecated) |
+| `limit`    | `number` | No       | `50`    | Integer, 1-100                                 |
+| `offset`   | `number` | No       | `0`     | Integer, >= 0                                  |
+
+### How It Works
+
+```
+Step 1 — Auth + Validate
+         Resolve timezone with shared precedence
+Step 2 — Convert period to date range
+Step 3 — 3 parallel queries:
+         Q1: Session list (paginated) with exercise_count + total_volume
+         Q2: Total count for pagination
+         Q3: Best session across entire period (no pagination)
+Step 4 — Return with pagination metadata
+```
+
+**Key detail: best_session spans entire period** regardless of current page.
+
+**Key detail: duration_minutes = null for partial sessions.**
+
+### Response
+
+**200 — Session history**
+
+```json
+{
+  "meta": {
+    "timezone_used": "Etc/UTC",
+    "timezone_source": "default_utc"
+  },
+  "sessions": [
+    {
+      "id": "uuid",
+      "workout_title": "Upper Body Push",
+      "date": "2026-02-15T10:30:00.000Z",
+      "duration_minutes": 55,
+      "status": "completed",
+      "exercise_count": 6,
+      "total_volume_kg": 3200
+    }
+  ],
+  "pagination": { "total": 45, "limit": 50, "offset": 0, "has_more": false },
+  "best_session": { "id": "uuid", "date": "2026-01-20T18:30:00.000Z", "total_volume_kg": 4500 }
+}
+```
+
+**Empty state:** `{ sessions: [], pagination: { total: 0, limit: 50, offset: 0, has_more: false }, best_session: null }`.
+
+### Logging
+
+Tag: `[clip2fit:stats]`
+
+Logs: userId, period, session count, limit, offset, timezone_used, timezone_source.
+
+### Client Use Case
+
+Scrollable "Session History" list. Each card shows date, workout name, duration, volume. best_session highlighted with badge. Infinite scroll via offset.

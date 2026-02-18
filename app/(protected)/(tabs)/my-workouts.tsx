@@ -168,7 +168,7 @@ const MyWorkoutsScreen = () => {
               </Animated.View>
             )
           }}
-          contentContainerStyle={{ paddingBottom: 16, gap: 12 }}
+          contentContainerStyle={{ paddingBottom: insets.bottom + 24, gap: 12 }}
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={Colors.content.secondary} />

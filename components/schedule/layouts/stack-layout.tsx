@@ -1,4 +1,5 @@
 import { ScrollView } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { ScheduleDayRow } from '@/components/schedule/schedule-day-row'
 
@@ -13,11 +14,12 @@ interface StackLayoutProps {
 
 export const StackLayout = ({ schedule, onDayPress, checkmarkDay }: StackLayoutProps) => {
   const today = getTodayDayOfWeek()
+  const insets = useSafeAreaInsets()
 
   return (
     <ScrollView
       className="flex-1"
-      contentContainerStyle={{ paddingTop: 16, paddingBottom: 16 }}
+      contentContainerStyle={{ paddingTop: 16, paddingBottom: insets.bottom + 24 }}
       showsVerticalScrollIndicator={false}
     >
       {schedule.entries.map((entry, i) => {
