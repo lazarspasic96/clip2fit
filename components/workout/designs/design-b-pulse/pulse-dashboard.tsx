@@ -14,9 +14,10 @@ interface DashboardProps {
   onBack: () => void
   onFinish: () => void
   isEditMode?: boolean
+  learningPill?: React.ReactNode
 }
 
-export const PulseDashboard = ({ onBack, onFinish, isEditMode }: DashboardProps) => {
+export const PulseDashboard = ({ onBack, onFinish, isEditMode, learningPill }: DashboardProps) => {
   const { session, currentExercise, navigateExercise } = useActiveWorkout()
   const { activeSetIndex, totalCount } = useActiveSet()
   useElapsedTimer()
@@ -57,11 +58,7 @@ export const PulseDashboard = ({ onBack, onFinish, isEditMode }: DashboardProps)
         </View>
 
         {/* Exercise name with nav arrows */}
-        <Animated.View
-          key={currentExercise.id}
-          entering={FadeIn.duration(200)}
-          className="items-center mt-5"
-        >
+        <Animated.View key={currentExercise.id} entering={FadeIn.duration(200)} className="items-center mt-5">
           <View className="flex-row items-center px-4">
             <Pressable
               onPress={() => navigateExercise(index - 1)}
@@ -91,10 +88,13 @@ export const PulseDashboard = ({ onBack, onFinish, isEditMode }: DashboardProps)
           <View className="px-4 mt-2 w-full">
             <SegmentedProgressBar activeIndex={index} total={exercises.length} onPress={navigateExercise} />
           </View>
-          <Text className="text-sm font-inter text-content-tertiary my-3">
+          <Text className="text-sm text-center font-inter text-content-tertiary my-3">
             {index + 1} of {exercises.length}
           </Text>
         </Animated.View>
+
+        {/* Learning pill */}
+        {learningPill !== undefined && <View className="px-4 mb-3">{learningPill}</View>}
 
         {/* Set card */}
         <Animated.View key={`card-${currentExercise.id}`} entering={FadeIn.duration(200)}>

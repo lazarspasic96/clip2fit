@@ -1,18 +1,18 @@
 import { useState } from 'react'
 import { View } from 'react-native'
 
+import { BaselinePulseDashboard } from '@/components/workout/designs/design-a-baseline/baseline-pulse-dashboard'
 import { FinishWorkoutSheet } from '@/components/workout/finish-workout-sheet'
 import { PrCelebration } from '@/components/workout/pr-celebration'
-import { PulseDashboard } from '@/components/workout/designs/design-b-pulse/pulse-dashboard'
 import { useActiveWorkout } from '@/contexts/active-workout-context'
 import { useFinishWorkout } from '@/hooks/use-finish-workout'
 import type { ApiPR } from '@/types/api'
 
-interface DesignSwitcherProps {
+interface ActiveWorkoutShellProps {
   onBack: () => void
 }
 
-export const DesignSwitcher = ({ onBack }: DesignSwitcherProps) => {
+export const ActiveWorkoutShell = ({ onBack }: ActiveWorkoutShellProps) => {
   const { session, finishSession } = useActiveWorkout()
   const [showFinishSheet, setShowFinishSheet] = useState(false)
   const [prs, setPrs] = useState<ApiPR[]>([])
@@ -65,7 +65,7 @@ export const DesignSwitcher = ({ onBack }: DesignSwitcherProps) => {
 
   return (
     <View className="flex-1">
-      <PulseDashboard
+      <BaselinePulseDashboard
         onBack={onBack}
         onFinish={isEditMode ? handleSave : handleFinish}
         isEditMode={isEditMode}
