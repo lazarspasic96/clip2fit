@@ -138,7 +138,10 @@ const AddWorkoutScreen = () => {
         </Pressable>
 
         <Pressable
-          onPress={() => {}}
+          onPress={() => {
+            router.back()
+            setTimeout(() => router.push('/(protected)/exercise-catalog' as never), 300)
+          }}
           className="bg-background-secondary rounded-2xl p-6 flex-row items-center gap-4"
         >
           <View

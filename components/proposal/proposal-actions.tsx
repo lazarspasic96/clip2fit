@@ -26,7 +26,7 @@ export const ProposalActions = ({
 
   return (
     <View
-      className="px-6 pt-4 border-t border-border-primary bg-background-primary"
+      className="px-5 pt-4 border-t border-border-primary bg-background-primary"
       style={{ paddingBottom: Math.max(insets.bottom, 16) }}
     >
       {saveError !== null && (

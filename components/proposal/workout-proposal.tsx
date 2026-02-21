@@ -83,20 +83,22 @@ export const WorkoutProposal = ({ workoutId, mode = 'proposal', onSaved, onDisca
       >
         <ProposalHeader workout={workout} exerciseCount={editableExercises.length} />
 
-        <Text className="text-base font-inter-semibold text-content-primary px-6 mb-3">Exercises</Text>
+        <Text className="text-base font-inter-semibold text-content-primary px-5 mb-3">Exercises</Text>
 
-        {editableExercises.map((exercise, index) => (
-          <ProposalExerciseRow
-            key={exercise.id}
-            exercise={exercise}
-            index={index}
-            onUpdate={(updated) => handleUpdateExercise(index, updated)}
-            onDelete={() => handleDeleteExercise(index)}
-          />
-        ))}
+        <View className="gap-3">
+          {editableExercises.map((exercise, index) => (
+            <ProposalExerciseRow
+              key={exercise.id}
+              exercise={exercise}
+              index={index}
+              onUpdate={(updated) => handleUpdateExercise(index, updated)}
+              onDelete={() => handleDeleteExercise(index)}
+            />
+          ))}
+        </View>
 
         {editableExercises.length === 0 && (
-          <View className="items-center py-8 mx-6">
+          <View className="items-center py-8 mx-5">
             <Text className="text-sm font-inter text-content-tertiary">No exercises remaining</Text>
           </View>
         )}

@@ -43,10 +43,13 @@ export interface ApiJob {
   createdAt: string
 }
 
+export type ConvertResponseStatus = 'existing' | 'cloned' | 'processing'
+
 export interface ApiConvertResponse {
   jobId?: string
   workoutId?: string
   existing?: boolean
+  status?: ConvertResponseStatus
 }
 
 export interface ApiProfilePayload {

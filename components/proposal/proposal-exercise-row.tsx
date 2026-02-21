@@ -40,7 +40,7 @@ export const ProposalExerciseRow = ({ exercise, index, onUpdate, onDelete }: Pro
     <Animated.View
       entering={FadeInDown.delay(index * 50).duration(300)}
       layout={Layout.springify()}
-      className="mb-3 mx-6"
+      className="mx-5"
     >
       <View className="overflow-hidden rounded-2xl">
         {/* Delete button revealed behind */}

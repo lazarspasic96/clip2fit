@@ -22,7 +22,7 @@ export const ProposalHeader = ({ workout, exerciseCount }: ProposalHeaderProps) 
     : workout.creatorHandle
 
   return (
-    <View className="px-6 pb-4">
+    <View className="px-5 pb-4">
       <View className="flex-row items-center gap-3 mb-3">
         <PlatformBadge platform={workout.platform} size={36} />
         <View className="flex-1">

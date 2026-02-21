@@ -1,14 +1,8 @@
-import { useEffect } from 'react'
 import { Pressable, Text, View } from 'react-native'
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  Easing,
-} from 'react-native-reanimated'
+import Animated, { FadeIn } from 'react-native-reanimated'
 
 import type { ProcessingState } from '@/types/processing'
-import { PlatformBadge } from '@/components/processing/platform-badge'
+import { HeroProgressRing } from '@/components/processing/hero-progress-ring'
 import { StageIndicator } from '@/components/processing/stage-indicator'
 
 interface ProcessingStagesProps {
@@ -38,51 +32,67 @@ const getStageStatus = (stageKey: string, currentStage: string): 'pending' | 'ac
 }
 
 export const ProcessingStages = ({ state, onCancel }: ProcessingStagesProps) => {
-  const progressWidth = useSharedValue(0)
-
-  useEffect(() => {
-    progressWidth.value = withTiming(state.progress, {
-      duration: 600,
-      easing: Easing.bezier(0.25, 0.1, 0.25, 1),
-    })
-  }, [state.progress, progressWidth])
-
-  const progressStyle = useAnimatedStyle(() => ({
-    width: `${progressWidth.value}%`,
-  }))
-
-  // Truncate URL for display
   const displayUrl = state.sourceUrl.length > 40
     ? `${state.sourceUrl.slice(0, 40)}...`
     : state.sourceUrl
 
   return (
-    <View className="flex-1 px-6 pt-8">
-      <View className="flex-row items-center gap-3 mb-8">
-        <PlatformBadge platform={state.platform} size={36} />
-        <Text className="text-sm font-inter text-content-secondary flex-1" numberOfLines={1}>
+    <View style={{ flex: 1, alignItems: 'center', paddingTop: 48 }}>
+      {/* Background gradient glow */}
+      <View
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 300,
+          experimental_backgroundImage:
+            'radial-gradient(circle at 50% 30%, rgba(132,204,22,0.06) 0%, transparent 60%)',
+        }}
+        pointerEvents="none"
+      />
+
+      {/* Hero ring */}
+      <Animated.View entering={FadeIn.duration(300)}>
+        <HeroProgressRing
+          progress={state.progress}
+          platform={state.platform}
+          stage={state.stage}
+        />
+      </Animated.View>
+
+      {/* Stage message + URL */}
+      <View style={{ marginTop: 32, alignItems: 'center', gap: 4, paddingHorizontal: 24 }}>
+        <Text
+          style={{
+            fontSize: 18,
+            fontFamily: 'Inter_600SemiBold',
+            color: '#fafafa',
+            textAlign: 'center',
+          }}
+        >
+          {state.message}
+        </Text>
+        <Text
+          numberOfLines={1}
+          style={{
+            fontSize: 13,
+            fontFamily: 'Inter_400Regular',
+            color: '#71717a',
+            textAlign: 'center',
+          }}
+        >
           {displayUrl}
         </Text>
       </View>
 
-      {/* Progress bar */}
-      <View className="h-2 bg-background-tertiary rounded-full overflow-hidden mb-8">
-        <Animated.View
-          className="h-full bg-brand-accent rounded-full"
-          style={progressStyle}
-        />
-      </View>
-
-      <Text className="text-lg font-inter-semibold text-content-primary mb-4">
-        {state.message}
-      </Text>
-
-      {/* Stage list */}
-      <View className="mb-8">
-        {STAGE_LABELS.map(({ key, label }) => (
+      {/* Stage timeline */}
+      <View style={{ marginTop: 40, alignSelf: 'stretch', paddingHorizontal: 24 }}>
+        {STAGE_LABELS.map(({ key, label }, index) => (
           <StageIndicator
             key={key}
             label={label}
+            index={index}
             status={
               state.stage === 'complete'
                 ? 'completed'
@@ -92,9 +102,18 @@ export const ProcessingStages = ({ state, onCancel }: ProcessingStagesProps) => 
         ))}
       </View>
 
-      <View className="mt-auto pb-4">
-        <Pressable onPress={onCancel} className="items-center py-3">
-          <Text className="text-base font-inter text-content-secondary">Cancel</Text>
+      {/* Cancel button */}
+      <View style={{ marginTop: 'auto', paddingBottom: 16 }}>
+        <Pressable onPress={onCancel} style={{ alignItems: 'center', paddingVertical: 12 }}>
+          <Text
+            style={{
+              fontSize: 16,
+              fontFamily: 'Inter_400Regular',
+              color: '#a1a1aa',
+            }}
+          >
+            Cancel
+          </Text>
         </Pressable>
       </View>
     </View>

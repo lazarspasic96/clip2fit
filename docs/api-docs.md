@@ -115,7 +115,7 @@ Step 5 — Tier 4: New conversion
 
 **Key detail: hash-based dedup.** The `sourceUrlHash` is a SHA-256 of the normalized URL + platform. This means the same video URL always resolves to the same hash, regardless of query params or minor URL variations. Tier 1 checks if the _user_ already has it; Tier 2 checks if _any user_ has already converted it (shared template).
 
-**Key detail: exercise catalog matching.** When Tier 4 triggers a new conversion, the Trigger.dev worker loads the full exercise catalog (~259 entries) and passes it to GPT-4o-mini during extraction. The LLM matches each extracted exercise to the closest catalog entry by name/alias and populates `catalogExerciseId`. This enables global PR tracking across workouts — exercises mapped to the same catalog entry share PR history. Unmatched exercises get `catalogExerciseId = null` and fall back to per-workout PRs.
+**Key detail: exercise catalog matching.** When Tier 4 triggers a new conversion, the Trigger.dev worker loads the full exercise catalog (873 entries) and passes it to GPT-4o-mini during extraction. The LLM matches each extracted exercise to the closest catalog entry by name/alias and populates `catalogExerciseId`. This enables global PR tracking across workouts — exercises mapped to the same catalog entry share PR history. Unmatched exercises get `catalogExerciseId = null` and fall back to per-workout PRs.
 
 ### Deduplication Tiers
 
@@ -1456,112 +1456,190 @@ User long-presses a workout and taps "Remove". The workout disappears from their
 
 ## 13. GET /api/exercises/catalog
 
-Browse the curated exercise catalog (259 exercises across 8 categories). Supports optional text search. The catalog powers global PR tracking — exercises mapped to catalog entries share PR history across all workouts.
+Browse the free-exercise-db catalog with pagination and filters. The catalog powers exercise browsing in mobile and global PR tracking for mapped exercises.
 
 ### Request
 
 ```
 GET /api/exercises/catalog
-GET /api/exercises/catalog?search=bench
+GET /api/exercises/catalog?search=bench&page=1&pageSize=30
+GET /api/exercises/catalog?muscle=chest&level=beginner&category=strength&page=1&pageSize=20
 Authorization: Bearer <token>
 ```
 
 **Query params:**
 
-| Param    | Type     | Required | Description                                               |
-| -------- | -------- | -------- | --------------------------------------------------------- |
-| `search` | `string` | No       | Case-insensitive search against exercise name and aliases |
+| Param       | Type     | Required | Description                                                |
+| ----------- | -------- | -------- | ---------------------------------------------------------- |
+| `search`    | `string` | No       | Case-insensitive search against exercise name and aliases  |
+| `muscle`    | `string` | No       | Filter by `primaryMuscleGroups` JSON array membership      |
+| `equipment` | `string` | No       | Filter by `equipment` JSON array membership                |
+| `level`     | `string` | No       | `beginner` \| `intermediate` \| `expert`                   |
+| `category`  | `string` | No       | free-exercise-db category (`strength`, `stretching`, etc.) |
+| `force`     | `string` | No       | `push` \| `pull` \| `static`                               |
+| `mechanic`  | `string` | No       | `compound` \| `isolation`                                  |
+| `page`      | `number` | No       | 1-based page index. Default `1`                            |
+| `pageSize`  | `number` | No       | Items per page. Default `30`, max `100`                    |
 
 ### How It Works
 
 ```
-Client sends: GET /api/exercises/catalog?search=bench
+Client sends: GET /api/exercises/catalog?search=bench&page=1&pageSize=30
          │
          ▼
 Step 1 — Auth
          │  getAuthUser() → userId
          │
          ▼
-Step 2 — Query
-         │  No search param? → SELECT * FROM exercise_catalog ORDER BY name ASC
-         │  With search?     → WHERE name ILIKE '%bench%'
-         │                       OR aliases::text ILIKE '%bench%'
-         │                     ORDER BY name ASC
+Step 2 — Validate query params
+         │  Zod schema validates filter values and pagination bounds
          │
          ▼
-Step 3 — Return results
-         │  Map each row to response shape
-         │  Return array (full catalog or filtered results)
+Step 3 — Query
+         │  Build dynamic WHERE conditions for search/filters
+         │  ORDER BY name ASC
+         │  LIMIT/OFFSET from page + pageSize
+         │  Run count(*) query for pagination metadata
+         │
+         ▼
+Step 4 — Return paginated response
+         │  Map each row to response shape (includes computed image URLs)
+         │  Return { items, pagination }
 ```
-
-**Key detail: aliases are searched too.** The search queries both `name` and the `aliases` JSONB column (cast to text for ILIKE matching). So searching "flat bench" will match exercises with "Flat Bench Press" in their aliases. Searching "OHP" will match "Overhead Press" which has "OHP" as an alias.
-
-**Key detail: no pagination.** The catalog is small enough (~259 rows) to return in full. No offset/limit needed.
 
 ### Catalog Structure
 
-The catalog contains 259 exercises across 8 categories:
+The catalog now contains 873 exercises from free-exercise-db.
 
-| Category    | Count | Examples                                                  |
-| ----------- | ----- | --------------------------------------------------------- |
-| `chest`     | 31    | Barbell Bench Press, Dumbbell Flyes, Cable Crossover      |
-| `back`      | 32    | Barbell Row, Pull-Up, Lat Pulldown, Face Pull             |
-| `legs`      | 53    | Barbell Squat, Romanian Deadlift, Leg Press, Hip Thrust   |
-| `shoulders` | 30    | Overhead Press, Lateral Raise, Rear Delt Fly              |
-| `arms`      | 37    | Barbell Curl, Hammer Curl, Tricep Pushdown, Skull Crusher |
-| `core`      | 27    | Plank, Hanging Leg Raise, Cable Woodchop, Ab Rollout      |
-| `cardio`    | 21    | Running, Jump Rope, Burpees, Battle Ropes                 |
-| `full_body` | 28    | Clean and Press, Turkish Get-Up, Kettlebell Swing         |
+Image URLs are computed from `freeExerciseDbId`:
+
+- Base URL: `EXERCISE_IMAGE_BASE_URL` env var
+- Default: `https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises`
+- Start image: `{base}/{freeExerciseDbId}/0.jpg`
+- End image: `{base}/{freeExerciseDbId}/1.jpg`
 
 Each exercise includes:
 
-- **name** — Proper exercise name (unique across catalog)
-- **aliases** — Common alternative names (e.g., "Bench Press" → "Flat Bench", "Barbell Press")
-- **primaryMuscleGroups** — Specific muscles worked (e.g., "quadriceps", "anterior deltoids", "rectus abdominis")
-- **equipment** — Required equipment (e.g., "barbell", "dumbbell", "cable machine", "bench")
-- **isBodyweight** — `true` only for exercises using no external weight
-- **category** — One of the 8 categories above
+- **freeExerciseDbId** — Stable source ID from free-exercise-db
+- **name** — Exercise display name
+- **aliases** — Generated alias variants for search/matching
+- **primaryMuscleGroups** / **secondaryMuscleGroups** — Muscle targeting data
+- **equipment** — Required equipment as string array
+- **isBodyweight** — Derived from free-exercise-db equipment
+- **category** — free-exercise-db activity category
+- **instructions** — Step list (not included in list response)
+- **force**, **level**, **mechanic** — Additional metadata fields
 
 ### How the Catalog Integrates
 
-1. **During conversion**: The Trigger.dev worker loads the full catalog and passes it to GPT-4o-mini. The LLM matches each extracted exercise to the closest catalog entry and sets `catalogExerciseId`.
+1. **During conversion**: The Trigger.dev worker loads catalog names/aliases for `catalogExerciseId` matching.
 2. **During session logging**: Exercises with `catalogExerciseId` get **global PRs** (compared across all workouts). Unmapped exercises fall back to per-workout PRs.
 3. **During PATCH**: Clients can manually set `catalogExerciseId` on exercises when editing a workout.
 
 ### Response
 
-**200 — Catalog entries**
+**200 — Paginated catalog**
 
 ```json
-[
-  {
-    "id": "uuid",
-    "name": "Barbell Bench Press",
-    "aliases": ["Bench Press", "Flat Bench Press", "Flat Barbell Press"],
-    "primaryMuscleGroups": ["chest", "triceps", "anterior deltoids"],
-    "equipment": ["barbell", "bench"],
-    "isBodyweight": false,
-    "category": "chest"
+{
+  "items": [
+    {
+      "id": "uuid",
+      "freeExerciseDbId": "Barbell_Curl",
+      "name": "Barbell Curl",
+      "aliases": ["BB Curl"],
+      "primaryMuscleGroups": ["biceps"],
+      "secondaryMuscleGroups": ["forearms"],
+      "equipment": ["barbell"],
+      "isBodyweight": false,
+      "category": "strength",
+      "force": "pull",
+      "level": "beginner",
+      "mechanic": "isolation",
+      "images": {
+        "start": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Curl/0.jpg",
+        "end": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Curl/1.jpg"
+      }
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "pageSize": 30,
+    "total": 873,
+    "totalPages": 30,
+    "hasNextPage": true
   }
-]
+}
 ```
-
-Returns empty array `[]` if no matches found. Returns full catalog (259 items) when no `search` param is provided.
 
 ### Logging
 
 Tag: `[clip2fit:catalog]`
 
-Logs: userId, search term, result count.
+Logs: userId, filters, page/pageSize, total, returned count.
 
 ### Client Use Case
 
 Used for:
 
-1. **Exercise picker** — browse/search catalog when building or editing a workout
-2. **Catalog matching** — map user-entered exercise names to catalog entries for global PR tracking
-3. **Exercise details** — show muscle groups, equipment, and category in the UI
-4. **Autocomplete** — power a search-as-you-type exercise selector using the `?search=` param
+1. **Exercise browser** — list, filter, and paginate exercises
+2. **Exercise picker** — map workout exercises to catalog entries
+3. **Catalog search** — search by name or aliases
+
+### GET /api/exercises/catalog/[id]
+
+Fetch full details for one catalog exercise.
+
+**Request**
+
+```
+GET /api/exercises/catalog/{catalogExerciseId}
+Authorization: Bearer <token>
+```
+
+**Path params**
+
+| Param | Type   | Required | Description           |
+| ----- | ------ | -------- | --------------------- |
+| `id`  | `uuid` | Yes      | Catalog exercise UUID |
+
+**Response (200)**
+
+```json
+{
+  "id": "uuid",
+  "freeExerciseDbId": "Barbell_Curl",
+  "name": "Barbell Curl",
+  "aliases": ["BB Curl"],
+  "primaryMuscleGroups": ["biceps"],
+  "secondaryMuscleGroups": ["forearms"],
+  "equipment": ["barbell"],
+  "isBodyweight": false,
+  "category": "strength",
+  "instructions": ["Stand up straight while holding a barbell..."],
+  "force": "pull",
+  "level": "beginner",
+  "mechanic": "isolation",
+  "images": {
+    "start": "https://.../0.jpg",
+    "end": "https://.../1.jpg"
+  }
+}
+```
+
+**Errors**
+
+```json
+{ "error": "Invalid catalog exercise ID" }  // 400
+{ "error": "Exercise not found" }           // 404
+{ "error": "Unauthorized" }                 // 401
+```
+
+### Logging
+
+Tag: `[clip2fit:catalog]`
+
+Logs: userId, catalogExerciseId, errors.
 
 ---
 
@@ -1577,23 +1655,23 @@ Dashboard overview of training activity: session counts, volume, streaks, top ex
 ### Request
 
 ```
-GET /api/stats/summary?period=90d
-GET /api/stats/summary?period=90d&tz=America/New_York
+GET /api/stats/summary?period=7d
+GET /api/stats/summary?period=7d&tz=America/New_York
 Authorization: Bearer <token>
 ```
 
 **Query params:**
 
-| Param      | Type     | Required | Default | Validation                                     |
-| ---------- | -------- | -------- | ------- | ---------------------------------------------- |
-| `period`   | `string` | No       | `90d`   | `30d` \| `90d` \| `6m` \| `1y` \| `all`        |
-| `tz`       | `string` | No       | —       | Valid IANA timezone                            |
-| `timezone` | `string` | No       | —       | Valid IANA timezone (legacy alias, deprecated) |
+| Param      | Type     | Required | Default | Validation                                      |
+| ---------- | -------- | -------- | ------- | ----------------------------------------------- |
+| `period`   | `string` | No       | `90d`   | `7d` \| `30d` \| `90d` \| `6m` \| `1y` \| `all` |
+| `tz`       | `string` | No       | —       | Valid IANA timezone                             |
+| `timezone` | `string` | No       | —       | Valid IANA timezone (legacy alias, deprecated)  |
 
 ### How It Works
 
 ```
-Client sends: GET /api/stats/summary?period=90d
+Client sends: GET /api/stats/summary?period=7d
          │
          ▼
 Step 1 — Auth + Validate
@@ -1608,7 +1686,7 @@ Step 1 — Auth + Validate
          │
          ▼
 Step 2 — Convert period to date range
-         │  periodToDateRange("90d") → { from: 90 days ago, to: now }
+         │  periodToDateRange("7d") → { from: 7 days ago, to: now }
          │
          ▼
 Step 3 — Run 5 parallel queries
@@ -1801,8 +1879,8 @@ PR timeline for a single exercise — chart-ready data with running PR detection
 ### Request
 
 ```
-GET /api/stats/prs/:catalogExerciseId/history?period=1y
-GET /api/stats/prs/:catalogExerciseId/history?period=1y&tz=America/New_York
+GET /api/stats/prs/:catalogExerciseId/history?period=7d
+GET /api/stats/prs/:catalogExerciseId/history?period=7d&tz=America/New_York
 Authorization: Bearer <token>
 ```
 
@@ -1814,11 +1892,11 @@ Authorization: Bearer <token>
 
 **Query params:**
 
-| Param      | Type     | Required | Default | Validation                                     |
-| ---------- | -------- | -------- | ------- | ---------------------------------------------- |
-| `period`   | `string` | No       | `1y`    | `30d` \| `90d` \| `6m` \| `1y` \| `all`        |
-| `tz`       | `string` | No       | —       | Valid IANA timezone                            |
-| `timezone` | `string` | No       | —       | Valid IANA timezone (legacy alias, deprecated) |
+| Param      | Type     | Required | Default | Validation                                      |
+| ---------- | -------- | -------- | ------- | ----------------------------------------------- |
+| `period`   | `string` | No       | `1y`    | `7d` \| `30d` \| `90d` \| `6m` \| `1y` \| `all` |
+| `tz`       | `string` | No       | —       | Valid IANA timezone                             |
+| `timezone` | `string` | No       | —       | Valid IANA timezone (legacy alias, deprecated)  |
 
 ### How It Works
 
@@ -1892,20 +1970,20 @@ Paginated session history with per-session metrics and best session across the e
 ### Request
 
 ```
-GET /api/stats/sessions?period=90d&limit=50&offset=0
-GET /api/stats/sessions?period=90d&tz=America/New_York&limit=50&offset=0
+GET /api/stats/sessions?period=7d&limit=50&offset=0
+GET /api/stats/sessions?period=7d&tz=America/New_York&limit=50&offset=0
 Authorization: Bearer <token>
 ```
 
 **Query params:**
 
-| Param      | Type     | Required | Default | Validation                                     |
-| ---------- | -------- | -------- | ------- | ---------------------------------------------- |
-| `period`   | `string` | No       | `90d`   | `30d` \| `90d` \| `6m` \| `1y` \| `all`        |
-| `tz`       | `string` | No       | —       | Valid IANA timezone                            |
-| `timezone` | `string` | No       | —       | Valid IANA timezone (legacy alias, deprecated) |
-| `limit`    | `number` | No       | `50`    | Integer, 1-100                                 |
-| `offset`   | `number` | No       | `0`     | Integer, >= 0                                  |
+| Param      | Type     | Required | Default | Validation                                      |
+| ---------- | -------- | -------- | ------- | ----------------------------------------------- |
+| `period`   | `string` | No       | `90d`   | `7d` \| `30d` \| `90d` \| `6m` \| `1y` \| `all` |
+| `tz`       | `string` | No       | —       | Valid IANA timezone                             |
+| `timezone` | `string` | No       | —       | Valid IANA timezone (legacy alias, deprecated)  |
+| `limit`    | `number` | No       | `50`    | Integer, 1-100                                  |
+| `offset`   | `number` | No       | `0`     | Integer, >= 0                                   |
 
 ### How It Works
 
@@ -1961,3 +2039,137 @@ Logs: userId, period, session count, limit, offset, timezone_used, timezone_sour
 ### Client Use Case
 
 Scrollable "Session History" list. Each card shows date, workout name, duration, volume. best_session highlighted with badge. Infinite scroll via offset.
+
+---
+
+## 18. GET /api/stats/heatmap
+
+GitHub-style daily activity heatmap with workout category coloring based on muscle group classification.
+
+**Date field contract for this route**
+
+- UTC event instants: `period.from`, `period.to`
+- Calendar artifacts (timezone-derived): `days[].date`
+
+### Request
+
+```
+GET /api/stats/heatmap?period=1y
+GET /api/stats/heatmap?period=1y&tz=America/New_York
+Authorization: Bearer <token>
+```
+
+**Query params:**
+
+| Param      | Type     | Required | Default | Validation                                      |
+| ---------- | -------- | -------- | ------- | ----------------------------------------------- |
+| `period`   | `string` | No       | `1y`    | `7d` \| `30d` \| `90d` \| `6m` \| `1y` \| `all` |
+| `tz`       | `string` | No       | —       | Valid IANA timezone                             |
+| `timezone` | `string` | No       | —       | Valid IANA timezone (legacy alias, deprecated)  |
+
+### Workout Category Classification
+
+Muscles from the exercise catalog are mapped to high-level workout categories:
+
+| Muscle                                                       | Category    |
+| ------------------------------------------------------------ | ----------- |
+| chest                                                        | `chest`     |
+| lats, middle back, lower back, traps                         | `back`      |
+| shoulders, neck                                              | `shoulders` |
+| biceps, triceps, forearms                                    | `arms`      |
+| quadriceps, hamstrings, glutes, calves, abductors, adductors | `legs`      |
+| abdominals                                                   | `core`      |
+
+**Classification logic:** If one category has >50% of a session's muscle groups, that's the category. Otherwise → `full_body`.
+
+Each day's `categories` array contains the deduplicated set of categories across all sessions that day.
+
+### How It Works
+
+```
+Client sends: GET /api/stats/heatmap?period=1y
+         │
+         ▼
+Step 1 — Auth + Validate
+         │  getAuthUser() → userId
+         │  Zod validates period enum
+         │  Resolve timezone precedence
+         │
+         ▼
+Step 2 — Convert period to date range
+         │  periodToDateRange("1y") → { from: 1 year ago, to: now }
+         │
+         ▼
+Step 3 — Run 2 parallel queries
+         │  Q1: Day counts (sessions per calendar day, timezone-aware)
+         │  Q2: Per-session muscle groups (for classification)
+         │
+         ▼
+Step 4 — Post-processing (JS)
+         │  Classify each session → WorkoutCategory
+         │  Group categories by day
+         │  Merge Q1 counts with Q2 classifications
+         │  Days in Q1 but not Q2 → categories = []
+         │
+         ▼
+Step 5 — Return formatted response
+```
+
+**Key detail: only active days returned.** Days with zero sessions are omitted. The client fills blanks as grey/empty cells.
+
+**Key detail: both completed and partial sessions count** toward `count`.
+
+**Key detail: sessions with no logged exercises** appear in Q1 (have a count) but not Q2 (no muscles to classify), so their categories are `[]`.
+
+### Response
+
+**200 — Heatmap data**
+
+```json
+{
+  "meta": {
+    "timezone_used": "America/New_York",
+    "timezone_source": "query_tz"
+  },
+  "period": {
+    "from": "2025-02-21T00:00:00.000Z",
+    "to": "2026-02-21T00:00:00.000Z",
+    "label": "1y"
+  },
+  "days": [
+    { "date": "2025-03-15", "count": 1, "categories": ["chest"] },
+    { "date": "2025-03-17", "count": 2, "categories": ["back", "legs"] },
+    { "date": "2025-03-20", "count": 1, "categories": [] }
+  ],
+  "total_sessions": 45,
+  "active_days": 38
+}
+```
+
+**Empty state:**
+
+```json
+{
+  "meta": { "timezone_used": "Etc/UTC", "timezone_source": "default_utc" },
+  "period": { "from": "...", "to": "...", "label": "1y" },
+  "days": [],
+  "total_sessions": 0,
+  "active_days": 0
+}
+```
+
+**400 — Invalid timezone query**
+
+```json
+{ "error": "Validation failed", "details": { "tz": ["Invalid IANA timezone"] } }
+```
+
+### Logging
+
+Tag: `[clip2fit:stats]`
+
+Logs: userId, period, totalSessions, activeDays, timezone_used, timezone_source.
+
+### Client Use Case
+
+Renders a GitHub-style contribution heatmap on the stats screen. Each cell represents a calendar day. Cell intensity is based on `count`. Cell color is derived from `categories` — single-category days use the category color; multi-category or `full_body` days use a neutral/mixed color. Empty days (not in the response) are rendered as grey.

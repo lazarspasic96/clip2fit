@@ -1,9 +1,9 @@
 import { ActivityIndicator, ScrollView, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
+import { ActivityHeatmap } from '@/components/home/activity-heatmap'
 import { BottomActionButtons } from '@/components/home/bottom-action-buttons'
 import { CompletedWorkoutCard } from '@/components/home/completed-workout-card'
-import { CurrentStreakCard } from '@/components/home/current-streak-card'
 import { EmptyWorkoutCard } from '@/components/home/empty-workout-card'
 import { HomeHeader } from '@/components/home/home-header'
 import { ImportFromSocialsCard } from '@/components/home/import-from-socials-card'
@@ -27,21 +27,13 @@ const HomeScreen = () => {
   const todaysWorkout = todayEntry.workout
 
   const isCompletedToday =
-    completedSession !== null &&
-    todaysWorkout !== null &&
-    completedSession.plan.id === todaysWorkout.id
+    completedSession !== null && todaysWorkout !== null && completedSession.plan.id === todaysWorkout.id
 
-  const weekDays = buildWeekDaysFromSchedule(
-    schedule,
-    completedSession?.plan.id ?? null,
-  )
+  const weekDays = buildWeekDaysFromSchedule(schedule, completedSession?.plan.id ?? null)
 
   const subtitle = hasWorkouts
     ? 'Keep the momentum going!'
     : 'Turn your favorite influencer workouts into real training sessions.'
-  const streakText = hasWorkouts
-    ? `${workouts.length} workout${workouts.length === 1 ? '' : 's'} saved`
-    : 'No data. Start collecting!'
 
   if (loading) {
     return (
@@ -56,7 +48,7 @@ const HomeScreen = () => {
       <ScrollView
         contentContainerStyle={{
           paddingTop: insets.top + 12,
-          paddingBottom: 16,
+          paddingBottom: insets.bottom + 24,
           gap: 20,
         }}
         showsVerticalScrollIndicator={false}
@@ -72,10 +64,10 @@ const HomeScreen = () => {
         ) : (
           <RestDayCard />
         )}
-
-        <WeeklyTrainingPlan days={weekDays} />
-        <CurrentStreakCard text={streakText} />
         <ImportFromSocialsCard />
+        <WeeklyTrainingPlan days={weekDays} />
+        <ActivityHeatmap />
+
         <BottomActionButtons />
       </ScrollView>
     </View>

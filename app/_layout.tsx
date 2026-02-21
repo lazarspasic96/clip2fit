@@ -15,7 +15,9 @@ import 'react-native-reanimated'
 import '../global.css'
 
 import { AuthProvider, useAuth } from '@/contexts/auth-context'
+import { ConversionProvider } from '@/contexts/conversion-context'
 import { AppQueryClientProvider } from '@/contexts/query-client'
+import { FloatingConversionPill } from '@/components/processing/floating-conversion-pill'
 
 SplashScreen.preventAutoHideAsync()
 SystemUI.setBackgroundColorAsync('#09090b')
@@ -113,7 +115,10 @@ const RootLayout = () => {
           <KeyboardProvider>
             <BottomSheetModalProvider>
               <AuthProvider>
-                <RootNavigator />
+                <ConversionProvider>
+                  <RootNavigator />
+                  <FloatingConversionPill />
+                </ConversionProvider>
               </AuthProvider>
             </BottomSheetModalProvider>
           </KeyboardProvider>

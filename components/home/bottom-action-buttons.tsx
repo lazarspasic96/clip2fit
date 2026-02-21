@@ -18,7 +18,7 @@ export const BottomActionButtons = () => {
       </Pressable>
 
       <Pressable
-        onPress={() => console.log('Import manually')}
+        onPress={() => router.push('/(protected)/exercise-catalog' as never)}
         className="flex-1 bg-background-tertiary rounded-2xl p-4 items-center gap-2"
       >
         <Download size={24} color={Colors.brand.accent} pointerEvents="none" />
