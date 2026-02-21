@@ -23,6 +23,7 @@ export interface WorkoutExercise {
   notes: string | null
   sourceVideoUrl: string | null
   isBodyweight: boolean
+  catalogExerciseId: string | null
 }
 
 export interface WorkoutPlan {

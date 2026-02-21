@@ -23,36 +23,23 @@ const METHOD_COLORS: Record<string, string> = {
 
 const logRequest = (method: string, path: string, body?: unknown) => {
   const icon = METHOD_COLORS[method] ?? '⚪'
-  console.log(
-    `\n${icon} ━━━ ${method} ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
-    `\n📍 ${API_BASE_URL}${path}`,
-    body !== undefined ? `\n📦 Body:\n${JSON.stringify(body, null, 2)}` : '',
-  )
+  console.log(`${icon} ${method} → ${path}`)
+  if (body !== undefined) {
+    console.log('📦 Body:', body)
+  }
 }
 
-const logResponse = (method: string, path: string, status: number, duration: number, data: unknown) => {
+const logResponse = (_method: string, path: string, status: number, duration: number, data: unknown) => {
   const ok = status >= 200 && status < 300
   const icon = ok ? '✅' : '❌'
-  const statusLabel = ok ? 'SUCCESS' : 'FAILED'
-  console.log(
-    `\n${icon} ━━━ ${method} ${statusLabel} ━━━━━━━━━━━━━━━━━━━━`,
-    `\n📍 ${API_BASE_URL}${path}`,
-    `\n📊 Status: ${status} | ⏱️ ${duration}ms`,
-    `\n📄 Response:\n${JSON.stringify(data, null, 2)}`,
-    `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`,
-  )
+  console.log(`${icon} ${status} ${path} (${duration}ms)`)
+  console.log('📄 Response:', data)
 }
 
-const logError = (method: string, path: string, duration: number, error: unknown) => {
-  const message = error instanceof Error ? error.message : String(error)
+const logError = (_method: string, path: string, duration: number, error: unknown) => {
   const status = error instanceof ApiError ? error.status : 'N/A'
-  console.log(
-    `\n💥 ━━━ ${method} ERROR ━━━━━━━━━━━━━━━━━━━━━━━`,
-    `\n📍 ${API_BASE_URL}${path}`,
-    `\n📊 Status: ${status} | ⏱️ ${duration}ms`,
-    `\n🚨 ${message}`,
-    `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`,
-  )
+  console.error(`💥 ${status} ${path} (${duration}ms)`)
+  console.error('🚨 Error:', error)
 }
 
 const maybeLogTimezoneResolution = (path: string, data: unknown) => {

@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { queryKeys } from '@/constants/query-keys'
 import type { HeatmapData } from '@/types/heatmap'
 import { mapHeatmapResponse } from '@/types/heatmap'
-import { apiGet, ApiError } from '@/utils/api'
+import { ApiError, apiGet } from '@/utils/api'
 
 interface HeatmapQueryResult {
   days: HeatmapData['days']
@@ -20,23 +20,7 @@ export const useHeatmap = (period = '1y'): HeatmapQueryResult => {
     staleTime: 5 * 60 * 1000,
   })
 
-  if (query.data !== undefined) {
-    console.log('[use-heatmap] raw API response:', JSON.stringify(query.data, null, 2))
-  }
-  if (query.error !== undefined && query.error !== null) {
-    console.log('[use-heatmap] query error:', query.error)
-  }
-
   const mapped = query.data !== undefined ? mapHeatmapResponse(query.data) : null
-
-  if (mapped !== null) {
-    console.log('[use-heatmap] mapped result:', JSON.stringify({
-      totalSessions: mapped.totalSessions,
-      activeDays: mapped.activeDays,
-      daysCount: mapped.days.length,
-      days: mapped.days,
-    }, null, 2))
-  }
 
   return {
     days: mapped?.days ?? [],

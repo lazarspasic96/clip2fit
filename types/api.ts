@@ -14,6 +14,7 @@ export interface ApiExercise {
   order: number
   muscleGroups: string[]
   isBodyweight: boolean
+  catalogExerciseId: string | null
 }
 
 export interface ApiWorkout {
@@ -153,6 +154,7 @@ const mapExercise = (api: ApiExercise): WorkoutExercise => ({
   notes: api.notes,
   sourceVideoUrl: null,
   isBodyweight: api.isBodyweight,
+  catalogExerciseId: api.catalogExerciseId ?? null,
 })
 
 const VALID_PLATFORMS = ['tiktok', 'instagram', 'youtube', 'facebook', 'twitter'] as const
