@@ -77,8 +77,7 @@ export const UrlInputSection = ({ onSubmit, errorMessage, initialUrl }: UrlInput
         </View>
         <Pressable
           onPress={handlePaste}
-          className="items-center justify-center bg-background-secondary rounded-xl border border-border-primary"
-          style={{ width: 52, height: 52 }}
+          className="items-center justify-center bg-background-secondary rounded-xl border border-border-primary w-[52px] h-[52px]"
           hitSlop={8}
         >
           <ClipboardPaste size={22} color={Colors.content.secondary} pointerEvents="none" />

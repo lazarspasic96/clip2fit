@@ -23,16 +23,7 @@ import { useDeleteWorkoutMutation, useWorkoutsQuery } from '@/hooks/use-api'
 const DELETE_ACTION_WIDTH = 80
 
 const DeleteAction = () => (
-  <View
-    className="items-center justify-center"
-    style={{
-      width: DELETE_ACTION_WIDTH,
-      height: '100%',
-      backgroundColor: '#dc2626',
-      borderTopRightRadius: 16,
-      borderBottomRightRadius: 16,
-    }}
-  >
+  <View className="items-center justify-center w-[80px] h-full bg-red-600 rounded-tr-2xl rounded-br-2xl">
     <Trash2 size={20} color="#fff" pointerEvents="none" />
     <Text className="text-xs font-inter-semibold text-white mt-1">Delete</Text>
   </View>
@@ -63,18 +54,8 @@ const NewWorkoutHighlight = ({ children }: { children: React.ReactNode }) => {
     <View>
       {children}
       <Animated.View
-        style={[
-          {
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            borderRadius: 16,
-            pointerEvents: 'none',
-          },
-          animatedStyle,
-        ]}
+        className="absolute inset-0 rounded-2xl pointer-events-none"
+        style={animatedStyle}
       />
     </View>
   )

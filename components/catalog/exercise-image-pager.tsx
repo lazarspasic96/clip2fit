@@ -59,22 +59,14 @@ export const ExerciseImagePager = ({ images }: ExerciseImagePagerProps) => {
         />
       </ScrollView>
 
-      <View className="flex-row items-center justify-center mt-3" style={{ gap: 8 }}>
+      <View className="flex-row items-center justify-center mt-3 gap-2">
         <View
-          className="rounded-full"
-          style={{
-            width: 8,
-            height: 8,
-            backgroundColor: activeIndex === 0 ? Colors.content.primary : Colors.content.tertiary,
-          }}
+          className="w-2 h-2 rounded-full"
+          style={{ backgroundColor: activeIndex === 0 ? Colors.content.primary : Colors.content.tertiary }}
         />
         <View
-          className="rounded-full"
-          style={{
-            width: 8,
-            height: 8,
-            backgroundColor: activeIndex === 1 ? Colors.content.primary : Colors.content.tertiary,
-          }}
+          className="w-2 h-2 rounded-full"
+          style={{ backgroundColor: activeIndex === 1 ? Colors.content.primary : Colors.content.tertiary }}
         />
       </View>
     </View>

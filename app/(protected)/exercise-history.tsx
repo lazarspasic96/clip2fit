@@ -80,18 +80,18 @@ const HistoryChart = ({ points, width }: HistoryChartProps) => {
   return (
     <View className="bg-background-primary rounded-2xl p-2">
       <Svg width={width} height={chartHeight}>
-        <Line x1={chartPadding} y1={chartPadding} x2={chartPadding} y2={chartHeight - chartPadding} stroke="#3f3f46" strokeWidth={1} />
+        <Line x1={chartPadding} y1={chartPadding} x2={chartPadding} y2={chartHeight - chartPadding} stroke={Colors.border.secondary} strokeWidth={1} />
         <Line
           x1={chartPadding}
           y1={chartHeight - chartPadding}
           x2={width - chartPadding}
           y2={chartHeight - chartPadding}
-          stroke="#3f3f46"
+          stroke={Colors.border.secondary}
           strokeWidth={1}
         />
-        <Polyline points={polylinePoints} fill="none" stroke="#84cc16" strokeWidth={3} strokeLinejoin="round" strokeLinecap="round" />
+        <Polyline points={polylinePoints} fill="none" stroke={Colors.brand.accent} strokeWidth={3} strokeLinejoin="round" strokeLinecap="round" />
         {chartPoints.map(({ x, y, point }) => (
-          <Circle key={point.sessionId} cx={x} cy={y} r={4.5} fill="#bef264" />
+          <Circle key={point.sessionId} cx={x} cy={y} r={4.5} fill={Colors.brand.logo} />
         ))}
       </Svg>
       <View className="flex-row justify-between px-2">
@@ -125,10 +125,9 @@ const ExerciseHistoryScreen = () => {
   return (
     <View className="flex-1 bg-background-primary">
       <View
-        className="px-5 gap-4"
+        className="px-5 gap-4 pb-3"
         style={{
           paddingTop: insets.top + 8,
-          paddingBottom: 12,
         }}
       >
         <View className="flex-row items-center justify-between">
@@ -152,10 +151,9 @@ const ExerciseHistoryScreen = () => {
 
       <ScrollView
         contentInsetAdjustmentBehavior="never"
+        contentContainerClassName="px-5 gap-4"
         contentContainerStyle={{
-          paddingHorizontal: 20,
           paddingBottom: Math.max(insets.bottom, 16),
-          gap: 16,
         }}
         showsVerticalScrollIndicator={false}
       >

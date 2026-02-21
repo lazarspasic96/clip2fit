@@ -63,7 +63,7 @@ export const EditFitnessGoalSheet = ({
         <BottomSheetBackdrop {...props} opacity={0.6} pressBehavior="close" appearsOnIndex={0} disappearsOnIndex={-1} />
       )}
     >
-      <BottomSheetView style={{ paddingHorizontal: 24, paddingBottom: 32 }}>
+      <BottomSheetView className="px-6 pb-8">
         <Text className="text-lg font-inter-bold text-content-primary mb-6">Fitness Goal</Text>
 
         <RadioGroup options={FITNESS_GOALS} value={goal} onChange={setGoal} />

@@ -14,6 +14,7 @@ export const Colors = {
     primary: '#fafafa',
     secondary: '#a1a1aa',
     tertiary: '#71717a',
+    buttonPrimary: '#18181b',
   },
   brand: {
     accent: '#84cc16',
@@ -40,5 +41,34 @@ export const Colors = {
     scheduled: '#bef264',
     future: '#a1a1aa',
     rest: '#0284c7',
+  },
+  difficulty: {
+    beginner: '#22c55e',
+    intermediate: '#eab308',
+    advanced: '#ef4444',
+    expert: '#ef4444',
+  },
+  level: {
+    beginner: '#4ade80',
+    intermediate: '#facc15',
+    expert: '#f87171',
+  },
+  destructive: '#dc2626',
+  chart: {
+    lime: '#84cc16',
+    cyan: '#22d3ee',
+    blue: '#60a5fa',
+    amber: '#f59e0b',
+    pink: '#f472b6',
+    purple: '#a78bfa',
+  },
+  heatmap: {
+    chest: '#f97316',
+    back: '#06b6d4',
+    shoulders: '#8b5cf6',
+    arms: '#ec4899',
+    legs: '#3b82f6',
+    core: '#eab308',
+    fullBody: '#71717a',
   },
 } as const

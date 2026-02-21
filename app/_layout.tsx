@@ -18,13 +18,14 @@ import { AuthProvider, useAuth } from '@/contexts/auth-context'
 import { ConversionProvider } from '@/contexts/conversion-context'
 import { AppQueryClientProvider } from '@/contexts/query-client'
 import { FloatingConversionPill } from '@/components/processing/floating-conversion-pill'
+import { Colors } from '@/constants/colors'
 
 SplashScreen.preventAutoHideAsync()
-SystemUI.setBackgroundColorAsync('#09090b')
+SystemUI.setBackgroundColorAsync(Colors.background.primary)
 
 const AppDarkTheme = {
   ...DarkTheme,
-  colors: { ...DarkTheme.colors, background: '#09090b', card: '#09090b' },
+  colors: { ...DarkTheme.colors, background: Colors.background.primary, card: Colors.background.primary },
 }
 
 export const unstable_settings = {
@@ -103,7 +104,7 @@ const RootLayout = () => {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#09090b' }}>
+    <GestureHandlerRootView className="flex-1 bg-background-primary">
       <AppQueryClientProvider>
         <ShareIntentProvider
           options={{

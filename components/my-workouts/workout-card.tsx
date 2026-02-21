@@ -6,30 +6,17 @@ import { PlatformBadge } from '@/components/processing/platform-badge'
 import { Colors } from '@/constants/colors'
 import type { WorkoutPlan } from '@/types/workout'
 
-const DIFFICULTY_COLORS: Record<string, string> = {
-  beginner: '#22c55e',
-  intermediate: '#eab308',
-  advanced: '#ef4444',
-}
-
 interface WorkoutCardProps {
   workout: WorkoutPlan
 }
 
 export const WorkoutCard = ({ workout }: WorkoutCardProps) => {
-  const difficultyColor = DIFFICULTY_COLORS[workout.difficulty] ?? Colors.content.tertiary
+  const difficultyColor = Colors.difficulty[workout.difficulty as keyof typeof Colors.difficulty] ?? Colors.content.tertiary
 
   return (
-    <View style={{ borderRadius: 16, overflow: 'hidden', backgroundColor: Colors.background.secondary }} className="p-4 flex-row">
+    <View className="rounded-2xl overflow-hidden bg-background-secondary p-4 flex-row">
       {/* Left accent bar */}
-      <View
-        style={{
-          width: 3,
-          borderRadius: 2,
-          backgroundColor: Colors.brand.accent,
-          marginRight: 12,
-        }}
-      />
+      <View className="w-[3px] rounded-sm bg-brand-accent mr-3" />
 
       {/* Content */}
       <View className="flex-1 mr-3">

@@ -12,7 +12,7 @@ export const EmptyWorkoutCard = () => {
       onPress={() => router.push('/(protected)/add-workout')}
       className="mx-5 bg-background-tertiary rounded-2xl p-4 flex-row items-center gap-4"
     >
-      <View className="items-center justify-center rounded-full bg-brand-accent" style={{ width: 44, height: 44 }}>
+      <View className="w-11 h-11 items-center justify-center rounded-full bg-brand-accent">
         <Plus size={22} color={Colors.background.primary} strokeWidth={2.5} pointerEvents="none" />
       </View>
 

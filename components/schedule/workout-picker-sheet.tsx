@@ -47,7 +47,7 @@ export const WorkoutPickerSheet = forwardRef<BottomSheetModal, WorkoutPickerShee
 
     const headerComponent = (
       <View>
-        <View style={{ paddingHorizontal: 20, paddingTop: 8, paddingBottom: 12 }}>
+        <View className="px-5 pt-2 pb-3">
           {/* Header */}
           <View className="flex-row items-center justify-between mb-3">
             <Text className="text-lg font-inter-bold text-content-primary">Select Workout</Text>
@@ -68,7 +68,7 @@ export const WorkoutPickerSheet = forwardRef<BottomSheetModal, WorkoutPickerShee
         </View>
 
         {/* Divider — full width, outside the padded container */}
-        <View style={{ height: 1, backgroundColor: Colors.border.primary }} />
+        <View className="h-px bg-border-primary" />
       </View>
     )
 

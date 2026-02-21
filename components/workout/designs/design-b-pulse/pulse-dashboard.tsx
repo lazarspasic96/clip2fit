@@ -60,7 +60,7 @@ export const PulseDashboard = ({ onBack, onFinish, isEditMode }: DashboardProps)
         <Animated.View
           key={currentExercise.id}
           entering={FadeIn.duration(200)}
-          style={{ alignItems: 'center', marginTop: 20 }}
+          className="items-center mt-5"
         >
           <View className="flex-row items-center px-4">
             <Pressable
@@ -88,7 +88,7 @@ export const PulseDashboard = ({ onBack, onFinish, isEditMode }: DashboardProps)
             </Pressable>
           </View>
 
-          <View className="px-4 mt-2" style={{ width: '100%' }}>
+          <View className="px-4 mt-2 w-full">
             <SegmentedProgressBar activeIndex={index} total={exercises.length} onPress={navigateExercise} />
           </View>
           <Text className="text-sm font-inter text-content-tertiary my-3">

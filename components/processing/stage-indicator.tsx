@@ -72,7 +72,7 @@ export const StageIndicator = ({ label, status, index }: StageIndicatorProps) =>
           isActive ? { backgroundColor: 'rgba(132,204,22,0.06)' } : undefined,
         ]}
       >
-        <View style={{ width: 24, alignItems: 'center' }}>
+        <View className="w-6 items-center">
           {status === 'completed' && (
             <Animated.View entering={FadeIn.duration(200)}>
               <CircleCheck size={ICON_SIZE} color={Colors.brand.accent} pointerEvents="none" />

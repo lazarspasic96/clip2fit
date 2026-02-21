@@ -58,7 +58,7 @@ export const ConfirmationSheet = ({
         <BottomSheetBackdrop {...props} opacity={0.6} pressBehavior="close" appearsOnIndex={0} disappearsOnIndex={-1} />
       )}
     >
-      <BottomSheetView style={{ paddingHorizontal: 24, paddingBottom: 32, paddingTop: 8 }}>
+      <BottomSheetView className="px-6 pb-8 pt-2">
         <Text className="text-lg font-inter-bold text-content-primary text-center">{title}</Text>
         <Text className="text-sm font-inter text-content-secondary text-center mt-2">{description}</Text>
 

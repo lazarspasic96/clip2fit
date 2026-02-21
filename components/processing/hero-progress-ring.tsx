@@ -41,7 +41,6 @@ export const HeroProgressRing = ({ progress, platform, stage }: HeroProgressRing
     }),
   }))
 
-  // Subtle scale pulse + haptic on stage transitions
   useEffect(() => {
     if (stage === prevStageRef.current) return
     prevStageRef.current = stage
@@ -79,7 +78,7 @@ export const HeroProgressRing = ({ progress, platform, stage }: HeroProgressRing
         pointerEvents="none"
       />
 
-      <Svg width={SIZE} height={SIZE} style={{ position: 'absolute' }}>
+      <Svg width={SIZE} height={SIZE} className="absolute">
         <Circle
           cx={SIZE / 2}
           cy={SIZE / 2}
@@ -103,15 +102,11 @@ export const HeroProgressRing = ({ progress, platform, stage }: HeroProgressRing
         />
       </Svg>
 
-      <View style={{ alignItems: 'center', gap: 2 }}>
+      <View className="items-center gap-0.5">
         <PlatformBadge platform={platform} size={32} />
         <Text
-          style={{
-            fontSize: 20,
-            fontFamily: 'Inter_700Bold',
-            color: Colors.brand.accent,
-            fontVariant: ['tabular-nums'],
-          }}
+          className="text-xl font-inter-bold text-brand-accent"
+          style={{ fontVariant: ['tabular-nums'] }}
         >
           {displayPercent}%
         </Text>

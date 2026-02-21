@@ -39,8 +39,11 @@ export const MiniProgressRing = ({
       : Colors.brand.accent
 
   return (
-    <View style={{ width: SIZE, height: SIZE, alignItems: 'center', justifyContent: 'center' }}>
-      <Svg width={SIZE} height={SIZE} style={{ position: 'absolute' }}>
+    <View
+      className="items-center justify-center"
+      style={{ width: SIZE, height: SIZE }}
+    >
+      <Svg width={SIZE} height={SIZE} className="absolute">
         <Circle
           cx={SIZE / 2}
           cy={SIZE / 2}

@@ -61,14 +61,8 @@ const ExerciseDetailScreen = () => {
       {/* Back button */}
       <Pressable
         onPress={handleBack}
-        className="absolute items-center justify-center rounded-full bg-background-primary/60"
-        style={{
-          top: insets.top + 8,
-          left: 16,
-          zIndex: 10,
-          width: 40,
-          height: 40,
-        }}
+        className="absolute left-4 z-10 w-10 h-10 items-center justify-center rounded-full bg-background-primary/60"
+        style={{ top: insets.top + 8 }}
       >
         <ChevronLeft size={24} color={Colors.content.primary} pointerEvents="none" />
       </Pressable>

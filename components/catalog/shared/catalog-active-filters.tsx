@@ -66,26 +66,9 @@ export const CatalogActiveFilters = ({
             >
               <Pressable
                 onPress={() => onRemoveFilter(key)}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 6,
-                  paddingLeft: 12,
-                  paddingRight: 8,
-                  paddingVertical: 6,
-                  borderRadius: 999,
-                  backgroundColor: Colors.background.tertiary,
-                  borderWidth: 1,
-                  borderColor: Colors.brand.accent,
-                }}
+                className="flex-row items-center gap-1.5 pl-3 pr-2 py-1.5 rounded-full bg-background-tertiary border border-brand-accent"
               >
-                <Text
-                  style={{
-                    fontSize: 12,
-                    fontFamily: 'Inter_600SemiBold',
-                    color: Colors.brand.accent,
-                  }}
-                >
+                <Text className="text-xs font-inter-semibold text-brand-accent">
                   {label}
                 </Text>
                 <X size={12} color={Colors.brand.accent} pointerEvents="none" />
@@ -94,14 +77,8 @@ export const CatalogActiveFilters = ({
           )
         })}
 
-        <Pressable onPress={onClearAll} style={{ paddingHorizontal: 8, paddingVertical: 6 }}>
-          <Text
-            style={{
-              fontSize: 12,
-              fontFamily: 'Inter_600SemiBold',
-              color: Colors.content.tertiary,
-            }}
-          >
+        <Pressable onPress={onClearAll} className="px-2 py-1.5">
+          <Text className="text-xs font-inter-semibold text-content-tertiary">
             Clear all
           </Text>
         </Pressable>

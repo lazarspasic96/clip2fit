@@ -34,15 +34,13 @@ interface CatalogDesignProps {
 
 const COLUMN_GAP = 12
 
-const ITEM_SEPARATOR_HEIGHT = 12
-
-const ItemSeparator = () => <View style={{ height: ITEM_SEPARATOR_HEIGHT }} />
+const ItemSeparator = () => <View className="h-3" />
 
 const ListFooter = ({ isFetchingNextPage }: { isFetchingNextPage: boolean }) => {
-  if (!isFetchingNextPage) return <View style={{ height: 24 }} />
+  if (!isFetchingNextPage) return <View className="h-6" />
 
   return (
-    <View style={{ paddingVertical: 20, alignItems: 'center' }}>
+    <View className="py-5 items-center">
       <ActivityIndicator color={Colors.content.tertiary} />
     </View>
   )
@@ -164,23 +162,17 @@ export const CardCarouselDesign = ({
   return (
     <View className="flex-1">
       {/* Search + filter row */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, gap: 8 }}>
-        <View style={{ flex: 1 }}>
+      <View className="flex-row items-center px-5 gap-2">
+        <View className="flex-1">
           <CatalogSearchBar value={filters.search} onChangeText={handleSearchChange} />
         </View>
 
         <Pressable
           onPress={() => setFilterSheetVisible(true)}
+          className="w-12 h-12 rounded-[14px] border bg-background-secondary items-center justify-center"
           style={{
-            width: 48,
-            height: 48,
-            borderRadius: 14,
             borderCurve: 'continuous',
-            borderWidth: 1,
             borderColor: sheetFilterCount > 0 ? Colors.brand.accent : Colors.border.primary,
-            backgroundColor: Colors.background.secondary,
-            alignItems: 'center',
-            justifyContent: 'center',
           }}
         >
           <Sliders
@@ -189,26 +181,10 @@ export const CardCarouselDesign = ({
             pointerEvents="none"
           />
           {sheetFilterCount > 0 && (
-            <View
-              style={{
-                position: 'absolute',
-                top: -4,
-                right: -4,
-                width: 18,
-                height: 18,
-                borderRadius: 9,
-                backgroundColor: Colors.brand.accent,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
+            <View className="absolute -top-1 -right-1 w-[18px] h-[18px] rounded-full bg-brand-accent items-center justify-center">
               <Text
-                style={{
-                  fontSize: 10,
-                  fontFamily: 'Inter_700Bold',
-                  color: Colors.background.primary,
-                  fontVariant: ['tabular-nums'],
-                }}
+                className="text-[10px] font-inter-bold text-background-primary"
+                style={{ fontVariant: ['tabular-nums'] }}
               >
                 {sheetFilterCount}
               </Text>
@@ -218,7 +194,7 @@ export const CardCarouselDesign = ({
       </View>
 
       {/* Inline muscle chips */}
-      <View style={{ marginTop: 10 }}>
+      <View className="mt-2.5">
         <CatalogFilterChips
           selectedMuscle={filters.muscle}
           onSelectMuscle={handleMuscleSelect}
@@ -227,7 +203,7 @@ export const CardCarouselDesign = ({
 
       {/* Active filter pills */}
       {sheetFilterCount > 0 && (
-        <View style={{ marginTop: 8 }}>
+        <View className="mt-2">
           <CatalogActiveFilters
             filters={filters}
             onRemoveFilter={handleRemoveFilter}
@@ -237,13 +213,13 @@ export const CardCarouselDesign = ({
       )}
 
       {/* Result count */}
-      <View style={{ marginTop: 10, paddingHorizontal: 20 }}>
+      <View className="mt-2.5 px-5">
         <Text className="text-xs font-inter text-content-tertiary">
           {getResultLabel()}
         </Text>
       </View>
 
-      <View className="flex-1" style={{ marginTop: 12 }}>
+      <View className="flex-1 mt-3">
         {isLoading ? (
           <View className="flex-1 justify-center items-center">
             <ActivityIndicator color={Colors.content.tertiary} size="large" />

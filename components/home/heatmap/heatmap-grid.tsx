@@ -4,7 +4,6 @@ import type { HeatmapDay } from '@/types/heatmap'
 import { buildHeatmapGrid, getCellColor, getSecondaryColor } from './heatmap-utils'
 
 const CELL_SIZE = 12
-const CELL_GAP = 2
 
 interface HeatmapGridProps {
   days: HeatmapDay[]
@@ -27,9 +26,9 @@ export const HeatmapGrid = ({ days }: HeatmapGridProps) => {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ paddingRight: 8 }}
       >
-        <View className="flex-row" style={{ gap: CELL_GAP }}>
+        <View className="flex-row gap-0.5">
           {weeks.map((week, weekIdx) => (
-            <View key={weekIdx} style={{ gap: CELL_GAP }}>
+            <View key={weekIdx} className="gap-0.5">
               {week.cells.map((cell) => {
                 const bgColor = getCellColor(cell.categories)
                 const borderColor = getSecondaryColor(cell.categories)

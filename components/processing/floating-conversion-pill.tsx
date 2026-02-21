@@ -34,11 +34,9 @@ export const FloatingConversionPill = () => {
   const isCompleted = state.jobState === 'completed'
   const isError = state.jobState === 'error'
 
-  // Detect whether tabs are visible
   const inTabs = segments[0] === '(protected)' && segments[1] === '(tabs)'
   const bottomOffset = insets.bottom + (inTabs ? TAB_BAR_HEIGHT + 12 : 12)
 
-  // Smooth show/hide driven by withTiming + cubic easing
   useEffect(() => {
     show.value = withTiming(isVisible ? 1 : 0, {
       duration: isVisible ? 300 : 200,
@@ -46,7 +44,6 @@ export const FloatingConversionPill = () => {
     })
   }, [isVisible, show])
 
-  // Celebration pulse on completion
   useEffect(() => {
     if (isCompleted && state.presentation === 'minimized') {
       celebrationScale.value = withSequence(
@@ -135,24 +132,17 @@ export const FloatingConversionPill = () => {
           isError={isError}
         />
 
-        <View style={{ flex: 1, gap: 2 }}>
+        <View className="flex-1 gap-0.5">
           <Text
             numberOfLines={1}
-            style={{
-              fontSize: 14,
-              fontFamily: 'Inter_500Medium',
-              color: isCompleted ? accentColor : Colors.content.primary,
-            }}
+            className="text-sm font-inter-medium"
+            style={{ color: isCompleted ? accentColor : Colors.content.primary }}
           >
             {stageText}
           </Text>
           <Text
             numberOfLines={1}
-            style={{
-              fontSize: 12,
-              fontFamily: 'Inter_400Regular',
-              color: Colors.content.tertiary,
-            }}
+            className="text-xs font-inter text-content-tertiary"
           >
             {truncatedUrl}
           </Text>

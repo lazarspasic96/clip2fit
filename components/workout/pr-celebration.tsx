@@ -25,8 +25,7 @@ export const PrCelebration = ({ prs, onDismiss }: PrCelebrationProps) => {
     <Animated.View
       entering={FadeIn.duration(300)}
       exiting={FadeOut.duration(200)}
-      className="absolute inset-0 justify-center items-center"
-      style={{ backgroundColor: 'rgba(9,9,11,0.92)' }}
+      className="absolute inset-0 justify-center items-center bg-overlay"
     >
       <View className="items-center px-8">
         <Trophy size={56} color={Colors.brand.accent} pointerEvents="none" />

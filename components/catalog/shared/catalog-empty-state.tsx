@@ -74,31 +74,18 @@ export const CatalogEmptyState = ({
       </Text>
 
       {suggestions.length > 0 && onRemoveFilter !== undefined && (
-        <View style={{ marginTop: 16, gap: 8 }}>
+        <View className="mt-4 gap-2">
           <Text className="text-xs font-inter text-content-tertiary text-center">
             Try removing:
           </Text>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8 }}>
+          <View className="flex-row flex-wrap justify-center gap-2">
             {suggestions.map(({ key, label }) => (
               <Pressable
                 key={key}
                 onPress={() => onRemoveFilter(key)}
-                style={{
-                  paddingHorizontal: 14,
-                  paddingVertical: 6,
-                  borderRadius: 999,
-                  backgroundColor: Colors.background.tertiary,
-                  borderWidth: 1,
-                  borderColor: Colors.border.secondary,
-                }}
+                className="px-3.5 py-1.5 rounded-full bg-background-tertiary border border-border-secondary"
               >
-                <Text
-                  style={{
-                    fontSize: 13,
-                    fontFamily: 'Inter_600SemiBold',
-                    color: Colors.content.primary,
-                  }}
-                >
+                <Text className="text-[13px] font-inter-semibold text-content-primary">
                   {label}
                 </Text>
               </Pressable>

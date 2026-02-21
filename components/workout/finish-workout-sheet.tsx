@@ -49,7 +49,7 @@ export const FinishWorkoutSheet = ({
         <BottomSheetBackdrop {...props} opacity={0.6} pressBehavior="close" appearsOnIndex={0} disappearsOnIndex={-1} />
       )}
     >
-      <BottomSheetView style={{ paddingHorizontal: 24, paddingBottom: 32, paddingTop: 8 }}>
+      <BottomSheetView className="px-6 pb-8 pt-2">
         <Text className="text-lg font-inter-bold text-content-primary text-center">Finish Workout?</Text>
 
         <View className="mt-4 gap-2">

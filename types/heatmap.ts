@@ -1,3 +1,5 @@
+import { Colors } from '@/constants/colors'
+
 export type WorkoutCategory =
   | 'chest'
   | 'back'
@@ -8,13 +10,13 @@ export type WorkoutCategory =
   | 'full_body'
 
 export const CATEGORY_COLORS: Record<WorkoutCategory, string> = {
-  chest: '#f97316',
-  back: '#06b6d4',
-  shoulders: '#8b5cf6',
-  arms: '#ec4899',
-  legs: '#3b82f6',
-  core: '#eab308',
-  full_body: '#71717a',
+  chest: Colors.heatmap.chest,
+  back: Colors.heatmap.back,
+  shoulders: Colors.heatmap.shoulders,
+  arms: Colors.heatmap.arms,
+  legs: Colors.heatmap.legs,
+  core: Colors.heatmap.core,
+  full_body: Colors.heatmap.fullBody,
 }
 
 export const CATEGORY_LABELS: Record<WorkoutCategory, string> = {

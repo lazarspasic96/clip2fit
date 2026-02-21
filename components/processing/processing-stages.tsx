@@ -37,7 +37,7 @@ export const ProcessingStages = ({ state, onCancel }: ProcessingStagesProps) => 
     : state.sourceUrl
 
   return (
-    <View style={{ flex: 1, alignItems: 'center', paddingTop: 48 }}>
+    <View className="flex-1 items-center pt-12">
       {/* Background gradient glow */}
       <View
         style={{
@@ -62,32 +62,20 @@ export const ProcessingStages = ({ state, onCancel }: ProcessingStagesProps) => 
       </Animated.View>
 
       {/* Stage message + URL */}
-      <View style={{ marginTop: 32, alignItems: 'center', gap: 4, paddingHorizontal: 24 }}>
-        <Text
-          style={{
-            fontSize: 18,
-            fontFamily: 'Inter_600SemiBold',
-            color: '#fafafa',
-            textAlign: 'center',
-          }}
-        >
+      <View className="mt-8 items-center gap-1 px-6">
+        <Text className="text-lg font-inter-semibold text-content-primary text-center">
           {state.message}
         </Text>
         <Text
           numberOfLines={1}
-          style={{
-            fontSize: 13,
-            fontFamily: 'Inter_400Regular',
-            color: '#71717a',
-            textAlign: 'center',
-          }}
+          className="text-[13px] font-inter text-content-tertiary text-center"
         >
           {displayUrl}
         </Text>
       </View>
 
       {/* Stage timeline */}
-      <View style={{ marginTop: 40, alignSelf: 'stretch', paddingHorizontal: 24 }}>
+      <View className="mt-10 self-stretch px-6">
         {STAGE_LABELS.map(({ key, label }, index) => (
           <StageIndicator
             key={key}
@@ -103,15 +91,9 @@ export const ProcessingStages = ({ state, onCancel }: ProcessingStagesProps) => 
       </View>
 
       {/* Cancel button */}
-      <View style={{ marginTop: 'auto', paddingBottom: 16 }}>
-        <Pressable onPress={onCancel} style={{ alignItems: 'center', paddingVertical: 12 }}>
-          <Text
-            style={{
-              fontSize: 16,
-              fontFamily: 'Inter_400Regular',
-              color: '#a1a1aa',
-            }}
-          >
+      <View className="mt-auto pb-4">
+        <Pressable onPress={onCancel} className="items-center py-3">
+          <Text className="text-base font-inter text-content-secondary">
             Cancel
           </Text>
         </Pressable>

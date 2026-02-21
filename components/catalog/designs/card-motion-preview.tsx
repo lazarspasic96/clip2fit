@@ -12,12 +12,6 @@ import { MUSCLE_GROUP_LABELS } from '@/types/catalog'
 const IMAGE_HEIGHT = 120
 const BORDER_RADIUS = 16
 
-const LEVEL_COLORS: Record<string, string> = {
-  beginner: '#22c55e',
-  intermediate: '#eab308',
-  expert: '#ef4444',
-}
-
 interface CardMotionPreviewProps {
   exercise: CatalogExercise
   onNavigate: () => void
@@ -48,7 +42,7 @@ export const CardMotionPreview = ({
   const hasImage = exercise.images?.start !== undefined
 
   const levelColor = exercise.level !== null
-    ? LEVEL_COLORS[exercise.level] ?? null
+    ? Colors.difficulty[exercise.level as keyof typeof Colors.difficulty] ?? null
     : null
 
   const muscleText = exercise.primaryMuscleGroups
@@ -62,13 +56,7 @@ export const CardMotionPreview = ({
         onPress={onNavigate}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
-        style={{
-          borderRadius: BORDER_RADIUS,
-          overflow: 'hidden',
-          borderWidth: 1,
-          borderColor: Colors.border.primary,
-          backgroundColor: Colors.background.secondary,
-        }}
+        className="rounded-2xl overflow-hidden border border-border-primary bg-background-secondary"
       >
         {/* Exercise image */}
         <View style={{ height: IMAGE_HEIGHT }}>
@@ -80,32 +68,12 @@ export const CardMotionPreview = ({
               cachePolicy="memory-disk"
             />
           ) : (
-            <View
-              className="bg-background-tertiary"
-              style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
-            >
+            <View className="bg-background-tertiary flex-1 items-center justify-center">
               <Dumbbell size={24} color={Colors.content.tertiary} />
             </View>
           )}
-          <View
-            style={{
-              position: 'absolute',
-              bottom: 4,
-              left: 4,
-              backgroundColor: 'rgba(0,0,0,0.5)',
-              borderRadius: 4,
-              paddingHorizontal: 5,
-              paddingVertical: 2,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 8,
-                fontFamily: 'Inter_700Bold',
-                color: '#fafafa',
-                letterSpacing: 0.5,
-              }}
-            >
+          <View className="absolute bottom-1 left-1 bg-black/50 rounded-xs px-[5px] py-0.5">
+            <Text className="text-[8px] font-inter-bold text-content-primary tracking-wider">
               START
             </Text>
           </View>
@@ -115,8 +83,8 @@ export const CardMotionPreview = ({
         <CardAddButton isSelected={isSelected} onToggle={onToggle} position="top-right" />
 
         {/* Text area */}
-        <View style={{ padding: 10, gap: 4 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+        <View className="p-2.5 gap-1">
+          <View className="flex-row items-center gap-1.5">
             {levelColor !== null && (
               <View
                 style={{
@@ -128,9 +96,8 @@ export const CardMotionPreview = ({
               />
             )}
             <Text
-              className="text-sm font-inter-bold text-content-primary"
+              className="text-sm font-inter-bold text-content-primary flex-1"
               numberOfLines={1}
-              style={{ flex: 1 }}
             >
               {exercise.name}
             </Text>
@@ -147,14 +114,7 @@ export const CardMotionPreview = ({
         {isSelected && (
           <View
             pointerEvents="none"
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(132,204,22,0.06)',
-            }}
+            className="absolute top-0 left-0 right-0 bottom-0 bg-brand-accent/[0.06]"
           />
         )}
       </Pressable>

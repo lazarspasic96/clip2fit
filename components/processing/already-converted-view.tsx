@@ -36,10 +36,11 @@ export const AlreadyConvertedView = ({
 
   return (
     <View className="flex-1 items-center px-6" style={{ paddingTop: 60 }}>
-      {/* Hero ring — full green, platform badge centered */}
+      {/* Hero ring -- full green, platform badge centered */}
       <Animated.View
         entering={FadeIn.duration(300)}
-        style={{ width: SIZE, height: SIZE, alignItems: 'center', justifyContent: 'center' }}
+        style={{ width: SIZE, height: SIZE }}
+        className="items-center justify-center"
       >
         {/* Radial glow */}
         <View
@@ -54,7 +55,7 @@ export const AlreadyConvertedView = ({
           pointerEvents="none"
         />
 
-        <Svg width={SIZE} height={SIZE} style={{ position: 'absolute' }}>
+        <Svg width={SIZE} height={SIZE} className="absolute">
           {/* Full green ring */}
           <Circle
             cx={SIZE / 2}
@@ -72,15 +73,7 @@ export const AlreadyConvertedView = ({
         <PlatformBadge platform={platform} size={32} />
 
         {/* Check overlay at bottom-right */}
-        <View
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            right: 4,
-            backgroundColor: Colors.background.primary,
-            borderRadius: 14,
-          }}
-        >
+        <View className="absolute bottom-0 right-1 rounded-[14px] bg-background-primary">
           <CircleCheck
             size={28}
             color={Colors.brand.accent}
@@ -92,36 +85,16 @@ export const AlreadyConvertedView = ({
       </Animated.View>
 
       {/* Message block */}
-      <View style={{ marginTop: 32, alignItems: 'center', gap: 8 }}>
-        <Text
-          style={{
-            fontSize: 18,
-            fontFamily: 'Inter_600SemiBold',
-            color: Colors.content.primary,
-            textAlign: 'center',
-          }}
-        >
+      <View className="mt-8 items-center gap-2">
+        <Text className="text-lg font-inter-semibold text-content-primary text-center">
           Already in your library
         </Text>
-        <Text
-          style={{
-            fontSize: 14,
-            fontFamily: 'Inter_400Regular',
-            color: Colors.content.tertiary,
-            textAlign: 'center',
-            lineHeight: 20,
-          }}
-        >
+        <Text className="text-sm font-inter text-content-tertiary text-center leading-5">
           You&apos;ve converted this video before.{'\n'}Check your workout library.
         </Text>
         <Text
           numberOfLines={1}
-          style={{
-            fontSize: 13,
-            fontFamily: 'Inter_400Regular',
-            color: Colors.content.tertiary,
-            maxWidth: 280,
-          }}
+          className="text-[13px] font-inter text-content-tertiary max-w-[280px]"
         >
           {truncatedUrl}
         </Text>
@@ -130,32 +103,19 @@ export const AlreadyConvertedView = ({
       {/* CTAs */}
       <Animated.View
         entering={FadeInUp.delay(200).duration(300)}
-        style={{ marginTop: 40, width: '100%', gap: 16, alignItems: 'center' }}
+        className="mt-10 w-full gap-4 items-center"
       >
         <Pressable
           onPress={onViewInLibrary}
-          className="w-full items-center justify-center rounded-[14px] py-4"
-          style={{ backgroundColor: Colors.brand.accent }}
+          className="w-full items-center justify-center rounded-[14px] py-4 bg-brand-accent"
         >
-          <Text
-            style={{
-              fontSize: 16,
-              fontFamily: 'Inter_600SemiBold',
-              color: Colors.background.primary,
-            }}
-          >
+          <Text className="text-base font-inter-semibold text-background-primary">
             View in Library
           </Text>
         </Pressable>
 
         <Pressable onPress={onGoBack} hitSlop={12}>
-          <Text
-            style={{
-              fontSize: 14,
-              fontFamily: 'Inter_500Medium',
-              color: Colors.content.secondary,
-            }}
-          >
+          <Text className="text-sm font-inter-medium text-content-secondary">
             Convert a different video
           </Text>
         </Pressable>

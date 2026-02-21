@@ -1,5 +1,7 @@
 import { ActivityIndicator, Pressable, Text } from 'react-native'
 
+import { Colors } from '@/constants/colors'
+
 import { cn } from './cn'
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost'
@@ -14,9 +16,9 @@ interface ButtonProps {
 }
 
 const SPINNER_COLORS: Record<ButtonVariant, string> = {
-  primary: '#18181b',
-  secondary: '#fafafa',
-  ghost: '#a1a1aa',
+  primary: Colors.content.buttonPrimary,
+  secondary: Colors.content.primary,
+  ghost: Colors.content.secondary,
 }
 
 export const Button = ({

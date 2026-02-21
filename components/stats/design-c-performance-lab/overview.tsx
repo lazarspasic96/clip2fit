@@ -4,13 +4,21 @@ import { ScrollView, Text, View } from 'react-native'
 import { formatCompactNumber } from '@/components/stats/shared/stats-formatters'
 import type { StatsOverviewProps } from '@/components/stats/shared/stats-view-types'
 import { TopExerciseCard } from '@/components/stats/shared/top-exercise-card'
+import { Colors } from '@/constants/colors'
 import { formatMuscleLabel } from '@/types/stats'
 
 const RADAR_SIZE = 210
 const RADAR_RADIUS = 82
 const RADAR_CENTER = RADAR_SIZE / 2
 
-const MUSCLE_COLORS = ['#84cc16', '#22d3ee', '#60a5fa', '#f59e0b', '#f472b6', '#a78bfa']
+const MUSCLE_COLORS = [
+  Colors.chart.lime,
+  Colors.chart.cyan,
+  Colors.chart.blue,
+  Colors.chart.amber,
+  Colors.chart.pink,
+  Colors.chart.purple,
+]
 
 const toRadarPoint = (angle: number, radius: number) => {
   const x = RADAR_CENTER + radius * Math.cos(angle)
@@ -73,19 +81,19 @@ export const PerformanceLabOverview = ({ summary, onPressExercise }: StatsOvervi
       <View className="bg-background-secondary rounded-2xl p-4 gap-4 border border-border-secondary">
         <Text className="text-xs font-inter uppercase text-content-tertiary">Performance Lab</Text>
         <View className="flex-row flex-wrap gap-3">
-          <View className="bg-background-primary rounded-xl p-3 gap-1" style={{ width: '48%' }}>
+          <View className="bg-background-primary rounded-xl p-3 gap-1 w-[48%]">
             <Text className="text-xs font-inter text-content-tertiary">Sessions</Text>
             <Text className="text-xl font-inter-bold text-content-primary">{summary.totalSessions}</Text>
           </View>
-          <View className="bg-background-primary rounded-xl p-3 gap-1" style={{ width: '48%' }}>
+          <View className="bg-background-primary rounded-xl p-3 gap-1 w-[48%]">
             <Text className="text-xs font-inter text-content-tertiary">Volume</Text>
             <Text className="text-xl font-inter-bold text-content-primary">{formatCompactNumber(summary.totalVolume)}</Text>
           </View>
-          <View className="bg-background-primary rounded-xl p-3 gap-1" style={{ width: '48%' }}>
+          <View className="bg-background-primary rounded-xl p-3 gap-1 w-[48%]">
             <Text className="text-xs font-inter text-content-tertiary">Current Streak</Text>
             <Text className="text-xl font-inter-bold text-content-primary">{summary.currentStreakWeeks}w</Text>
           </View>
-          <View className="bg-background-primary rounded-xl p-3 gap-1" style={{ width: '48%' }}>
+          <View className="bg-background-primary rounded-xl p-3 gap-1 w-[48%]">
             <Text className="text-xs font-inter text-content-tertiary">Best Streak</Text>
             <Text className="text-xl font-inter-bold text-content-primary">{summary.bestStreakWeeks}w</Text>
           </View>
@@ -96,7 +104,7 @@ export const PerformanceLabOverview = ({ summary, onPressExercise }: StatsOvervi
         <Text className="text-base font-inter-semibold text-content-primary">Top Exercises</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12 }}>
           {summary.topExercises.slice(0, 6).map((exercise, index) => (
-            <View key={exercise.exerciseName} style={{ width: 190 }}>
+            <View key={exercise.exerciseName} className="w-[190px]">
               <TopExerciseCard
                 exercise={exercise}
                 index={index}

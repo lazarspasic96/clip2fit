@@ -57,7 +57,7 @@ const AddWorkoutScreen = () => {
           <View className="bg-background-secondary rounded-2xl overflow-hidden">
             <Image
               source={{ uri: selectedVideo.uri }}
-              style={{ width: '100%', height: 240 }}
+              className="w-full h-60"
               contentFit="cover"
             />
             <View className="p-4">
@@ -106,8 +106,7 @@ const AddWorkoutScreen = () => {
           className="bg-background-secondary rounded-2xl p-6 flex-row items-center gap-4"
         >
           <View
-            className="items-center justify-center rounded-full bg-brand-accent"
-            style={{ width: 52, height: 52 }}
+            className="w-[52px] h-[52px] items-center justify-center rounded-full bg-brand-accent"
           >
             <Link2 size={26} color={Colors.background.primary} pointerEvents="none" />
           </View>
@@ -124,8 +123,7 @@ const AddWorkoutScreen = () => {
           className="bg-background-secondary rounded-2xl p-6 flex-row items-center gap-4"
         >
           <View
-            className="items-center justify-center rounded-full bg-background-tertiary"
-            style={{ width: 52, height: 52 }}
+            className="w-[52px] h-[52px] items-center justify-center rounded-full bg-background-tertiary"
           >
             <Video size={26} color={Colors.content.primary} pointerEvents="none" />
           </View>
@@ -145,8 +143,7 @@ const AddWorkoutScreen = () => {
           className="bg-background-secondary rounded-2xl p-6 flex-row items-center gap-4"
         >
           <View
-            className="items-center justify-center rounded-full bg-background-tertiary"
-            style={{ width: 52, height: 52 }}
+            className="w-[52px] h-[52px] items-center justify-center rounded-full bg-background-tertiary"
           >
             <Download size={26} color={Colors.content.primary} pointerEvents="none" />
           </View>

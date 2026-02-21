@@ -77,4 +77,45 @@
   --shadow-ring: 0 0 0 1px #27272a;
   --shadow-badge-success: 0 0 0 3px rgba(190, 242, 100, 0.1);
   --shadow-badge-error: 0 0 0 3px rgba(248, 113, 113, 0.1);
+
+  /* Difficulty */
+  --color-difficulty-beginner: #22c55e;
+  --color-difficulty-intermediate: #eab308;
+  --color-difficulty-advanced: #ef4444;
+
+  /* Level (filter sheet alt palette) */
+  --color-level-beginner: #4ade80;
+  --color-level-intermediate: #facc15;
+  --color-level-expert: #f87171;
+
+  /* Destructive */
+  --color-destructive: #dc2626;
+
+  /* Status */
+  --color-status-completed: #84cc16;
+  --color-status-skipped: #f87171;
+  --color-status-active: #fafafa;
+  --color-status-scheduled: #bef264;
+  --color-status-future: #a1a1aa;
+  --color-status-rest: #0284c7;
+
+  /* Chart (stats radar) */
+  --color-chart-lime: #84cc16;
+  --color-chart-cyan: #22d3ee;
+  --color-chart-blue: #60a5fa;
+  --color-chart-amber: #f59e0b;
+  --color-chart-pink: #f472b6;
+  --color-chart-purple: #a78bfa;
+
+  /* Heatmap categories */
+  --color-heatmap-chest: #f97316;
+  --color-heatmap-back: #06b6d4;
+  --color-heatmap-shoulders: #8b5cf6;
+  --color-heatmap-arms: #ec4899;
+  --color-heatmap-legs: #3b82f6;
+  --color-heatmap-core: #eab308;
+  --color-heatmap-full-body: #71717a;
+
+  /* Overlay */
+  --color-overlay: rgba(9, 9, 11, 0.92);
 }

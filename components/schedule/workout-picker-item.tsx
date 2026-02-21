@@ -1,7 +1,6 @@
 import { Pressable, Text, View } from 'react-native'
 
 import { cn } from '@/components/ui/cn'
-import { Colors } from '@/constants/colors'
 import type { DayOfWeek } from '@/types/schedule'
 import type { WorkoutPlan } from '@/types/workout'
 import { DAY_SHORT_LABELS } from '@/utils/schedule'
@@ -36,18 +35,18 @@ export const WorkoutPickerItem = ({
             <View className="flex-row gap-1">
               {workout.targetMuscles.slice(0, 2).map((m) => (
                 <View key={m} className="px-1.5 py-0.5 rounded-full bg-background-tertiary">
-                  <Text className="text-xs font-inter capitalize" style={{ color: Colors.brand.accent }}>{m}</Text>
+                  <Text className="text-xs font-inter capitalize text-brand-accent">{m}</Text>
                 </View>
               ))}
             </View>
           )}
           {workout.estimatedDurationMinutes > 0 && (
-            <Text className="text-xs font-inter" style={{ color: Colors.brand.accent }}>
+            <Text className="text-xs font-inter text-brand-accent">
               {workout.estimatedDurationMinutes}min
             </Text>
           )}
           <View className="px-1.5 py-0.5 rounded-full bg-background-tertiary">
-            <Text className="text-xs font-inter capitalize" style={{ color: Colors.brand.accent }}>
+            <Text className="text-xs font-inter capitalize text-brand-accent">
               {workout.difficulty}
             </Text>
           </View>

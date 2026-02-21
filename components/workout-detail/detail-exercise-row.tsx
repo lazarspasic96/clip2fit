@@ -15,14 +15,8 @@ const DELETE_ACTION_WIDTH = 72
 
 const DeleteAction = () => (
   <View
-    className="items-center justify-center"
-    style={{
-      width: DELETE_ACTION_WIDTH,
-      height: '100%',
-      backgroundColor: '#dc2626',
-      borderTopRightRadius: 16,
-      borderBottomRightRadius: 16,
-    }}
+    className="items-center justify-center h-full bg-destructive rounded-tr-2xl rounded-br-2xl"
+    style={{ width: DELETE_ACTION_WIDTH }}
   >
     <Trash2 size={18} color="#fff" pointerEvents="none" />
     <Text className="text-xs font-inter-semibold text-white mt-0.5">Delete</Text>

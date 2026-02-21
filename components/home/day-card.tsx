@@ -42,8 +42,7 @@ export const DayCard = ({ day }: { day: WeekDay }) => {
 
   return (
     <View
-      className={cn('flex-1 items-center rounded-xs border p-2 justify-between', styles.card)}
-      style={{ height: 80 }}
+      className={cn('flex-1 items-center rounded-xs border p-2 justify-between h-20', styles.card)}
     >
       <View className="items-center">
         <Text className={cn('text-xs font-inter-semibold', styles.text)}>{day.label}</Text>

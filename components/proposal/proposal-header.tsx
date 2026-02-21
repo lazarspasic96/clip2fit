@@ -10,10 +10,10 @@ interface ProposalHeaderProps {
   exerciseCount: number
 }
 
-const DIFFICULTY_COLORS: Record<string, string> = {
-  beginner: 'text-green-400',
-  intermediate: 'text-yellow-400',
-  advanced: 'text-red-400',
+const DIFFICULTY_CLASSES: Record<string, string> = {
+  beginner: 'text-difficulty-beginner',
+  intermediate: 'text-difficulty-intermediate',
+  advanced: 'text-difficulty-advanced',
 }
 
 export const ProposalHeader = ({ workout, exerciseCount }: ProposalHeaderProps) => {
@@ -50,7 +50,7 @@ export const ProposalHeader = ({ workout, exerciseCount }: ProposalHeaderProps) 
         )}
         <View className="flex-row items-center gap-1.5">
           <Flame size={14} color={Colors.content.secondary} pointerEvents="none" />
-          <Text className={`text-sm font-inter-semibold ${DIFFICULTY_COLORS[workout.difficulty] ?? 'text-content-secondary'}`}>
+          <Text className={`text-sm font-inter-semibold ${DIFFICULTY_CLASSES[workout.difficulty] ?? 'text-content-secondary'}`}>
             {workout.difficulty}
           </Text>
         </View>

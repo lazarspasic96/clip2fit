@@ -1,7 +1,5 @@
 import { Text, View } from 'react-native'
 
-import { Colors } from '@/constants/colors'
-
 interface ExerciseInstructionsProps {
   instructions: string[]
 }
@@ -18,17 +16,11 @@ export const ExerciseInstructions = ({ instructions }: ExerciseInstructionsProps
           No instructions available
         </Text>
       ) : (
-        <View style={{ gap: 12 }}>
+        <View className="gap-3">
           {instructions.map((step, index) => (
             <View key={index} className="flex-row">
-              <View
-                className="items-center justify-center mr-3"
-                style={{ width: 24, height: 24 }}
-              >
-                <Text
-                  className="text-sm font-inter-bold"
-                  style={{ color: Colors.brand.accent }}
-                >
+              <View className="items-center justify-center mr-3 w-6 h-6">
+                <Text className="text-sm font-inter-bold text-brand-accent">
                   {index + 1}
                 </Text>
               </View>

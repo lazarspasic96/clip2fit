@@ -16,19 +16,13 @@ export const StatusIndicator = ({ status }: { status: DayStatus }) => {
   if (hasRing) {
     return (
       <View
-        style={{
-          width: 14,
-          height: 14,
-          borderRadius: 7,
-          backgroundColor: ringColor,
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
+        className="w-3.5 h-3.5 rounded-full items-center justify-center"
+        style={{ backgroundColor: ringColor }}
       >
-        <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: dotColor }} />
+        <View className="w-2 h-2 rounded-full" style={{ backgroundColor: dotColor }} />
       </View>
     )
   }
 
-  return <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: dotColor }} />
+  return <View className="w-2 h-2 rounded-full" style={{ backgroundColor: dotColor }} />
 }

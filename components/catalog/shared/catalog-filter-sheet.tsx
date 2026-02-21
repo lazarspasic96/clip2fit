@@ -48,11 +48,6 @@ const REGION_TABS: RegionTab[] = ['all', 'upper', 'lower', 'core']
 // --- Filter option constants ---
 
 const LEVEL_OPTIONS: CatalogLevel[] = ['beginner', 'intermediate', 'expert']
-const LEVEL_DOT_COLORS: Record<string, string> = {
-  beginner: '#4ade80',
-  intermediate: '#facc15',
-  expert: '#f87171',
-}
 
 const FORCE_OPTIONS: CatalogForce[] = ['push', 'pull', 'static']
 const MECHANIC_OPTIONS: CatalogMechanic[] = ['compound', 'isolation']
@@ -243,7 +238,7 @@ export const CatalogFilterSheet = ({
             labels={LEVEL_DISPLAY_LABELS}
             selected={level}
             onToggle={(v) => toggleValue(level, v as CatalogLevel, setLevel)}
-            dotColors={LEVEL_DOT_COLORS}
+            dotColors={Colors.level}
           />
         </View>
 

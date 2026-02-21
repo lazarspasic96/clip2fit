@@ -55,31 +55,18 @@ export const BuilderExerciseRow = ({
   const muscleGroups = exercise.catalogExercise.primaryMuscleGroups.slice(0, 2)
 
   return (
-    <View style={{ marginBottom: 10 }}>
+    <View className="mb-2.5">
       <SwipeableRow
         actionWidth={DELETE_ACTION_WIDTH}
         actionContent={deleteActionContent}
         onAction={onDelete}
       >
         <View
-          style={{
-            marginHorizontal: 20,
-            backgroundColor: Colors.background.secondary,
-            borderRadius: 16,
-            borderCurve: 'continuous',
-            flexDirection: 'row',
-            overflow: 'hidden',
-          }}
+          className="mx-5 bg-background-secondary rounded-2xl flex-row overflow-hidden"
+          style={{ borderCurve: 'continuous' }}
         >
           {/* Reorder grip + index badge */}
-          <View
-            style={{
-              width: 36,
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 6,
-            }}
-          >
+          <View className="w-9 items-center justify-center gap-1.5">
             <Pressable
               onPress={onMoveUp}
               disabled={isFirst}
@@ -88,16 +75,7 @@ export const BuilderExerciseRow = ({
             >
               <GripVertical size={14} color={Colors.content.tertiary} pointerEvents="none" />
             </Pressable>
-            <View
-              style={{
-                width: 22,
-                height: 22,
-                borderRadius: 11,
-                backgroundColor: Colors.brand.accent,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
+            <View className="w-[22px] h-[22px] rounded-full bg-brand-accent items-center justify-center">
               <Text
                 style={{
                   fontSize: 11,
@@ -120,39 +98,23 @@ export const BuilderExerciseRow = ({
           </View>
 
           {/* Content: name, muscles, sets/reps */}
-          <View style={{ flex: 1, paddingVertical: 14, paddingRight: 12, gap: 8 }}>
+          <View className="flex-1 py-3.5 pr-3 gap-2">
             <Text
-              style={{
-                fontSize: 15,
-                fontFamily: 'Inter_600SemiBold',
-                color: Colors.content.primary,
-              }}
+              className="text-[15px] font-inter-semibold text-content-primary"
               numberOfLines={2}
             >
               {exercise.catalogExercise.name}
             </Text>
 
             {muscleGroups.length > 0 && (
-              <View style={{ flexDirection: 'row', gap: 4 }}>
+              <View className="flex-row gap-1">
                 {muscleGroups.map((muscle) => (
                   <View
                     key={muscle}
-                    style={{
-                      backgroundColor: 'rgba(132,204,22,0.1)',
-                      borderRadius: 6,
-                      paddingHorizontal: 7,
-                      paddingVertical: 2,
-                      borderCurve: 'continuous',
-                    }}
+                    className="bg-brand-accent/10 rounded-md px-[7px] py-0.5"
+                    style={{ borderCurve: 'continuous' }}
                   >
-                    <Text
-                      style={{
-                        fontSize: 10,
-                        fontFamily: 'Inter_500Medium',
-                        color: Colors.brand.accent,
-                        letterSpacing: 0.2,
-                      }}
-                    >
+                    <Text className="text-[10px] font-inter-medium text-brand-accent tracking-wide">
                       {MUSCLE_GROUP_LABELS[muscle] ?? muscle}
                     </Text>
                   </View>
@@ -161,26 +123,12 @@ export const BuilderExerciseRow = ({
             )}
 
             {/* Sets x Reps inline */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <View className="flex-row items-center gap-1.5">
               <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  backgroundColor: Colors.background.tertiary,
-                  borderRadius: 10,
-                  borderCurve: 'continuous',
-                  paddingHorizontal: 10,
-                  height: 34,
-                  gap: 4,
-                }}
+                className="flex-row items-center bg-background-tertiary rounded-[10px] px-2.5 h-[34px] gap-1"
+                style={{ borderCurve: 'continuous' }}
               >
-                <Text
-                  style={{
-                    fontSize: 11,
-                    fontFamily: 'Inter_500Medium',
-                    color: Colors.content.tertiary,
-                  }}
-                >
+                <Text className="text-[11px] font-inter-medium text-content-tertiary">
                   Sets
                 </Text>
                 <TextInput
@@ -202,35 +150,15 @@ export const BuilderExerciseRow = ({
                 />
               </View>
 
-              <Text
-                style={{
-                  fontSize: 13,
-                  fontFamily: 'Inter_500Medium',
-                  color: Colors.content.tertiary,
-                }}
-              >
+              <Text className="text-[13px] font-inter-medium text-content-tertiary">
                 ×
               </Text>
 
               <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  backgroundColor: Colors.background.tertiary,
-                  borderRadius: 10,
-                  borderCurve: 'continuous',
-                  paddingHorizontal: 10,
-                  height: 34,
-                  gap: 4,
-                }}
+                className="flex-row items-center bg-background-tertiary rounded-[10px] px-2.5 h-[34px] gap-1"
+                style={{ borderCurve: 'continuous' }}
               >
-                <Text
-                  style={{
-                    fontSize: 11,
-                    fontFamily: 'Inter_500Medium',
-                    color: Colors.content.tertiary,
-                  }}
-                >
+                <Text className="text-[11px] font-inter-medium text-content-tertiary">
                   Reps
                 </Text>
                 <TextInput

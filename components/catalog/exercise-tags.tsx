@@ -13,12 +13,6 @@ interface TagItem {
   color?: string
 }
 
-const LEVEL_COLORS: Record<string, string> = {
-  beginner: '#22c55e',
-  intermediate: '#eab308',
-  expert: '#ef4444',
-}
-
 const capitalize = (value: string): string =>
   value.charAt(0).toUpperCase() + value.slice(1)
 
@@ -45,7 +39,7 @@ export const ExerciseTags = ({ exercise }: ExerciseTagsProps) => {
   }
 
   if (exercise.level !== null) {
-    tags.push({ label: capitalize(exercise.level), color: LEVEL_COLORS[exercise.level] })
+    tags.push({ label: capitalize(exercise.level), color: Colors.difficulty[exercise.level as keyof typeof Colors.difficulty] })
   }
 
   if (tags.length === 0) return null

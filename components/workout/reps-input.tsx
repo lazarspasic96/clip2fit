@@ -18,7 +18,6 @@ export const RepsInput = ({ value, placeholder, onChangeText }: RepsInputProps) 
         placeholderTextColor={Colors.content.tertiary}
         keyboardType="numeric"
         className="text-base font-inter text-content-primary border-b border-border-secondary w-12 text-center pb-1"
-        style={{ color: Colors.content.primary }}
       />
       <Text className="text-xs font-inter text-content-tertiary ml-1">reps</Text>
     </View>
