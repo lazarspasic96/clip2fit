@@ -10,7 +10,8 @@
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.2",
@@ -67,6 +68,7 @@
     "@types/react": "~19.2.0",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~55.0.0",
+    "patch-package": "^8.0.1",
     "postcss": "^8.5.0",
     "shadcn": "^3.8.5",
     "tailwindcss": "next",

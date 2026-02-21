@@ -1,8 +1,8 @@
-@import "tailwindcss/theme.css" layer(theme);
-@import "tailwindcss/preflight.css" layer(base);
-@import "tailwindcss/utilities.css";
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/preflight.css' layer(base);
+@import 'tailwindcss/utilities.css';
 
-@import "nativewind/theme";
+@import 'nativewind/theme';
 
 @source "./app/**/*.{js,jsx,ts,tsx}";
 @source "./components/**/*.{js,jsx,ts,tsx}";
@@ -38,11 +38,11 @@
   --color-brand-accent: #84cc16;
 
   /* Fonts */
-  --font-inter: "Inter_400Regular";
-  --font-inter-medium: "Inter_500Medium";
-  --font-inter-semibold: "Inter_600SemiBold";
-  --font-inter-bold: "Inter_700Bold";
-  --font-onest: "Onest_400Regular";
+  --font-inter: 'Inter_400Regular';
+  --font-inter-medium: 'Inter_500Medium';
+  --font-inter-semibold: 'Inter_600SemiBold';
+  --font-inter-bold: 'Inter_700Bold';
+  --font-onest: 'Onest_400Regular';
 
   /* Font sizes */
   --font-size-xs: 12px;
