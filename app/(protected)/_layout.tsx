@@ -60,6 +60,14 @@ const ProtectedLayout = () => {
               animation: 'slide_from_bottom',
             }}
           />
+          <Stack.Screen
+            name="form-coach"
+            options={{
+              presentation: 'fullScreenModal',
+              gestureEnabled: false,
+              animation: 'slide_from_bottom',
+            }}
+          />
         </Stack>
       </ActiveWorkoutProvider>
     </WorkoutBuilderProvider>

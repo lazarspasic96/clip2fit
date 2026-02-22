@@ -1,6 +1,10 @@
+import { BottomSheetModal } from '@gorhom/bottom-sheet'
+import { useRouter } from 'expo-router'
+import { useRef } from 'react'
 import { ActivityIndicator, ScrollView, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
+import { ExerciseSheet } from '@/components/form-coach/exercise-sheet'
 import { ActivityHeatmap } from '@/components/home/activity-heatmap'
 import { BottomActionButtons } from '@/components/home/bottom-action-buttons'
 import { CompletedWorkoutCard } from '@/components/home/completed-workout-card'
@@ -18,6 +22,8 @@ import { buildWeekDaysFromSchedule, getTodayDayOfWeek } from '@/utils/schedule'
 
 const HomeScreen = () => {
   const insets = useSafeAreaInsets()
+  const router = useRouter()
+  const exerciseSheetRef = useRef<BottomSheetModal>(null)
   const { workouts, isLoading: loading } = useWorkoutsQuery()
   const { schedule } = useScheduleQuery()
   const { completedSession } = useActiveWorkout()
@@ -30,6 +36,14 @@ const HomeScreen = () => {
     completedSession !== null && todaysWorkout !== null && completedSession.plan.id === todaysWorkout.id
 
   const weekDays = buildWeekDaysFromSchedule(schedule, completedSession?.plan.id ?? null)
+
+  const handleFormCoachPress = () => {
+    if (hasWorkouts) {
+      exerciseSheetRef.current?.present()
+    } else {
+      router.push('/(protected)/form-coach')
+    }
+  }
 
   const subtitle = hasWorkouts
     ? 'Keep the momentum going!'
@@ -64,12 +78,15 @@ const HomeScreen = () => {
         ) : (
           <RestDayCard />
         )}
-        <ImportFromSocialsCard />
-        <WeeklyTrainingPlan days={weekDays} />
-        <ActivityHeatmap />
 
-        <BottomActionButtons />
+        <ActivityHeatmap />
+        <WeeklyTrainingPlan days={weekDays} />
+        <ImportFromSocialsCard />
+
+        <BottomActionButtons onFormCoachPress={handleFormCoachPress} />
       </ScrollView>
+
+      <ExerciseSheet ref={exerciseSheetRef} />
     </View>
   )
 }

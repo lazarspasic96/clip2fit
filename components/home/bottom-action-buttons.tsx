@@ -1,11 +1,23 @@
 import { useRouter } from 'expo-router'
-import { Download, Video } from 'lucide-react-native'
+import { Download, ScanLine, Video } from 'lucide-react-native'
 import { Pressable, Text, View } from 'react-native'
 
 import { Colors } from '@/constants/colors'
 
-export const BottomActionButtons = () => {
+type BottomActionButtonsProps = {
+  onFormCoachPress?: () => void
+}
+
+export const BottomActionButtons = ({ onFormCoachPress }: BottomActionButtonsProps) => {
   const router = useRouter()
+
+  const handleFormCoachPress = () => {
+    if (onFormCoachPress) {
+      onFormCoachPress()
+    } else {
+      router.push('/(protected)/form-coach')
+    }
+  }
 
   return (
     <View className="flex-row mx-5 gap-3">
@@ -23,6 +35,14 @@ export const BottomActionButtons = () => {
       >
         <Download size={24} color={Colors.brand.accent} pointerEvents="none" />
         <Text className="text-sm font-inter text-content-primary text-center">Import workout manually</Text>
+      </Pressable>
+
+      <Pressable
+        onPress={handleFormCoachPress}
+        className="flex-1 bg-background-tertiary rounded-2xl p-4 items-center gap-2"
+      >
+        <ScanLine size={24} color="#84cc16" pointerEvents="none" />
+        <Text className="text-sm font-inter text-content-primary text-center">Form Coach</Text>
       </Pressable>
     </View>
   )

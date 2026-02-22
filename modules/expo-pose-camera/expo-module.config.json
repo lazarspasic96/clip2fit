@@ -1,0 +1,11 @@
+{
+  "platforms": ["apple", "android"],
+  "apple": {
+    "modules": ["ExposePoseCameraModule"],
+    "podspecPath": "expo-pose-camera.podspec",
+    "swiftModuleName": "expo_pose_camera"
+  },
+  "android": {
+    "modules": ["expo.modules.posecamera.ExposePoseCameraModule"]
+  }
+}
