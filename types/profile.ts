@@ -13,6 +13,8 @@ export type WeightUnit = 'kg' | 'lbs'
 export interface UserProfile {
   fullName?: string
   gender?: Gender
+  dateOfBirth?: string
+  /** Read-only, computed from dateOfBirth by the API */
   age?: number
   height?: number
   heightUnit?: HeightUnit

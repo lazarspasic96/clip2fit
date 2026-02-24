@@ -21,14 +21,7 @@ const SPINNER_COLORS: Record<ButtonVariant, string> = {
   ghost: Colors.content.secondary,
 }
 
-export const Button = ({
-  onPress,
-  loading,
-  disabled,
-  children,
-  variant = 'primary',
-  className,
-}: ButtonProps) => {
+export const Button = ({ onPress, loading, disabled, children, variant = 'primary', className }: ButtonProps) => {
   const isDisabled = disabled || loading
 
   return (
@@ -38,7 +31,7 @@ export const Button = ({
       className={cn(
         'items-center justify-center rounded-md py-3.5',
         variant === 'primary' && 'bg-background-button-primary',
-        variant === 'secondary' && 'bg-background-button-secondary border border-border-primary',
+        variant === 'secondary' && 'bg-background-button-secondary border border-border-primary px-4',
         variant === 'ghost' && 'bg-transparent',
         isDisabled && 'opacity-50',
         className,

@@ -44,17 +44,17 @@ const HomeScreen = () => {
   }
 
   return (
-    <View className="flex-1 bg-background-primary">
+    <View className="flex-1 bg-background-primary" style={{ paddingTop: insets.top + 12 }}>
+      <HomeHeader subtitle={subtitle} />
+
       <ScrollView
         contentContainerStyle={{
-          paddingTop: insets.top + 12,
+          paddingTop: 20,
           paddingBottom: insets.bottom + 24,
           gap: 20,
         }}
         showsVerticalScrollIndicator={false}
       >
-        <HomeHeader subtitle={subtitle} />
-
         {isCompletedToday && todaysWorkout !== null ? (
           <CompletedWorkoutCard workout={todaysWorkout} />
         ) : todaysWorkout !== null ? (

@@ -1,8 +1,7 @@
 import { useState } from 'react'
-import { ActivityIndicator, Text, View } from 'react-native'
+import { ActivityIndicator, Alert, Text, View } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 
-import { ConfirmationSheet } from '@/components/ui/confirmation-sheet'
 import { ProposalActions } from '@/components/proposal/proposal-actions'
 import { ProposalExerciseRow } from '@/components/proposal/proposal-exercise-row'
 import { ProposalHeader } from '@/components/proposal/proposal-header'
@@ -21,7 +20,6 @@ export const WorkoutProposal = ({ workoutId, mode = 'proposal', onSaved, onDisca
   const updateMutation = useUpdateWorkoutMutation()
 
   const [editableExercises, setEditableExercises] = useState<ApiExercise[] | null>(null)
-  const [showDiscardModal, setShowDiscardModal] = useState(false)
 
   // Initialize editable state from raw workout data (once)
   if (rawWorkout !== null && editableExercises === null) {
@@ -56,34 +54,40 @@ export const WorkoutProposal = ({ workoutId, mode = 'proposal', onSaved, onDisca
   }
 
   const handleSave = () => {
-    updateMutation.mutate(
-      { id: workoutId, payload: { exercises: editableExercises } },
-      { onSuccess: onSaved },
-    )
+    updateMutation.mutate({ id: workoutId, payload: { exercises: editableExercises } }, { onSuccess: onSaved })
   }
 
   const handleDiscardPress = () => {
     if (isDirty) {
-      setShowDiscardModal(true)
+      const title = mode === 'edit' ? 'Discard changes?' : 'Discard edits?'
+      const description =
+        mode === 'edit' ? 'Your changes will not be saved.' : 'The original workout will still be in your library.'
+      Alert.alert(title, description, [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Discard', style: 'destructive', onPress: onDiscard },
+      ])
     } else {
       onDiscard()
     }
   }
 
-  const saveError = updateMutation.error !== null
-    ? (updateMutation.error instanceof Error ? updateMutation.error.message : 'Failed to save')
-    : null
+  const saveError =
+    updateMutation.error !== null
+      ? updateMutation.error instanceof Error
+        ? updateMutation.error.message
+        : 'Failed to save'
+      : null
 
   return (
     <View className="flex-1">
       <KeyboardAwareScrollView
         className="flex-1"
-        contentContainerStyle={{ paddingTop: 16, paddingBottom: 16 }}
+        contentContainerStyle={{ paddingTop: 16, paddingBottom: 16, paddingHorizontal: 20 }}
         keyboardShouldPersistTaps="handled"
       >
         <ProposalHeader workout={workout} exerciseCount={editableExercises.length} />
 
-        <Text className="text-base font-inter-semibold text-content-primary px-5 mb-3">Exercises</Text>
+        <Text className="text-base font-inter-semibold text-content-primary ml-1 mb-3">Exercises</Text>
 
         <View className="gap-3">
           {editableExercises.map((exercise, index) => (
@@ -111,18 +115,6 @@ export const WorkoutProposal = ({ workoutId, mode = 'proposal', onSaved, onDisca
         saveError={saveError}
         exerciseCount={editableExercises.length}
         mode={mode}
-      />
-
-      <ConfirmationSheet
-        visible={showDiscardModal}
-        title={mode === 'edit' ? 'Discard changes?' : 'Discard edits?'}
-        description={mode === 'edit' ? 'Your changes will not be saved.' : 'The original workout will still be in your library.'}
-        confirmLabel="Discard"
-        onCancel={() => setShowDiscardModal(false)}
-        onConfirm={() => {
-          setShowDiscardModal(false)
-          onDiscard()
-        }}
       />
     </View>
   )

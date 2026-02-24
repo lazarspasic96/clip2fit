@@ -1,14 +1,12 @@
 import { FlashList } from '@shopify/flash-list'
 import { useRouter } from 'expo-router'
 import { AlertCircle, RefreshCw, Sliders } from 'lucide-react-native'
-import { useState } from 'react'
 import { ActivityIndicator, Pressable, Text, View } from 'react-native'
 
 import { CardMotionPreview } from '@/components/catalog/designs/card-motion-preview'
 import { CatalogActiveFilters } from '@/components/catalog/shared/catalog-active-filters'
 import { CatalogEmptyState } from '@/components/catalog/shared/catalog-empty-state'
 import { CatalogFilterChips } from '@/components/catalog/shared/catalog-filter-chips'
-import { CatalogFilterSheet } from '@/components/catalog/shared/catalog-filter-sheet'
 import { CatalogSearchBar } from '@/components/catalog/shared/catalog-search-bar'
 import { Colors } from '@/constants/colors'
 import type { CatalogExercise, CatalogFilters } from '@/types/catalog'
@@ -64,7 +62,6 @@ export const CardCarouselDesign = ({
   bottomInset,
 }: CatalogDesignProps) => {
   const router = useRouter()
-  const [filterSheetVisible, setFilterSheetVisible] = useState(false)
 
   // Exclude muscle from badge count (shown inline as chips)
   const sheetFilterCount = [
@@ -102,11 +99,6 @@ export const CardCarouselDesign = ({
       force: null,
       mechanic: null,
     }))
-  }
-
-  const handleFilterApply = (applied: CatalogFilters) => {
-    setFilters(applied)
-    setFilterSheetVisible(false)
   }
 
   const getResultLabel = (): string => {
@@ -168,7 +160,7 @@ export const CardCarouselDesign = ({
         </View>
 
         <Pressable
-          onPress={() => setFilterSheetVisible(true)}
+          onPress={() => router.push('/(protected)/sheets/catalog-filters')}
           className="w-12 h-12 rounded-[14px] border bg-background-secondary items-center justify-center"
           style={{
             borderCurve: 'continuous',
@@ -266,12 +258,6 @@ export const CardCarouselDesign = ({
         )}
       </View>
 
-      <CatalogFilterSheet
-        visible={filterSheetVisible}
-        onDismiss={() => setFilterSheetVisible(false)}
-        filters={filters}
-        onApply={handleFilterApply}
-      />
     </View>
   )
 }

@@ -14,11 +14,9 @@ export interface ProcessingState {
 }
 
 export type ConversionJobState = 'idle' | 'processing' | 'completed' | 'error' | 'existing'
-export type PresentationMode = 'fullscreen' | 'minimized' | 'hidden'
 
 export interface ConversionState {
   jobState: ConversionJobState
-  presentation: PresentationMode
   jobId: string | null
   workoutId: string | null
   sourceUrl: string

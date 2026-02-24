@@ -7,6 +7,7 @@ import type {
   ApiWorkout,
   PatchWorkoutPayload,
 } from '@/types/api'
+import type { CreateWorkoutPayload } from '@/types/catalog'
 import { mapApiWorkout, mapProfileToApi } from '@/types/api'
 import type { UserProfile } from '@/types/profile'
 import type { WorkoutPlan } from '@/types/workout'
@@ -196,6 +197,20 @@ export const useDeleteWorkoutMutation = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.workouts.all })
       queryClient.invalidateQueries({ queryKey: queryKeys.schedule.current })
+    },
+  })
+}
+
+// --- useCreateWorkoutMutation ---
+
+export const useCreateWorkoutMutation = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (payload: CreateWorkoutPayload) =>
+      apiPost<ApiWorkout>('/api/workouts', payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.workouts.all })
     },
   })
 }

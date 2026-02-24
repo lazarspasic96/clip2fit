@@ -21,10 +21,10 @@ export interface ApiWorkout {
   id: string
   title: string
   description: string | null
-  platform: string
+  platform: string | null
   creatorName: string | null
   creatorHandle: string | null
-  sourceUrl: string
+  sourceUrl: string | null
   thumbnailUrl: string | null
   estimatedDurationMinutes: number | null
   difficulty: string | null
@@ -56,7 +56,7 @@ export interface ApiConvertResponse {
 export interface ApiProfilePayload {
   fullName?: string
   gender?: string
-  age?: number
+  dateOfBirth?: string
   height?: number
   heightUnit?: 'cm' | 'in'
   weight?: number
@@ -69,6 +69,7 @@ export interface ApiProfileResponse {
   id: string
   fullName: string | null
   gender: string | null
+  dateOfBirth: string | null
   age: number | null
   height: number | null
   heightUnit: 'cm' | 'in' | null
@@ -160,7 +161,8 @@ const mapExercise = (api: ApiExercise): WorkoutExercise => ({
 const VALID_PLATFORMS = ['tiktok', 'instagram', 'youtube', 'facebook', 'twitter'] as const
 type Platform = (typeof VALID_PLATFORMS)[number]
 
-const toPlatform = (raw: string): Platform => {
+const toPlatform = (raw: string | null): Platform | null => {
+  if (raw === null) return null
   const lower = raw.toLowerCase()
   if (VALID_PLATFORMS.includes(lower as Platform)) return lower as Platform
   return 'instagram'
@@ -181,7 +183,7 @@ export const mapApiWorkout = (api: ApiWorkout): WorkoutPlan => ({
   platform: toPlatform(api.platform),
   creatorName: api.creatorName ?? null,
   creatorHandle: api.creatorHandle ?? '',
-  sourceUrl: api.sourceUrl,
+  sourceUrl: api.sourceUrl ?? '',
   thumbnailUrl: api.thumbnailUrl ?? '',
   exercises: api.exercises.map((ex) => mapExercise(ex)),
   estimatedDurationMinutes: api.estimatedDurationMinutes ?? 0,
@@ -197,7 +199,7 @@ export const mapProfileToApi = (profile: Partial<UserProfile>): ApiProfilePayloa
 
   if (profile.fullName !== undefined) payload.fullName = profile.fullName
   if (profile.gender !== undefined) payload.gender = profile.gender
-  if (profile.age !== undefined) payload.age = profile.age
+  if (profile.dateOfBirth !== undefined) payload.dateOfBirth = profile.dateOfBirth
   if (profile.height !== undefined) payload.height = profile.height
   if (profile.weight !== undefined) payload.weight = profile.weight
   if (profile.fitnessGoal !== undefined) payload.fitnessGoal = profile.fitnessGoal
@@ -219,6 +221,7 @@ export const mapApiProfileToMobile = (api: ApiProfileResponse): UserProfile => {
 
   if (api.fullName !== null) profile.fullName = api.fullName
   if (api.gender !== null) profile.gender = api.gender as Gender
+  if (api.dateOfBirth !== null) profile.dateOfBirth = api.dateOfBirth
   if (api.age !== null) profile.age = api.age
   if (api.height !== null) profile.height = api.height
   if (api.weight !== null) profile.weight = api.weight

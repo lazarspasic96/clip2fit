@@ -3,19 +3,18 @@ import { Onest_400Regular } from '@expo-google-fonts/onest'
 import { DarkTheme, ThemeProvider } from '@react-navigation/native'
 import { useFonts } from 'expo-font'
 import { Stack, useRouter, useSegments } from 'expo-router'
-import { ShareIntentProvider, useShareIntentContext } from 'expo-share-intent'
+import { useIncomingShare } from 'expo-sharing'
 import * as SplashScreen from 'expo-splash-screen'
 import * as SystemUI from 'expo-system-ui'
 import { StatusBar } from 'expo-status-bar'
 import { useEffect } from 'react'
-import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { KeyboardProvider } from 'react-native-keyboard-controller'
 import 'react-native-reanimated'
 import '../global.css'
 
 import { AuthProvider, useAuth } from '@/contexts/auth-context'
-import { ConversionProvider } from '@/contexts/conversion-context'
+import { ConversionProvider, useConversion } from '@/contexts/conversion-context'
 import { AppQueryClientProvider } from '@/contexts/query-client'
 import { FloatingConversionPill } from '@/components/processing/floating-conversion-pill'
 import { Colors } from '@/constants/colors'
@@ -32,19 +31,42 @@ export const unstable_settings = {
   anchor: '(protected)',
 }
 
+const ShareIntentHandler = () => {
+  const { session, onboardingComplete } = useAuth()
+  const { state, startConversion } = useConversion()
+  const { sharedPayloads, clearSharedPayloads } = useIncomingShare()
+
+  useEffect(() => {
+    if (
+      session !== null &&
+      onboardingComplete &&
+      sharedPayloads.length > 0 &&
+      state.jobState === 'idle'
+    ) {
+      const firstPayload = sharedPayloads[0]
+      const sharedUrl = firstPayload?.value
+      if (sharedUrl !== undefined && sharedUrl !== null) {
+        startConversion(sharedUrl)
+        clearSharedPayloads()
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only react to new shared payloads
+  }, [sharedPayloads, session, onboardingComplete])
+
+  return null
+}
+
 const RootNavigator = () => {
   const { session, initialized, onboardingComplete } = useAuth()
-  const { hasShareIntent } = useShareIntentContext()
   const segments = useSegments()
   const router = useRouter()
 
   useEffect(() => {
-    console.log('[RootNav] auth effect — initialized:', initialized, 'session:', !!session, 'onboardingComplete:', onboardingComplete, 'hasShareIntent:', hasShareIntent, 'segments:', segments)
+    console.log('[RootNav] auth effect — initialized:', initialized, 'session:', !!session, 'onboardingComplete:', onboardingComplete, 'segments:', segments)
     if (!initialized) return
 
     const inAuthGroup = segments[0] === '(auth)'
     const inOnboarding = segments.includes('onboarding' as never)
-    const inProcessUrl = segments.includes('process-url' as never)
 
     if (!session && !inAuthGroup) {
       console.log('[RootNav] → redirect to welcome (no session)')
@@ -63,12 +85,7 @@ const RootNavigator = () => {
       router.replace('/(protected)/(tabs)/(home)' as never)
       return
     }
-
-    if (session && onboardingComplete && hasShareIntent && !inProcessUrl) {
-      console.log('[RootNav] → redirect to process-url (share intent detected)')
-      router.replace('/(protected)/process-url' as never)
-    }
-  }, [initialized, session, onboardingComplete, segments, hasShareIntent])
+  }, [initialized, session, onboardingComplete, segments])
 
   if (!initialized) return null
 
@@ -106,24 +123,15 @@ const RootLayout = () => {
   return (
     <GestureHandlerRootView className="flex-1 bg-background-primary">
       <AppQueryClientProvider>
-        <ShareIntentProvider
-          options={{
-            debug: __DEV__,
-            resetOnBackground: true,
-            onResetShareIntent: () => {},
-          }}
-        >
-          <KeyboardProvider>
-            <BottomSheetModalProvider>
-              <AuthProvider>
-                <ConversionProvider>
-                  <RootNavigator />
-                  <FloatingConversionPill />
-                </ConversionProvider>
-              </AuthProvider>
-            </BottomSheetModalProvider>
-          </KeyboardProvider>
-        </ShareIntentProvider>
+        <KeyboardProvider>
+          <AuthProvider>
+            <ConversionProvider>
+              <RootNavigator />
+              <ShareIntentHandler />
+              <FloatingConversionPill />
+            </ConversionProvider>
+          </AuthProvider>
+        </KeyboardProvider>
       </AppQueryClientProvider>
     </GestureHandlerRootView>
   )

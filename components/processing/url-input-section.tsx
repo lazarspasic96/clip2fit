@@ -23,7 +23,6 @@ interface UrlInputSectionProps {
 export const UrlInputSection = ({ onSubmit, errorMessage, initialUrl }: UrlInputSectionProps) => {
   const [url, setUrl] = useState(initialUrl ?? '')
   const [hasAttemptedValidation, setHasAttemptedValidation] = useState(false)
-
   const validation = validateWorkoutUrl(url)
   const showError = hasAttemptedValidation && url.length > 0 && !validation.isValid
 

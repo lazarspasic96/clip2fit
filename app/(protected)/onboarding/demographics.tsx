@@ -1,4 +1,7 @@
+import { useState } from 'react'
+
 import { Button } from '@/components/ui/button'
+import { DateOfBirthPicker } from '@/components/ui/native-ui/date-of-birth-picker'
 import { FormInput } from '@/components/ui/form-input'
 import { FormRadioGroup } from '@/components/ui/form-radio-group'
 import { FormSegmentedControl } from '@/components/ui/form-segmented-control'
@@ -7,6 +10,7 @@ import { useProfileForm } from '@/contexts/profile-form-context'
 import { useZodForm } from '@/hooks/use-zod-form'
 import type { Gender, HeightUnit, WeightUnit } from '@/types/profile'
 import { GENDERS } from '@/types/profile'
+import { formatDateToISO } from '@/utils/format-profile'
 import { useRouter } from 'expo-router'
 import { FormProvider } from 'react-hook-form'
 import { Text, View } from 'react-native'
@@ -17,7 +21,6 @@ import { z } from 'zod'
 const userInfoSchema = z.object({
   fullName: z.string().optional().default(''),
   gender: z.enum(['male', 'female', 'other', 'prefer_not_to_say']).optional(),
-  age: z.string().optional().default(''),
   height: z.string().optional().default(''),
   heightUnit: z.enum(['cm', 'ft']).default('cm'),
   weight: z.string().optional().default(''),
@@ -31,12 +34,13 @@ const DemographicsScreen = () => {
   const { updateField } = useProfileForm()
   const insets = useSafeAreaInsets()
 
+  const [dateOfBirth, setDateOfBirth] = useState<Date | undefined>()
+
   const form = useZodForm({
     schema: userInfoSchema,
     defaultValues: {
       fullName: '',
       gender: undefined,
-      age: '',
       height: '',
       heightUnit: 'cm' as HeightUnit,
       weight: '',
@@ -50,7 +54,7 @@ const DemographicsScreen = () => {
   const onNext = (data: UserInfoValues) => {
     if (data.fullName) updateField('fullName', data.fullName)
     if (data.gender) updateField('gender', data.gender as Gender)
-    if (data.age) updateField('age', parseInt(data.age, 10))
+    if (dateOfBirth !== undefined) updateField('dateOfBirth', formatDateToISO(dateOfBirth))
     if (data.height) {
       updateField('height', parseFloat(data.height))
       updateField('heightUnit', data.heightUnit as HeightUnit)
@@ -84,7 +88,7 @@ const DemographicsScreen = () => {
 
             <FormRadioGroup name="gender" label="Gender" options={GENDERS} />
 
-            <FormInput name="age" label="Age" placeholder="e.g. 25" keyboardType="number-pad" />
+            <DateOfBirthPicker value={dateOfBirth} onChange={setDateOfBirth} />
 
             <View className="gap-1.5">
               <Label text="Height" />

@@ -1,9 +1,10 @@
-import { Check, Plus } from 'lucide-react-native'
+import { Check, Plus, X } from 'lucide-react-native'
 import { Pressable, Text, View } from 'react-native'
 import Animated, { FadeInUp } from 'react-native-reanimated'
 
 import { cn } from '@/components/ui/cn'
 import { Colors } from '@/constants/colors'
+import type { FlashAction } from '@/stores/schedule-flash-store'
 import type { DayOfWeek, ScheduleEntry } from '@/types/schedule'
 import { DAY_LABELS } from '@/utils/schedule'
 
@@ -12,11 +13,11 @@ interface ScheduleDayRowProps {
   dayOfWeek: DayOfWeek
   isToday: boolean
   onPress: () => void
-  showCheckmark: boolean
+  flashIcon: FlashAction | null
   index: number
 }
 
-export const ScheduleDayRow = ({ entry, dayOfWeek, isToday, onPress, showCheckmark, index }: ScheduleDayRowProps) => {
+export const ScheduleDayRow = ({ entry, dayOfWeek, isToday, onPress, flashIcon, index }: ScheduleDayRowProps) => {
   const hasWorkout = entry.workoutId !== null
 
   return (
@@ -68,10 +69,14 @@ export const ScheduleDayRow = ({ entry, dayOfWeek, isToday, onPress, showCheckma
             )}
           </View>
 
-          {/* Success checkmark flash */}
-          {showCheckmark && (
+          {/* Flash icon after assign/clear */}
+          {flashIcon !== null && (
             <Animated.View entering={FadeInUp.springify()}>
-              <Check size={20} color={Colors.brand.accent} pointerEvents="none" />
+              {flashIcon === 'clear' ? (
+                <X size={20} color={Colors.badge.error.content} pointerEvents="none" />
+              ) : (
+                <Check size={20} color={Colors.brand.accent} pointerEvents="none" />
+              )}
             </Animated.View>
           )}
         </View>

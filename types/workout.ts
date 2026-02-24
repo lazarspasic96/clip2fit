@@ -30,7 +30,7 @@ export interface WorkoutPlan {
   id: string
   title: string
   description: string
-  platform: 'tiktok' | 'instagram' | 'youtube' | 'facebook' | 'twitter'
+  platform: 'tiktok' | 'instagram' | 'youtube' | 'facebook' | 'twitter' | null
   creatorName: string | null
   creatorHandle: string
   sourceUrl: string

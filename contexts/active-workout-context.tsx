@@ -1,6 +1,7 @@
+import type { ApiSessionResponse } from '@/types/api'
 import type { WorkoutExercise, WorkoutPlan, WorkoutSession } from '@/types/workout'
 import { clearPersistedSession, loadSession, saveSession } from '@/utils/session-storage'
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useRef, useState } from 'react'
 
 const isFinished = (item: { status: string }) =>
   item.status === 'completed' || item.status === 'skipped'
@@ -130,12 +131,17 @@ interface WorkoutContextValue {
   navigateExercise: (index: number) => void
   finishSession: () => void
   clearSession: () => void
+  finishResult: ApiSessionResponse | null
+  setFinishResult: (result: ApiSessionResponse) => void
+  clearFinishResult: () => void
 }
 
 const ActiveWorkoutContext = createContext<WorkoutContextValue | undefined>(undefined)
 
 export const ActiveWorkoutProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<WorkoutSession | null>(() => loadSession())
+  const finishResultRef = useRef<ApiSessionResponse | null>(null)
+  const [, setFinishResultVersion] = useState(0)
 
   const updateAndPersist = (updater: (prev: WorkoutSession) => WorkoutSession) => {
     setSession((prev) => {
@@ -194,6 +200,16 @@ export const ActiveWorkoutProvider = ({ children }: { children: React.ReactNode 
     ? { completed: 0, total: 0 }
     : { completed: session.plan.exercises.filter(isFinished).length, total: session.plan.exercises.length }
 
+  const setFinishResultValue = (result: ApiSessionResponse) => {
+    finishResultRef.current = result
+    setFinishResultVersion((v) => v + 1)
+  }
+
+  const clearFinishResult = () => {
+    finishResultRef.current = null
+    setFinishResultVersion((v) => v + 1)
+  }
+
   const value: WorkoutContextValue = {
     session,
     activeWorkoutId,
@@ -207,6 +223,9 @@ export const ActiveWorkoutProvider = ({ children }: { children: React.ReactNode 
     navigateExercise,
     finishSession,
     clearSession,
+    finishResult: finishResultRef.current,
+    setFinishResult: setFinishResultValue,
+    clearFinishResult,
   }
 
   return <ActiveWorkoutContext.Provider value={value}>{children}</ActiveWorkoutContext.Provider>

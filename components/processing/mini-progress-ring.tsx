@@ -43,29 +43,31 @@ export const MiniProgressRing = ({
       className="items-center justify-center"
       style={{ width: SIZE, height: SIZE }}
     >
-      <Svg width={SIZE} height={SIZE} className="absolute">
-        <Circle
-          cx={SIZE / 2}
-          cy={SIZE / 2}
-          r={RADIUS}
-          stroke={Colors.background.tertiary}
-          strokeWidth={STROKE_WIDTH}
-          fill="none"
-        />
-        <AnimatedCircle
-          cx={SIZE / 2}
-          cy={SIZE / 2}
-          r={RADIUS}
-          stroke={strokeColor}
-          strokeWidth={STROKE_WIDTH}
-          fill="none"
-          strokeDasharray={CIRCUMFERENCE}
-          animatedProps={animatedProps}
-          strokeLinecap="round"
-          rotation={-90}
-          origin={`${SIZE / 2}, ${SIZE / 2}`}
-        />
-      </Svg>
+      <View className="absolute inset-0">
+        <Svg width={SIZE} height={SIZE}>
+          <Circle
+            cx={SIZE / 2}
+            cy={SIZE / 2}
+            r={RADIUS}
+            stroke={Colors.background.tertiary}
+            strokeWidth={STROKE_WIDTH}
+            fill="none"
+          />
+          <AnimatedCircle
+            cx={SIZE / 2}
+            cy={SIZE / 2}
+            r={RADIUS}
+            stroke={strokeColor}
+            strokeWidth={STROKE_WIDTH}
+            fill="none"
+            strokeDasharray={CIRCUMFERENCE}
+            animatedProps={animatedProps}
+            strokeLinecap="round"
+            rotation={-90}
+            origin={`${SIZE / 2}, ${SIZE / 2}`}
+          />
+        </Svg>
+      </View>
       <PlatformBadge platform={platform} size={18} />
     </View>
   )

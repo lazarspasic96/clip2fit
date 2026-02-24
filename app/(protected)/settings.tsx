@@ -1,38 +1,22 @@
 import { useRouter } from 'expo-router'
 import { X } from 'lucide-react-native'
-import { useState } from 'react'
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { EditBodyMeasurementsSheet } from '@/components/settings/edit-body-measurements-sheet'
-import { EditFitnessGoalSheet } from '@/components/settings/edit-fitness-goal-sheet'
-import { EditPersonalInfoSheet } from '@/components/settings/edit-personal-info-sheet'
 import { ProfileHeader } from '@/components/settings/profile-header'
 import { SettingsRow } from '@/components/settings/settings-row'
 import { SettingsSection } from '@/components/settings/settings-section'
 import { Button } from '@/components/ui/button'
 import { Colors } from '@/constants/colors'
 import { useAuth } from '@/contexts/auth-context'
-import { useSaveProfileMutation } from '@/hooks/use-api'
 import { useProfileQuery } from '@/hooks/use-profile-query'
-import type { UserProfile } from '@/types/profile'
-import { displayGender, displayGoal, formatHeight, formatWeight } from '@/utils/format-profile'
-
-type ActiveSheet = 'personal' | 'body' | 'goal' | null
+import { displayGender, displayGoal, formatDateOfBirth, formatHeight, formatWeight } from '@/utils/format-profile'
 
 const SettingsScreen = () => {
   const { user, signOut } = useAuth()
   const router = useRouter()
   const insets = useSafeAreaInsets()
   const { profile, isLoading } = useProfileQuery()
-  const saveMutation = useSaveProfileMutation()
-  const [activeSheet, setActiveSheet] = useState<ActiveSheet>(null)
-
-  const handleSave = (data: Partial<UserProfile>) => {
-    saveMutation.mutate(data, {
-      onSuccess: () => setActiveSheet(null),
-    })
-  }
 
   return (
     <View className="flex-1 bg-background-primary" style={{ paddingTop: insets.top }}>
@@ -52,16 +36,21 @@ const SettingsScreen = () => {
           <ProfileHeader fullName={profile?.fullName} email={user?.email} />
 
           <SettingsSection title="Personal Info">
-            <SettingsRow label="Name" value={profile?.fullName} onPress={() => setActiveSheet('personal')} />
+            <SettingsRow label="Name" value={profile?.fullName} onPress={() => router.push('/(protected)/sheets/edit-personal-info')} />
             <SettingsRow
               label="Gender"
               value={displayGender(profile?.gender)}
-              onPress={() => setActiveSheet('personal')}
+              onPress={() => router.push('/(protected)/sheets/edit-personal-info')}
+            />
+            <SettingsRow
+              label="Date of Birth"
+              value={formatDateOfBirth(profile?.dateOfBirth)}
+              onPress={() => router.push('/(protected)/sheets/edit-personal-info')}
             />
             <SettingsRow
               label="Age"
               value={profile?.age !== undefined ? String(profile.age) : undefined}
-              onPress={() => setActiveSheet('personal')}
+              onPress={() => router.push('/(protected)/sheets/edit-personal-info')}
             />
           </SettingsSection>
 
@@ -69,12 +58,12 @@ const SettingsScreen = () => {
             <SettingsRow
               label="Height"
               value={formatHeight(profile?.height, profile?.heightUnit)}
-              onPress={() => setActiveSheet('body')}
+              onPress={() => router.push('/(protected)/sheets/edit-body-measurements')}
             />
             <SettingsRow
               label="Weight"
               value={formatWeight(profile?.weight, profile?.weightUnit)}
-              onPress={() => setActiveSheet('body')}
+              onPress={() => router.push('/(protected)/sheets/edit-body-measurements')}
             />
           </SettingsSection>
 
@@ -82,7 +71,7 @@ const SettingsScreen = () => {
             <SettingsRow
               label="Goal"
               value={displayGoal(profile?.fitnessGoal)}
-              onPress={() => setActiveSheet('goal')}
+              onPress={() => router.push('/(protected)/sheets/edit-fitness-goal')}
             />
           </SettingsSection>
 
@@ -94,32 +83,6 @@ const SettingsScreen = () => {
         </ScrollView>
       )}
 
-      <EditPersonalInfoSheet
-        visible={activeSheet === 'personal'}
-        onDismiss={() => setActiveSheet(null)}
-        currentValues={profile ?? {}}
-        onSave={handleSave}
-        saving={saveMutation.isPending}
-        error={saveMutation.error instanceof Error ? saveMutation.error.message : null}
-      />
-
-      <EditBodyMeasurementsSheet
-        visible={activeSheet === 'body'}
-        onDismiss={() => setActiveSheet(null)}
-        currentValues={profile ?? {}}
-        onSave={handleSave}
-        saving={saveMutation.isPending}
-        error={saveMutation.error instanceof Error ? saveMutation.error.message : null}
-      />
-
-      <EditFitnessGoalSheet
-        visible={activeSheet === 'goal'}
-        onDismiss={() => setActiveSheet(null)}
-        currentGoal={profile?.fitnessGoal}
-        onSave={handleSave}
-        saving={saveMutation.isPending}
-        error={saveMutation.error instanceof Error ? saveMutation.error.message : null}
-      />
     </View>
   )
 }

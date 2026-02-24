@@ -101,7 +101,7 @@ const AddWorkoutScreen = () => {
         <Pressable
           onPress={() => {
             router.back()
-            setTimeout(() => router.push('/(protected)/process-url' as never), 300)
+            setTimeout(() => router.push('/(protected)/process-url'), 300)
           }}
           className="bg-background-secondary rounded-2xl p-6 flex-row items-center gap-4"
         >

@@ -1,4 +1,4 @@
-import { useState, useSyncExternalStore } from 'react'
+import { useSyncExternalStore } from 'react'
 import { View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -8,8 +8,8 @@ import { CatalogHeader } from '@/components/catalog/shared/catalog-header'
 import { useWorkoutBuilder } from '@/contexts/workout-builder-context'
 import { useCatalogInfinite } from '@/hooks/use-catalog'
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
+import { catalogFilterStore } from '@/stores/catalog-filter-store'
 import type { CatalogExercise, CatalogFilters } from '@/types/catalog'
-import { EMPTY_FILTERS } from '@/types/catalog'
 
 const CTA_HEIGHT = 96
 
@@ -19,7 +19,9 @@ const ExerciseCatalogScreen = () => {
   const selectionVersion = useSyncExternalStore(builder.subscribe, builder.getSnapshot)
   const selectedCount = builder.getSelectedCount()
 
-  const [filters, setFilters] = useState<CatalogFilters>(EMPTY_FILTERS)
+  // Subscribe to catalog filter store
+  useSyncExternalStore(catalogFilterStore.subscribe, catalogFilterStore.getSnapshot)
+  const filters = catalogFilterStore.getFilters()
 
   const debouncedSearch = useDebouncedValue(filters.search, 300)
   const activeFilters: CatalogFilters = { ...filters, search: debouncedSearch }
@@ -27,6 +29,14 @@ const ExerciseCatalogScreen = () => {
 
   const handleToggle = (exercise: CatalogExercise) => {
     builder.toggleExercise(exercise)
+  }
+
+  const setFilters = (next: CatalogFilters | ((prev: CatalogFilters) => CatalogFilters)) => {
+    if (typeof next === 'function') {
+      catalogFilterStore.setFilters(next(catalogFilterStore.getFilters()))
+    } else {
+      catalogFilterStore.setFilters(next)
+    }
   }
 
   return (

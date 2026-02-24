@@ -1,116 +1,135 @@
-# Handoff: Weekly Workout Schedule
+# Handoff: Form Coach — Pose Detection Camera
 
 ## Goal
 
-Weekly schedule system: backend API + 3-tab mobile layout + Schedule screen with 3 design variants (Stack/Calendar/Grid) + home screen integration. Full spec: `plans/weekly-schedule.md`.
+Add a real-time exercise form feedback screen. User taps "Form Coach" on home screen → exercise selection bottom sheet → camera opens full-screen → skeleton overlay (dots + connecting lines) drawn on top of live camera via Skia, driven by Reanimated SharedValue updated on the UI thread via `runOnUI`. Foundation for later LLM-powered form coaching.
+
+Full spec: `plans/plan-form-coach-pose-camera.md`
 
 ## Current Progress
 
-### Phase 0: Backend — DONE
+### Phase 0: Dependencies & Smoke Tests — DONE
 
-Backend repo: `/Users/lazarspasic/git/clip2fit-api/src`
+- Installed `@shopify/react-native-skia`, `expo-camera`, `expo-screen-orientation`
+- Camera permissions added to `app.json` (iOS `NSCameraUsageDescription` + Android `CAMERA`)
+- Skia + Reanimated v4 smoke test passed (SharedValues read by Skia Canvas on UI thread at 60 FPS, zero React re-renders)
 
-- **Schema**: `weeklySchedules` table in `src/lib/db/schema.ts` — uuid PK, userId (FK profiles, cascade), dayOfWeek (smallint 0-6), workoutId (FK workouts, set null), isRestDay. Constraints: unique(userId, dayOfWeek), check day range, check rest-or-workout mutual exclusion.
-- **Relations**: Added `scheduleEntries: many(weeklySchedules)` to `profilesRelations` and `workoutsRelations`. Added `weeklySchedulesRelations` (one user, one workout).
-- **Validation**: `scheduleEntrySchema` and `upsertScheduleSchema` in `src/lib/validations.ts` — 7 entries, unique days, no workout+rest simultaneously.
-- **Route**: `src/app/api/schedules/route.ts` — GET (fetch with joined workouts) + PUT (bulk upsert via delete+insert transaction, re-query with joins).
-- **Migration**: Generated via `drizzle-kit generate` → `drizzle/0000_funny_pandemic.sql`. **Not yet run** — needs `drizzle-kit migrate` or `drizzle-kit push`.
+### Phase 1: Entry Point & Navigation — DONE
 
-### Phase 1: Mobile Data Layer — DONE
+- "Form Coach" 3rd tile added to `components/home/bottom-action-buttons.tsx` (ScanLine icon, lime #84cc16)
+- `form-coach` screen registered in `app/(protected)/_layout.tsx` as `fullScreenModal`, `slide_from_bottom`, `gestureEnabled: false`
+- Placeholder `app/(protected)/form-coach.tsx` created with close button, exercise label
 
-- `types/schedule.ts` — `DayOfWeek`, `DayStatus`, `WeekDay`, `ApiScheduleEntry`, `ScheduleEntry`, `WeeklySchedule`, `UpsertSchedulePayload`
-- `utils/api.ts` — Added `apiPut` (same pattern as `apiPatch`)
-- `constants/query-keys.ts` — Added `schedule.current`
-- `hooks/use-schedule.ts` — `useScheduleQuery()` (fills missing days to always return 7), `useUpdateScheduleMutation()` (invalidates schedule key)
-- `utils/schedule.ts` — `DAY_LABELS`, `DAY_SHORT_LABELS`, `getTodayDayOfWeek()`, `buildEmptySchedule()`, `scheduleToPayload()`, `buildWeekDaysFromSchedule()`, `getScheduleStats()`
+### Phase 2: Exercise Selection Sheet — DONE
 
-### Phase 2: Tab Bar — DONE
+- `components/form-coach/exercise-sheet.tsx` — BottomSheetModal with deduplicated exercise names from user workouts. Supports two modes: navigation (from home) and in-place selection (from camera via `onSelect` prop)
+- Wired into home screen via ref, skips sheet if no workouts
+- Exercise label at bottom of camera screen is tappable → reopens sheet
 
-- `app/(protected)/(tabs)/_layout.tsx` — Added `schedule` screen between index and my-workouts
-- `components/ui/custom-tab-bar.tsx` — 3 tabs + FAB: Home | Schedule | + | Library. Dynamic loop with FAB after index 1. CalendarDays icon for Schedule. Renamed "My Workouts" → "Library".
+### Phase 3: Local Expo Module Scaffold — DONE
 
-### Phase 3: Schedule Screen — DONE (15 new files)
+- `modules/expo-pose-camera/` created manually (not via `create-expo-module` — interactive prompt doesn't work in CI)
+- TypeScript types: `PoseLandmark`, `PoseDetectedEvent`, `ExposePoseCameraViewProps`
+- `requireNativeView('ExposePoseCamera')` wrapper
+- `expo-module.config.json` with iOS + Android module definitions
+- `package.json` added (required for proper module resolution)
+- `expo-pose-camera.podspec` with `source_files = 'ios/*.{h,m,mm,swift}', 'ios/**/*.{h,m,mm,swift}'`
 
-- `app/(protected)/(tabs)/schedule.tsx` — Orchestrator: segmented control, day press → options/picker sheets, mutation with checkmark flash
-- `components/schedule/schedule-segmented-control.tsx` — Stack/Calendar/Grid toggle
-- `components/schedule/schedule-stats-card.tsx` — Training/rest day counts + muscle coverage pills
-- `components/schedule/schedule-day-row.tsx` — Reusable day row (green/blue accent bars, today badge, FadeInUp stagger, checkmark flash)
-- `components/schedule/layouts/stack-layout.tsx` — 7 vertical ScheduleDayRow cards
-- `components/schedule/layouts/calendar-layout.tsx` — Horizontal week strip + detail card
-- `components/schedule/layouts/grid-layout.tsx` — 2-column compact grid
-- `components/schedule/workout-picker-sheet.tsx` — BottomSheetModal with search, rest day, clear, BottomSheetFlatList of workouts with day badges
-- `components/schedule/workout-picker-item.tsx` — Workout row with muscle pills, duration, difficulty, day badges
-- `components/schedule/day-options-sheet.tsx` — Action sheet: Change Workout / Mark Rest / Assign / Clear
-- `components/schedule/option-row.tsx` — Extracted shared option row component
-- `components/schedule/empty-schedule-state.tsx` — "No workouts yet" with CTA to import
+### Phase 4: iOS Native (Swift) — DONE
 
-### Phase 4: Home Screen Integration — DONE
+- `ios/ExposePoseCameraModule.swift` — Module definition with View, Events("onPoseDetected"), Prop("isActive")
+- `ios/PoseCameraView.swift` — ExpoView subclass:
+  - AVCaptureSession + AVCaptureVideoPreviewLayer (back camera, portrait)
+  - AVCaptureVideoDataOutputSampleBufferDelegate on dedicated serial queue
+  - VNDetectHumanBodyPoseRequest per frame
+  - Multi-person: picks highest confidence sum
+  - Normalizes coordinates (flips Y for Vision's bottom-left origin)
+  - Filters confidence ≤ 0.3, throttles to ~20 FPS
+  - Fires `onPoseDetected` event with landmarks array
+  - `isActive` prop controls session start/stop
 
-- `app/(protected)/(tabs)/index.tsx` — Uses `useScheduleQuery()`, builds `WeekDay[]` via `buildWeekDaysFromSchedule()`, shows today's scheduled workout or "No workout scheduled today" or empty state
-- `components/home/weekly-training-plan.tsx` — "View" button navigates to `/(protected)/(tabs)/schedule`
-- `components/home/day-card.tsx` + `components/home/status-indicator.tsx` — Updated imports from `types/schedule` (was `utils/mock-data`)
-- `hooks/use-api.ts` — `useDeleteWorkoutMutation` now also invalidates `queryKeys.schedule.current`
+### Phase 5: Skeleton Overlay — DONE
 
-### Code Review Fixes — DONE
+- `constants/pose-skeleton.ts` — 19 joint names, 15 bone connections, drawing constants
+- `components/form-coach/skeleton-overlay.tsx` — Skia Canvas reading `SharedValue<PoseLandmark[]>` on UI thread via `useDerivedValue`. Extracted `Bone` and `JointDot` sub-components to avoid hooks-in-loops lint errors. Draws lime lines (strokeWidth 3) and circles (radius 6)
 
-- Extracted `OptionRow` to own file (one component per file rule)
-- Fixed dead branch in `buildWeekDaysFromSchedule` ternary
-- Fixed schedule screen to check both `scheduleLoading` and `workoutsLoading`
-- Added "No workout scheduled today" text on home screen (plan spec)
-- Invalidate schedule query key when workout is deleted
+### Phase 6: Form Coach Screen Polish — DONE
+
+- `components/form-coach/permission-denied-view.tsx` — Camera denied fallback with "Open Settings" button
+- `app/(protected)/form-coach.tsx` — Full screen with:
+  - `useCameraPermissions()` from expo-camera for permission gate
+  - `ExposePoseCameraView` (absoluteFill) with `isActive={isFocused}`
+  - `SkeletonOverlay` (absoluteFill, pointerEvents=none)
+  - `runOnUI` event bridge from `onPoseDetected` → SharedValue
+  - Close button (top-right), exercise label (bottom-center)
+  - Portrait lock via `expo-screen-orientation`
+
+### Phase 7: Android Native (Kotlin) — DONE (code written, not tested)
+
+- `android/build.gradle` — CameraX 1.4.1 + ML Kit pose-detection-accurate 18.0.0-beta5
+- `android/src/main/java/expo/modules/posecamera/ExposePoseCameraModule.kt`
+- `android/src/main/java/expo/modules/posecamera/PoseCameraView.kt` — CameraX + ML Kit, same event format as iOS
+
+### Build Status — iOS BUILD SUCCEEDS, NEEDS RUNTIME VERIFICATION
+
+- `npx expo run:ios` completed successfully (0 errors, 1165 warnings — mostly Skia linker warnings)
+- Swift files confirmed compiled (`.swiftdeps` present in DerivedData)
+- App installed on iPhone 17 Pro Max simulator
+
+### Runtime Blocker Found and Fixed (Native View Registration)
+
+- Symptom at runtime:
+  - `Unimplemented component: <ViewManagerAdapter_ExposePoseCamera>`
+- Root cause:
+  - Local module autolinking metadata for Apple platform was incomplete, so `ExpoModulesProvider.swift` did not register `ExposePoseCameraModule`.
+- Fix:
+  - Updated `modules/expo-pose-camera/expo-module.config.json` to:
+    - use `platforms: ["apple", "android"]`
+    - define `apple.modules`
+    - define `apple.podspecPath`
+    - define `apple.swiftModuleName`
+  - Re-ran `pod install` so `expo-pose-camera` is included in generated module provider and package list.
 
 ## What Worked
 
-- **Bulk upsert via delete+insert in transaction** — simpler than individual upserts, atomic
-- **`buildFullSchedule()` pattern** — API may return 0-7 entries, hook always normalizes to exactly 7
-- **Dynamic tab bar loop** — `state.routes.flatMap` with FAB insertion after index 1 scales to N tabs
-- **`forwardRef` for bottom sheets** — parent controls present/dismiss via ref, sheet is stateless
-- **Haptic feedback** on all picker/options interactions via `expo-haptics`
+- **Custom Expo Module over VisionCamera** — Avoids worklets-core conflict with Reanimated v4
+- **`runOnUI` event bridge** — Public API only, no Reanimated internal C++ headers
+- **Skia reads SharedValues directly** — Proven in smoke test, circle animated at 60 FPS
+- **Sub-components for Skia elements** — Extracted `Bone` and `JointDot` to fix hooks-in-loops ESLint errors
+- **`useCameraPermissions()` from expo-camera** — Cleaner than manual permission checking
 
 ## What Didn't Work / Watch Out For
 
-- **`forwardRef` needs `.displayName`** — ESLint `react/display-name` rule catches this
-- **One component per file** — Initially had `OptionRow` inside `day-options-sheet.tsx`, had to extract
-- **Optimistic updates not yet implemented** — Plan specifies optimistic local update + revert on error with toast. Current implementation does standard mutation (delay between tap and visual update). This is the biggest remaining UX gap.
-- **Pre-existing lint warnings** — Unescaped `'` in `check-email.tsx` and `index.tsx` — not our changes
-- **Typed Routes** — `schedule` route may show TS errors until Metro restarts
+- **`npx create-expo-module --local` interactive prompt** — Fails in non-TTY environments. Had to scaffold manually
+- **Missing podspec** — Local Expo modules MUST have a `.podspec` file for CocoaPods to compile Swift files. Without it, autolinking detects the module but CocoaPods only compiles the dummy .m stub
+- **Podspec `source_files` glob** — `'ios/**/*.{h,m,mm,swift}'` alone did NOT match files in `ios/` directory on this CocoaPods version. Fixed by using BOTH patterns: `'ios/*.{h,m,mm,swift}', 'ios/**/*.{h,m,mm,swift}'`
+- **`videoRotationAngle`** — iOS 17+ only. Project targets iOS 15.1. Fixed with `if #available(iOS 17.0, *)` fallback to `videoOrientation = .portrait`
+- **`prebuild` ≠ `run:ios`** — `prebuild` only generates native project files. `run:ios` actually compiles Swift and installs the binary. User must run `npx expo run:ios` after any native code change
+- **Missing `package.json` in module** — Added for proper module resolution
 
 ## Key Files Reference
 
 | File | Purpose |
 |------|---------|
-| `plans/weekly-schedule.md` | Full implementation spec |
-| `types/schedule.ts` | Schedule types + relocated DayStatus/WeekDay |
-| `utils/schedule.ts` | Day labels, date math, stats, mappers |
-| `hooks/use-schedule.ts` | useScheduleQuery, useUpdateScheduleMutation |
-| `app/(protected)/(tabs)/schedule.tsx` | Schedule tab screen |
-| `components/schedule/*.tsx` | 11 schedule components |
-| `components/schedule/layouts/*.tsx` | 3 layout variants |
-| `components/ui/custom-tab-bar.tsx` | Tab bar (3 tabs + FAB) |
-
-## Current Route Structure
-
-```
-app/
-  _layout.tsx                  # Root: auth + onboarding state machine
-  (auth)/
-    welcome.tsx, login.tsx, signup.tsx, check-email.tsx
-  (protected)/
-    _layout.tsx                # Stack: tabs + modals
-    (tabs)/
-      _layout.tsx              # Custom tab bar: Home | Schedule | + FAB | Library
-      index.tsx                # Home screen
-      schedule.tsx             # Schedule screen (Stack/Calendar/Grid)
-      my-workouts.tsx          # Library screen
-    onboarding/
-    settings.tsx, add-workout.tsx, active-workout.tsx, etc.
-```
+| `plans/plan-form-coach-pose-camera.md` | Full implementation spec |
+| `app/(protected)/form-coach.tsx` | Main camera screen |
+| `components/form-coach/exercise-sheet.tsx` | Exercise selection bottom sheet |
+| `components/form-coach/skeleton-overlay.tsx` | Skia canvas skeleton (Bone/JointDot sub-components) |
+| `components/form-coach/permission-denied-view.tsx` | Camera denied fallback |
+| `components/home/bottom-action-buttons.tsx` | Home screen tiles (3rd = Form Coach) |
+| `constants/pose-skeleton.ts` | Joint names, connections, drawing constants |
+| `modules/expo-pose-camera/` | Local Expo module (entire directory) |
+| `modules/expo-pose-camera/ios/PoseCameraView.swift` | iOS camera + Vision pose detection |
+| `modules/expo-pose-camera/ios/ExposePoseCameraModule.swift` | iOS module definition |
+| `modules/expo-pose-camera/android/.../PoseCameraView.kt` | Android CameraX + ML Kit |
+| `modules/expo-pose-camera/android/.../ExposePoseCameraModule.kt` | Android module definition |
+| `modules/expo-pose-camera/expo-pose-camera.podspec` | CocoaPods spec (critical for iOS) |
 
 ## Next Steps
 
-1. **Run migration** — `cd clip2fit-api && npx drizzle-kit migrate` (or `drizzle-kit push` for dev). The migration file is generated but not applied.
-2. **Optimistic updates** — Add React Query optimistic update in `schedule.tsx` `handleAssign()`: set query data immediately, revert `onError`, show error toast. This is the plan's specified pattern and the biggest UX improvement remaining.
-3. **Test on device** — `npm start` → verify 4-item tab bar, schedule screen loads, segmented control toggles, picker opens, assignments save to API.
-4. **Error toast** — Need a toast library or component for showing mutation errors. Consider `react-native-toast-message` or a custom component.
-5. **Workout history tracking** — `DayStatus` currently doesn't track completed/skipped for past days (all show as `future`). When workout session completion is persisted, `buildWeekDaysFromSchedule` should check completion history.
-6. **`utils/mock-data.ts` cleanup** — `DayStatus` and `WeekDay` types moved to `types/schedule.ts`. If nothing else imports from `utils/mock-data.ts`, it can be removed.
+1. **Runtime verification on iOS** — Open app on simulator/device, tap Form Coach → select exercise → verify camera opens and skeleton draws on a person. The build succeeds but runtime behavior hasn't been verified yet.
+2. **Test on physical iOS device** — Simulator has no real camera. Need a device build via `npx expo run:ios --device` to verify actual pose detection with Apple Vision.
+3. **Android testing** — Run `npx expo run:android`, verify CameraX + ML Kit pose detection works. The Kotlin code is written but completely untested.
+4. **Verify skeleton tracking quality** — Check that skeleton tracks at ≥15 FPS, joints/bones appear at correct positions, multi-person picks correct body, empty frame clears skeleton instantly.
+5. **Edge cases** — Test: deny camera permission → PermissionDeniedView with "Open Settings"; exercise label tap → sheet reopens over live camera; close button → returns to home; camera stops when screen unfocused.
+6. **Performance profiling** — Verify via React DevTools Profiler that FormCoachScreen has zero re-renders during skeleton drawing (only SharedValue mutations on UI thread).

@@ -72,16 +72,16 @@ export interface SelectedExercise {
   restSeconds: number | null
 }
 
-export interface ManualWorkoutPayload {
+export interface CreateWorkoutPayload {
   title: string
   exercises: Array<{
     catalogExerciseId: string
-    name: string
     sets: number
     reps: string
+    targetWeight: number | null
     restBetweenSets: string | null
+    notes: string | null
     order: number
-    muscleGroups: string[]
     isBodyweight: boolean
   }>
 }

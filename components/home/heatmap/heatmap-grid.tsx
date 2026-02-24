@@ -1,31 +1,44 @@
 import { ScrollView, Text, View } from 'react-native'
 
 import type { HeatmapDay } from '@/types/heatmap'
-import { buildHeatmapGrid, getCellColor, getSecondaryColor } from './heatmap-utils'
+import { buildHeatmapGrid, getCellColor, getMonthLabels, getSecondaryColor } from './heatmap-utils'
 
 const CELL_SIZE = 12
+const GAP = 2
 
 interface HeatmapGridProps {
   days: HeatmapDay[]
 }
 
 export const HeatmapGrid = ({ days }: HeatmapGridProps) => {
-  const weeks = buildHeatmapGrid(days, 52)
+  const weeks = buildHeatmapGrid(days)
+  const monthLabels = getMonthLabels(weeks)
+  const totalWidth = weeks.length * (CELL_SIZE + GAP)
 
   return (
-    <View>
-      {/* Month labels — only Jan (left) and Dec (right) */}
-      <View className="flex-row justify-between mb-1">
-        <Text className="text-[10px] font-inter text-content-tertiary">Jan</Text>
-        <Text className="text-[10px] font-inter text-content-tertiary">Dec</Text>
-      </View>
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={{ paddingRight: 8 }}
+    >
+      <View style={{ width: totalWidth }}>
+        {/* Month labels — scroll with grid */}
+        <View style={{ height: 16, position: 'relative' }}>
+          {monthLabels.map(({ label, weekIndex }) => (
+            <Text
+              key={`${label}-${weekIndex}`}
+              className="text-[10px] font-inter text-content-tertiary"
+              style={{
+                position: 'absolute',
+                left: weekIndex * (CELL_SIZE + GAP),
+              }}
+            >
+              {label}
+            </Text>
+          ))}
+        </View>
 
-      {/* Scrollable grid — no day labels */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingRight: 8 }}
-      >
+        {/* Grid cells */}
         <View className="flex-row gap-0.5">
           {weeks.map((week, weekIdx) => (
             <View key={weekIdx} className="gap-0.5">
@@ -50,7 +63,7 @@ export const HeatmapGrid = ({ days }: HeatmapGridProps) => {
                 )
               })}
 
-              {/* Pad incomplete last week */}
+              {/* Pad incomplete weeks */}
               {week.cells.length < 7 &&
                 Array.from({ length: 7 - week.cells.length }).map((_, i) => (
                   <View
@@ -61,7 +74,7 @@ export const HeatmapGrid = ({ days }: HeatmapGridProps) => {
             </View>
           ))}
         </View>
-      </ScrollView>
-    </View>
+      </View>
+    </ScrollView>
   )
 }

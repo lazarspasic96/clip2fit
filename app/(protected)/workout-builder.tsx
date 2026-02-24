@@ -10,18 +10,20 @@ import { Input } from '@/components/ui/input'
 import { BuilderExerciseRow } from '@/components/catalog/builder-exercise-row'
 import { BuilderActions } from '@/components/catalog/builder-actions'
 import { useWorkoutBuilder } from '@/contexts/workout-builder-context'
-import type { ManualWorkoutPayload } from '@/types/catalog'
+import { useCreateWorkoutMutation } from '@/hooks/use-api'
+import { ApiError } from '@/utils/api'
+import type { CreateWorkoutPayload } from '@/types/catalog'
 
 const WorkoutBuilderScreen = () => {
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const builder = useWorkoutBuilder()
+  const createMutation = useCreateWorkoutMutation()
 
   // Subscribe to builder state changes via useSyncExternalStore
   useSyncExternalStore(builder.subscribe, builder.getSnapshot)
 
   const [title, setTitle] = useState('')
-  const [saving, setSaving] = useState(false)
 
   const exercises = builder.getOrderedExercises()
 
@@ -45,37 +47,33 @@ const WorkoutBuilderScreen = () => {
       return
     }
 
-    setSaving(true)
-
-    const payload: ManualWorkoutPayload = {
+    const payload: CreateWorkoutPayload = {
       title: title.trim() || 'My Workout',
       exercises: exercises.map((e, index) => ({
         catalogExerciseId: e.catalogExercise.id,
-        name: e.catalogExercise.name,
         sets: e.sets,
         reps: e.reps,
+        targetWeight: null,
         restBetweenSets: e.restSeconds !== null ? `${e.restSeconds}s` : null,
+        notes: null,
         order: index + 1,
-        muscleGroups: e.catalogExercise.primaryMuscleGroups,
         isBodyweight: e.catalogExercise.isBodyweight,
       })),
     }
 
-    // TODO: Replace with actual API call
-    setSaving(false)
-    Alert.alert(
-      'Workout Created',
-      `"${payload.title}" with ${payload.exercises.length} exercises`,
-      [
-        {
-          text: 'OK',
-          onPress: () => {
-            builder.clearAll()
-            router.replace('/(protected)/(tabs)/(home)' as never)
-          },
-        },
-      ],
-    )
+    createMutation.mutate(payload, {
+      onSuccess: () => {
+        builder.clearAll()
+        router.replace('/(protected)/(tabs)/(home)' as never)
+      },
+      onError: (error) => {
+        const message =
+          error instanceof ApiError && error.status === 400
+            ? error.message
+            : 'Something went wrong. Please try again.'
+        Alert.alert('Failed to create workout', message)
+      },
+    })
   }
 
   const handleAddMore = () => {
@@ -157,7 +155,7 @@ const WorkoutBuilderScreen = () => {
       <BuilderActions
         onSave={handleCreate}
         exerciseCount={exercises.length}
-        saving={saving}
+        saving={createMutation.isPending}
       />
     </View>
   )

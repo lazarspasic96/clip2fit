@@ -17,12 +17,11 @@ const DIFFICULTY_CLASSES: Record<string, string> = {
 }
 
 export const ProposalHeader = ({ workout, exerciseCount }: ProposalHeaderProps) => {
-  const creatorDisplay = workout.creatorName !== null
-    ? `${workout.creatorName} (${workout.creatorHandle})`
-    : workout.creatorHandle
+  const creatorDisplay =
+    workout.creatorName !== null ? `${workout.creatorName} (${workout.creatorHandle})` : workout.creatorHandle
 
   return (
-    <View className="px-5 pb-4">
+    <View className="pb-4">
       <View className="flex-row items-center gap-3 mb-3">
         <PlatformBadge platform={workout.platform} size={36} />
         <View className="flex-1">
@@ -50,7 +49,9 @@ export const ProposalHeader = ({ workout, exerciseCount }: ProposalHeaderProps) 
         )}
         <View className="flex-row items-center gap-1.5">
           <Flame size={14} color={Colors.content.secondary} pointerEvents="none" />
-          <Text className={`text-sm font-inter-semibold ${DIFFICULTY_CLASSES[workout.difficulty] ?? 'text-content-secondary'}`}>
+          <Text
+            className={`text-sm font-inter-semibold ${DIFFICULTY_CLASSES[workout.difficulty] ?? 'text-content-secondary'}`}
+          >
             {workout.difficulty}
           </Text>
         </View>

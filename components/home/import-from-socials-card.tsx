@@ -1,6 +1,6 @@
+import { useRouter } from 'expo-router'
 import { Plus } from 'lucide-react-native'
 import { Pressable, Text, View } from 'react-native'
-import { useRouter } from 'expo-router'
 
 import { Colors } from '@/constants/colors'
 import { TikTokIcon, InstagramIcon, YouTubeIcon, XIcon } from '@/components/ui/platform-icons'
@@ -10,7 +10,7 @@ export const ImportFromSocialsCard = () => {
 
   return (
     <Pressable
-      onPress={() => router.push('/(protected)/process-url' as never)}
+      onPress={() => router.push('/(protected)/process-url')}
       className="mx-5 bg-background-tertiary rounded-2xl p-4"
     >
       <View className="flex-row items-center gap-4">

@@ -7,10 +7,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { PlatformBadge } from '@/components/processing/platform-badge'
 import { DetailExerciseRow } from '@/components/workout-detail/detail-exercise-row'
 import { DetailHeader } from '@/components/workout-detail/detail-header'
-import { EditExerciseSheet } from '@/components/workout-detail/edit-exercise-sheet'
 import { Colors } from '@/constants/colors'
 import { useUpdateWorkoutMutation, useWorkoutQuery } from '@/hooks/use-api'
-import type { ApiExercise } from '@/types/api'
 
 export const WorkoutDetailContent = () => {
   const { id } = useLocalSearchParams<{ id: string }>()
@@ -19,7 +17,6 @@ export const WorkoutDetailContent = () => {
   const { workout, rawWorkout, isLoading, error } = useWorkoutQuery(id ?? null)
   const updateMutation = useUpdateWorkoutMutation()
 
-  const [selectedExerciseIndex, setSelectedExerciseIndex] = useState<number | null>(null)
   const [descriptionExpanded, setDescriptionExpanded] = useState(false)
 
   if (isLoading) {
@@ -75,16 +72,8 @@ export const WorkoutDetailContent = () => {
     ])
   }
 
-  const handleUpdateExercise = (updated: ApiExercise) => {
-    const updatedList = exercises.map((ex) => (ex.id === updated.id ? updated : ex))
-    updateMutation.mutate(
-      { id: workout.id, payload: { exercises: updatedList } },
-      { onSuccess: navigateToForkIfNeeded },
-    )
-  }
-
   const handleOpenSource = () => {
-    if (workout.sourceUrl.length > 0) {
+    if (workout.sourceUrl !== null && workout.sourceUrl.length > 0) {
       Linking.openURL(workout.sourceUrl)
     }
   }
@@ -98,8 +87,6 @@ export const WorkoutDetailContent = () => {
       : workout.difficulty === 'intermediate'
         ? 'text-yellow-400'
         : 'text-red-400'
-
-  const selectedExercise = selectedExerciseIndex !== null ? (exercises[selectedExerciseIndex] ?? null) : null
 
   return (
     <View className="flex-1 bg-background-primary" style={{ paddingTop: insets.top }}>
@@ -183,19 +170,12 @@ export const WorkoutDetailContent = () => {
           <DetailExerciseRow
             key={exercise.id}
             exercise={exercise}
-            onEdit={() => setSelectedExerciseIndex(index)}
+            onEdit={() => router.push({ pathname: '/(protected)/sheets/edit-exercise', params: { workoutId: id!, exerciseIndex: String(index) } })}
             onDelete={() => handleDeleteExercise(index)}
           />
         ))}
       </ScrollView>
 
-      <EditExerciseSheet
-        exercise={selectedExercise}
-        visible={selectedExerciseIndex !== null}
-        onDismiss={() => setSelectedExerciseIndex(null)}
-        onUpdate={handleUpdateExercise}
-        topInset={insets.top + 16}
-      />
     </View>
   )
 }

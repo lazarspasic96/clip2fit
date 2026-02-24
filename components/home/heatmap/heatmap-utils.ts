@@ -1,3 +1,5 @@
+import { subMonths, startOfMonth, startOfWeek, format, isAfter, isBefore } from 'date-fns'
+
 import type { HeatmapDay, WorkoutCategory } from '@/types/heatmap'
 import { CATEGORY_COLORS } from '@/types/heatmap'
 import { Colors } from '@/constants/colors'
@@ -12,55 +14,44 @@ export interface WeekColumn {
   cells: GridCell[]
 }
 
-const toDateString = (d: Date): string => {
-  const year = d.getFullYear()
-  const month = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
-}
-
 /**
- * Build a full grid of weeks x 7 days for the given period.
- * Fills gaps with empty cells.
+ * Build a grid covering exactly 12 months (1st of month 11 months ago → today).
+ * Columns = weeks (Sun–Sat). First/last columns may be partial.
  */
-export const buildHeatmapGrid = (
-  days: HeatmapDay[],
-  weeksBack = 52,
-): WeekColumn[] => {
+export const buildHeatmapGrid = (days: HeatmapDay[]): WeekColumn[] => {
   const dayMap = new Map<string, HeatmapDay>()
   for (const day of days) {
     dayMap.set(day.date, day)
   }
 
   const today = new Date()
-  const todayDow = today.getDay()
-
-  // Start from the Monday `weeksBack` weeks ago
-  const start = new Date(today)
-  start.setDate(start.getDate() - todayDow - (weeksBack - 1) * 7 + 1)
-
-  // Adjust to Monday (getDay() returns 0=Sun)
-  if (start.getDay() !== 1) {
-    start.setDate(start.getDate() - ((start.getDay() + 6) % 7))
-  }
+  // 11 months back from today's month → gives us 12 months inclusive
+  const rangeStart = startOfMonth(subMonths(today, 11))
+  // Align to the Sunday on or before rangeStart
+  const gridStart = startOfWeek(rangeStart, { weekStartsOn: 0 })
 
   const weeks: WeekColumn[] = []
-  const cursor = new Date(start)
+  const cursor = new Date(gridStart)
 
-  while (cursor <= today) {
+  while (!isAfter(cursor, today)) {
     const cells: GridCell[] = []
 
-    for (let dayOfWeek = 0; dayOfWeek < 7; dayOfWeek++) {
-      const dateStr = toDateString(cursor)
+    for (let dow = 0; dow < 7; dow++) {
+      // Skip days before range start (partial first week)
+      if (isBefore(cursor, rangeStart)) {
+        cursor.setDate(cursor.getDate() + 1)
+        continue
+      }
+      if (isAfter(cursor, today)) break
+
+      const dateStr = format(cursor, 'yyyy-MM-dd')
       const existing = dayMap.get(dateStr)
 
-      if (cursor <= today) {
-        cells.push({
-          date: dateStr,
-          count: existing?.count ?? 0,
-          categories: existing?.categories ?? [],
-        })
-      }
+      cells.push({
+        date: dateStr,
+        count: existing?.count ?? 0,
+        categories: existing?.categories ?? [],
+      })
 
       cursor.setDate(cursor.getDate() + 1)
     }
@@ -71,6 +62,37 @@ export const buildHeatmapGrid = (
   }
 
   return weeks
+}
+
+/**
+ * Get month label positions for the grid.
+ * Places a label at the first week where a new month starts.
+ * Skips labels that are too close together to prevent overlap.
+ */
+export const getMonthLabels = (
+  weeks: WeekColumn[],
+): { label: string; weekIndex: number }[] => {
+  const labels: { label: string; weekIndex: number }[] = []
+  let lastMonth = -1
+  let lastWeekIndex = -Infinity
+  const MIN_WEEK_GAP = 3
+
+  for (let i = 0; i < weeks.length; i++) {
+    const firstCell = weeks[i].cells[0]
+    if (firstCell === undefined) continue
+
+    const month = parseInt(firstCell.date.split('-')[1], 10) - 1
+    if (month !== lastMonth) {
+      if (i - lastWeekIndex >= MIN_WEEK_GAP) {
+        const date = new Date(firstCell.date + 'T00:00:00')
+        labels.push({ label: format(date, 'MMM'), weekIndex: i })
+        lastWeekIndex = i
+      }
+      lastMonth = month
+    }
+  }
+
+  return labels
 }
 
 /**

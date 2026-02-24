@@ -30,7 +30,6 @@ const STAGE_MESSAGES: Record<ProcessingStage, string> = {
 
 const INITIAL_STATE: ConversionState = {
   jobState: 'idle',
-  presentation: 'hidden',
   jobId: null,
   workoutId: null,
   sourceUrl: '',
@@ -44,8 +43,6 @@ const INITIAL_STATE: ConversionState = {
 interface ConversionContextValue {
   state: ConversionState
   startConversion: (url: string) => Promise<void>
-  minimize: () => void
-  maximize: () => void
   clear: () => void
   cancelConversion: () => void
 }
@@ -209,7 +206,6 @@ export const ConversionProvider = ({ children }: { children: React.ReactNode }) 
       setState({
         ...INITIAL_STATE,
         jobState: 'error',
-        presentation: 'fullscreen',
         sourceUrl: rawUrl,
         stage: 'error',
         message: "This platform isn't supported yet",
@@ -221,7 +217,6 @@ export const ConversionProvider = ({ children }: { children: React.ReactNode }) 
     setState({
       ...INITIAL_STATE,
       jobState: 'processing',
-      presentation: 'fullscreen',
       sourceUrl: validation.cleanUrl,
       platform: validation.platform,
       stage: 'validating',
@@ -266,14 +261,6 @@ export const ConversionProvider = ({ children }: { children: React.ReactNode }) 
     }
   }
 
-  const minimize = () => {
-    setState((prev) => ({ ...prev, presentation: 'minimized' }))
-  }
-
-  const maximize = () => {
-    setState((prev) => ({ ...prev, presentation: 'fullscreen' }))
-  }
-
   const clear = () => {
     stopPolling()
     clearSimulationTimers()
@@ -295,7 +282,12 @@ export const ConversionProvider = ({ children }: { children: React.ReactNode }) 
 
   return (
     <ConversionContext.Provider
-      value={{ state, startConversion, minimize, maximize, clear, cancelConversion }}
+      value={{
+        state,
+        startConversion,
+        clear,
+        cancelConversion,
+      }}
     >
       {children}
     </ConversionContext.Provider>

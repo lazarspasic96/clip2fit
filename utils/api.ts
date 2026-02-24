@@ -33,7 +33,6 @@ const logResponse = (_method: string, path: string, status: number, duration: nu
   const ok = status >= 200 && status < 300
   const icon = ok ? '✅' : '❌'
   console.log(`${icon} ${status} ${path} (${duration}ms)`)
-  console.log('📄 Response:', data)
 }
 
 const logError = (_method: string, path: string, duration: number, error: unknown) => {

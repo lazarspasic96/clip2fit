@@ -1,3 +1,5 @@
+import { differenceInYears, format, parseISO } from 'date-fns'
+
 import type { FitnessGoal, Gender, HeightUnit, WeightUnit } from '@/types/profile'
 import { FITNESS_GOALS, GENDERS } from '@/types/profile'
 
@@ -30,4 +32,19 @@ export const formatHeight = (height?: number, unit?: HeightUnit): string | undef
 export const formatWeight = (weight?: number, unit?: WeightUnit): string | undefined => {
   if (weight === undefined || unit === undefined) return undefined
   return `${weight} ${unit}`
+}
+
+export const formatDateToISO = (date: Date): string => {
+  return format(date, 'yyyy-MM-dd')
+}
+
+export const formatDateOfBirth = (dob?: string | Date): string | undefined => {
+  if (dob === undefined) return undefined
+  const date = dob instanceof Date ? dob : parseISO(dob)
+  if (isNaN(date.getTime())) return undefined
+  return format(date, 'MMM d, yyyy')
+}
+
+export const dobToAge = (dob: string): number => {
+  return differenceInYears(new Date(), parseISO(dob))
 }

@@ -1,17 +1,6 @@
-import { getShareExtensionKey } from 'expo-share-intent'
-
-export const redirectSystemPath = ({
-  path,
-}: {
-  path: string
-  initial: string
-}) => {
-  try {
-    if (path.includes(`dataUrl=${getShareExtensionKey()}`)) {
-      return '/(protected)/process-url'
-    }
-    return path
-  } catch {
-    return '/'
+export const redirectSystemPath = ({ path, initial }: { path: string; initial: boolean }): string => {
+  if (path.includes('expo-sharing')) {
+    return initial ? '/' : '/(protected)/process-url'
   }
+  return path
 }

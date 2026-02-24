@@ -62,7 +62,7 @@ export const HeroProgressRing = ({ progress, platform, stage }: HeroProgressRing
     <Animated.View
       style={[
         scaleStyle,
-        { width: SIZE, height: SIZE, alignItems: 'center', justifyContent: 'center' },
+        { width: SIZE, height: SIZE, alignItems: 'center', justifyContent: 'center', overflow: 'visible' },
       ]}
     >
       {/* Subtle radial glow */}
@@ -78,31 +78,33 @@ export const HeroProgressRing = ({ progress, platform, stage }: HeroProgressRing
         pointerEvents="none"
       />
 
-      <Svg width={SIZE} height={SIZE} className="absolute">
-        <Circle
-          cx={SIZE / 2}
-          cy={SIZE / 2}
-          r={RADIUS}
-          stroke={Colors.background.tertiary}
-          strokeWidth={STROKE_WIDTH}
-          fill="none"
-        />
-        <AnimatedCircle
-          cx={SIZE / 2}
-          cy={SIZE / 2}
-          r={RADIUS}
-          stroke={Colors.brand.accent}
-          strokeWidth={STROKE_WIDTH}
-          fill="none"
-          strokeDasharray={CIRCUMFERENCE}
-          animatedProps={animatedProps}
-          strokeLinecap="round"
-          rotation={-90}
-          origin={`${SIZE / 2}, ${SIZE / 2}`}
-        />
-      </Svg>
+      <View className="absolute inset-0">
+        <Svg width={SIZE} height={SIZE}>
+          <Circle
+            cx={SIZE / 2}
+            cy={SIZE / 2}
+            r={RADIUS}
+            stroke={Colors.background.tertiary}
+            strokeWidth={STROKE_WIDTH}
+            fill="none"
+          />
+          <AnimatedCircle
+            cx={SIZE / 2}
+            cy={SIZE / 2}
+            r={RADIUS}
+            stroke={Colors.brand.accent}
+            strokeWidth={STROKE_WIDTH}
+            fill="none"
+            strokeDasharray={CIRCUMFERENCE}
+            animatedProps={animatedProps}
+            strokeLinecap="round"
+            rotation={-90}
+            origin={`${SIZE / 2}, ${SIZE / 2}`}
+          />
+        </Svg>
+      </View>
 
-      <View className="items-center gap-0.5">
+      <View className="absolute inset-0 items-center justify-center">
         <PlatformBadge platform={platform} size={32} />
         <Text
           className="text-xl font-inter-bold text-brand-accent"

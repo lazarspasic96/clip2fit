@@ -1,25 +1,24 @@
-import { ExerciseAccordion } from '@/components/workout/command-center/exercise-accordion'
-import { WorkoutHeader } from '@/components/workout/command-center/workout-header'
-import { FinishWorkoutSheet } from '@/components/workout/finish-workout-sheet'
-import { PrCelebration } from '@/components/workout/pr-celebration'
-import { useActiveWorkout } from '@/contexts/active-workout-context'
-import { useFinishWorkout } from '@/hooks/use-finish-workout'
-import type { ApiPR } from '@/types/api'
+import { useRouter } from 'expo-router'
 import { useEffect, useRef, useState } from 'react'
 import { ScrollView, View } from 'react-native'
+
+import { ExerciseAccordion } from '@/components/workout/command-center/exercise-accordion'
+import { WorkoutHeader } from '@/components/workout/command-center/workout-header'
+import { PrCelebration } from '@/components/workout/pr-celebration'
+import { useActiveWorkout } from '@/contexts/active-workout-context'
+import type { ApiPR } from '@/types/api'
 
 interface CommandCenterWorkoutProps {
   onBack: () => void
 }
 
 export const CommandCenterWorkout = ({ onBack }: CommandCenterWorkoutProps) => {
-  const { session, clearSession } = useActiveWorkout()
+  const router = useRouter()
+  const { session, clearSession, finishResult, clearFinishResult } = useActiveWorkout()
   const [expandedId, setExpandedId] = useState<string | null>(null)
-  const [showFinishSheet, setShowFinishSheet] = useState(false)
   const [prs, setPrs] = useState<ApiPR[]>([])
   const [showPrCelebration, setShowPrCelebration] = useState(false)
   const scrollRef = useRef<ScrollView>(null)
-  const finishMutation = useFinishWorkout()
 
   useEffect(() => {
     if (session === null) return
@@ -29,26 +28,24 @@ export const CommandCenterWorkout = ({ onBack }: CommandCenterWorkoutProps) => {
     }
   }, [session])
 
+  // Consume finishResult written by the finish-workout sheet route
+  useEffect(() => {
+    if (finishResult === null) return
+    clearFinishResult()
+
+    if (finishResult.prs.length > 0) {
+      setPrs(finishResult.prs)
+      setShowPrCelebration(true)
+    } else {
+      clearSession()
+      onBack()
+    }
+  }, [finishResult, clearFinishResult, clearSession, onBack])
+
   if (session === null) return null
 
   const toggleAccordion = (id: string) => {
     setExpandedId((prev) => (prev === id ? null : id))
-  }
-
-  const handleFinishConfirm = () => {
-    finishMutation.mutate(session, {
-      onSuccess: (data) => {
-        setShowFinishSheet(false)
-
-        if (data.prs.length > 0) {
-          setPrs(data.prs)
-          setShowPrCelebration(true)
-        } else {
-          clearSession()
-          onBack()
-        }
-      },
-    })
   }
 
   const handlePrDismiss = () => {
@@ -57,11 +54,9 @@ export const CommandCenterWorkout = ({ onBack }: CommandCenterWorkoutProps) => {
     onBack()
   }
 
-  const finishError = finishMutation.error instanceof Error ? finishMutation.error.message : null
-
   return (
     <View className="flex-1">
-      <WorkoutHeader onBack={onBack} onFinish={() => setShowFinishSheet(true)} />
+      <WorkoutHeader onBack={onBack} onFinish={() => router.push('/(protected)/sheets/finish-workout')} />
 
       <ScrollView
         ref={scrollRef}
@@ -78,15 +73,6 @@ export const CommandCenterWorkout = ({ onBack }: CommandCenterWorkoutProps) => {
           />
         ))}
       </ScrollView>
-
-      <FinishWorkoutSheet
-        visible={showFinishSheet}
-        session={session}
-        onDismiss={() => setShowFinishSheet(false)}
-        onConfirm={handleFinishConfirm}
-        loading={finishMutation.isPending}
-        error={finishError}
-      />
 
       {showPrCelebration && <PrCelebration prs={prs} onDismiss={handlePrDismiss} />}
     </View>

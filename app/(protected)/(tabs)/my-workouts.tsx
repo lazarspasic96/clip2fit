@@ -1,7 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Trash2 } from 'lucide-react-native'
-import { useEffect, useRef, useState } from 'react'
-import { ActivityIndicator, FlatList, Pressable, RefreshControl, Text, View } from 'react-native'
+import { useEffect, useRef } from 'react'
+import { ActivityIndicator, Alert, FlatList, Pressable, RefreshControl, Text, View } from 'react-native'
 import Animated, {
   FadeInUp,
   LinearTransition,
@@ -14,7 +14,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { EmptyState } from '@/components/my-workouts/empty-state'
 import { WorkoutCard } from '@/components/my-workouts/workout-card'
-import { ConfirmationSheet } from '@/components/ui/confirmation-sheet'
 import { SwipeableRow } from '@/components/ui/swipeable-row'
 import { Colors } from '@/constants/colors'
 
@@ -68,7 +67,6 @@ const MyWorkoutsScreen = () => {
   const { workouts, isLoading, isRefetching, refetch } = useWorkoutsQuery()
   const deleteMutation = useDeleteWorkoutMutation()
 
-  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
   const mountedRef = useRef(true)
   const newWorkoutIdRef = useRef(newWorkoutId)
 
@@ -83,29 +81,21 @@ const MyWorkoutsScreen = () => {
     return () => clearTimeout(timer)
   }, [newWorkoutId, router])
 
-  const handleDeleteConfirm = () => {
-    if (deleteTargetId === null) return
-    deleteMutation.mutate(deleteTargetId, {
-      onSuccess: () => {
-        setDeleteTargetId(null)
+  const confirmDelete = (item: (typeof workouts)[number]) => {
+    const title = item.isPersonalCopy ? 'Delete workout?' : 'Remove from library?'
+    const description = item.isPersonalCopy
+      ? 'This will permanently delete your personal copy. This cannot be undone.'
+      : 'This workout will be removed from your library. You can add it back by converting the same video.'
+
+    Alert.alert(title, description, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: item.isPersonalCopy ? 'Delete' : 'Remove',
+        style: 'destructive',
+        onPress: () => deleteMutation.mutate(item.id),
       },
-    })
+    ])
   }
-
-  const deleteTarget = deleteTargetId !== null ? (workouts.find((w) => w.id === deleteTargetId) ?? null) : null
-
-  const deleteTitle = deleteTarget?.isPersonalCopy ? 'Delete workout?' : 'Remove from library?'
-
-  const deleteDescription = deleteTarget?.isPersonalCopy
-    ? 'This will permanently delete your personal copy. This cannot be undone.'
-    : 'This workout will be removed from your library. You can add it back by converting the same video.'
-
-  const deleteError =
-    deleteMutation.error !== null
-      ? deleteMutation.error instanceof Error
-        ? deleteMutation.error.message
-        : 'Failed to delete'
-      : null
 
   if (isLoading && workouts.length === 0) {
     return (
@@ -139,7 +129,7 @@ const MyWorkoutsScreen = () => {
               <SwipeableRow
                 actionWidth={DELETE_ACTION_WIDTH}
                 actionContent={<DeleteAction />}
-                onAction={() => setDeleteTargetId(item.id)}
+                onAction={() => confirmDelete(item)}
               >
                 <Pressable onPress={() => router.push(`/(protected)/workout-detail?id=${item.id}`)}>
                   <WorkoutCard workout={item} />
@@ -161,16 +151,6 @@ const MyWorkoutsScreen = () => {
         />
       )}
 
-      <ConfirmationSheet
-        visible={deleteTargetId !== null}
-        title={deleteTitle}
-        description={deleteDescription}
-        confirmLabel={deleteTarget?.isPersonalCopy ? 'Delete' : 'Remove'}
-        onCancel={() => setDeleteTargetId(null)}
-        onConfirm={handleDeleteConfirm}
-        loading={deleteMutation.isPending}
-        error={deleteError}
-      />
     </View>
   )
 }

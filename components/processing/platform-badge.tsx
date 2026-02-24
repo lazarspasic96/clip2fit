@@ -10,11 +10,13 @@ import {
 } from '@/components/ui/platform-icons'
 
 interface PlatformBadgeProps {
-  platform: SupportedPlatform
+  platform: SupportedPlatform | null
   size?: number
 }
 
 export const PlatformBadge = ({ platform, size = 28 }: PlatformBadgeProps) => {
+  if (platform === null || platform === 'unknown') return null
+
   const iconSize = size * 0.6
 
   const renderIcon = () => {
@@ -33,8 +35,6 @@ export const PlatformBadge = ({ platform, size = 28 }: PlatformBadgeProps) => {
         return null
     }
   }
-
-  if (platform === 'unknown') return null
 
   return (
     <View

@@ -22,15 +22,17 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
 const TAB_BAR_HEIGHT = 60
 
 export const FloatingConversionPill = () => {
-  const { state, maximize } = useConversion()
-  const insets = useSafeAreaInsets()
+  const { state } = useConversion()
   const router = useRouter()
+  const insets = useSafeAreaInsets()
   const segments = useSegments()
   const scale = useSharedValue(1)
   const celebrationScale = useSharedValue(1)
   const show = useSharedValue(0)
 
-  const isVisible = state.presentation === 'minimized' && state.jobState !== 'idle' && state.jobState !== 'existing'
+  const isOnProcessUrl = segments.includes('process-url' as never)
+  const isOnProposal = segments.includes('workout-proposal' as never)
+  const isVisible = !isOnProcessUrl && !isOnProposal && state.jobState !== 'idle' && state.jobState !== 'existing'
   const isCompleted = state.jobState === 'completed'
   const isError = state.jobState === 'error'
 
@@ -45,14 +47,14 @@ export const FloatingConversionPill = () => {
   }, [isVisible, show])
 
   useEffect(() => {
-    if (isCompleted && state.presentation === 'minimized') {
+    if (isCompleted && !isOnProcessUrl) {
       celebrationScale.value = withSequence(
         withTiming(1.02, { duration: 150, easing: Easing.out(Easing.cubic) }),
         withTiming(1.0, { duration: 200, easing: Easing.out(Easing.cubic) })
       )
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
     }
-  }, [isCompleted, state.presentation, celebrationScale])
+  }, [isCompleted, isOnProcessUrl, celebrationScale])
 
   const containerStyle = useAnimatedStyle(() => ({
     opacity: show.value,
@@ -73,8 +75,11 @@ export const FloatingConversionPill = () => {
 
   const handlePress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-    maximize()
-    router.push('/(protected)/process-url' as never)
+    if (isCompleted && state.workoutId !== null) {
+      router.push(`/(protected)/workout-proposal?workoutId=${state.workoutId}`)
+    } else {
+      router.push('/(protected)/process-url')
+    }
   }
 
   const accentColor = isError ? '#f87171' : Colors.brand.accent

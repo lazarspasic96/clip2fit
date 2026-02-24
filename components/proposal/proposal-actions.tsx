@@ -21,17 +21,15 @@ export const ProposalActions = ({
   mode = 'proposal',
 }: ProposalActionsProps) => {
   const insets = useSafeAreaInsets()
-  const saveLabel = mode === 'edit' ? 'Save Changes' : 'Save to Library'
+  const saveLabel = mode === 'edit' ? 'Save Changes' : 'Save to library'
   const discardLabel = mode === 'edit' ? 'Cancel' : 'Discard'
 
   return (
     <View
       className="px-5 pt-4 border-t border-border-primary bg-background-primary"
-      style={{ paddingBottom: Math.max(insets.bottom, 16) }}
+      style={{ paddingBottom: insets.bottom }}
     >
-      {saveError !== null && (
-        <Text className="text-sm font-inter text-red-400 text-center mb-3">{saveError}</Text>
-      )}
+      {saveError !== null && <Text className="text-sm font-inter text-red-400 text-center mb-3">{saveError}</Text>}
       <View className="gap-3">
         <Button onPress={onSave} loading={saving} disabled={exerciseCount === 0}>
           {saveLabel}

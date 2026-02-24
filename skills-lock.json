@@ -1,6 +1,21 @@
 {
   "version": 1,
   "skills": {
+    "android-kotlin": {
+      "source": "alinaqi/claude-bootstrap",
+      "sourceType": "github",
+      "computedHash": "08562cabf7a3afb5c10800334a4b4bbb99cdc88773f6bb63d55ac924c3160489"
+    },
+    "kotlin-specialist": {
+      "source": "jeffallan/claude-skills",
+      "sourceType": "github",
+      "computedHash": "ca08c7e647ac94eeb14837d382d01dce76f0487c81a96194159090ccddc2b1f6"
+    },
+    "reanimated-skia-performance": {
+      "source": "andreev-danila/skills",
+      "sourceType": "github",
+      "computedHash": "14ab8be93ebb822d4f9c6ebdce0204f0b5e3837b15b43cdb061a06973751364e"
+    },
     "swift-concurrency": {
       "source": "avdlee/swift-concurrency-agent-skill",
       "sourceType": "github",

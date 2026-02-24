@@ -1,7 +1,49 @@
 # Form Coach Screen — Implementation Plan
 
+## Agent Skills to Apply
+
+When implementing this feature, always activate the relevant skill before writing code in that domain:
+
+| Domain | Skill |
+|--------|-------|
+| Swift (iOS native) | `swift-style`, `swift-concurrency` |
+| React Native / Expo | `react-native-best-practices`, `building-native-ui` |
+| Skia / Reanimated animations | `reanimated-skia-performance` |
+| Expo module scaffold, navigation, permissions | `building-native-ui`, `expo-api-routes` |
+
+---
+
 ## Context
 Add a real-time exercise form feedback screen to Clip2Fit. User taps "Form Coach" on the home screen → exercise selection bottom sheet → camera opens full-screen → skeleton overlay (dots + connecting lines) is drawn on top of the live camera view via Skia, driven by a Reanimated SharedValue updated on the UI thread via `runOnUI` (no React re-renders, no Reanimated internal C++ headers). This is the foundation for later LLM-powered form coaching.
+
+---
+
+## How It Works (Plain English)
+
+**The camera** — We write a small custom native module (Swift on iOS, Kotlin on Android) that opens the device camera and analyzes each frame using built-in OS tools (Apple Vision on iOS, ML Kit on Android). These tools detect where a person's joints are in the image and give us a list of coordinates — "left knee is at 40% across, 70% down the screen", etc.
+
+**Getting the data to JS** — After each frame is analyzed, the native code fires an event to JavaScript. JS receives it instantly and immediately tells the UI thread "hey, update these coordinates."
+
+**Drawing the skeleton** — We use Skia, a 2D drawing library that runs directly on the UI thread, completely bypassing React. It reads the latest coordinates and draws lines and dots on a transparent layer on top of the camera feed. Because it bypasses React, there are no re-renders — it just draws, 20 times a second, smoothly.
+
+**The exercise picker** — Before the camera opens, a bottom sheet shows the user's saved exercises from the database. They tap one, its name gets passed to the camera screen as a URL parameter.
+
+**Short version:** native OS detects joints → fires event to JS → JS tells UI thread → Skia draws skeleton on top of camera. React is never involved in the per-frame drawing loop.
+
+---
+
+### What is Skia?
+
+A 2D drawing library (originally made by Google, used inside Chrome and Android). In React Native, `@shopify/react-native-skia` lets you draw shapes — lines, circles, paths — directly on screen using a `<Canvas>` component. Think of it like `<canvas>` on the web, but for mobile.
+
+### What is the UI thread?
+
+React Native runs three threads:
+- **JS thread** — where React code, state updates, and re-renders happen
+- **UI thread** (main thread) — where the screen is actually painted. Every pixel you see goes through here.
+- **Background threads** — where the camera and pose detection run
+
+If the JS thread is busy, animations stutter. For anything that needs to be smooth — like a skeleton redrawing 20 times per second — you bypass the JS thread and write directly to the UI thread. Reanimated's `runOnUI` schedules work there, and Skia reads from it there.
 
 ---
 
