@@ -19,7 +19,7 @@ const SettingsScreen = () => {
   const { profile, isLoading } = useProfileQuery()
 
   return (
-    <View className="flex-1 bg-background-primary" style={{ paddingTop: insets.top }}>
+    <View className="flex-1 bg-background-primary px-5" style={{ paddingTop: insets.top }}>
       <View className="flex-row items-center justify-between px-6 pt-4 pb-2">
         <Text className="text-2xl font-inter-bold text-content-primary">Settings</Text>
         <Pressable onPress={() => router.back()} hitSlop={12} className="p-1">
@@ -36,21 +36,20 @@ const SettingsScreen = () => {
           <ProfileHeader fullName={profile?.fullName} email={user?.email} />
 
           <SettingsSection title="Personal Info">
-            <SettingsRow label="Name" value={profile?.fullName} onPress={() => router.push('/(protected)/sheets/edit-personal-info')} />
+            <SettingsRow
+              label="Name"
+              value={profile?.fullName}
+              onPress={() => router.push('/(protected)/sheets/edit-name')}
+            />
             <SettingsRow
               label="Gender"
               value={displayGender(profile?.gender)}
-              onPress={() => router.push('/(protected)/sheets/edit-personal-info')}
+              onPress={() => router.push('/(protected)/sheets/edit-gender')}
             />
             <SettingsRow
               label="Date of Birth"
               value={formatDateOfBirth(profile?.dateOfBirth)}
-              onPress={() => router.push('/(protected)/sheets/edit-personal-info')}
-            />
-            <SettingsRow
-              label="Age"
-              value={profile?.age !== undefined ? String(profile.age) : undefined}
-              onPress={() => router.push('/(protected)/sheets/edit-personal-info')}
+              onPress={() => router.push('/(protected)/sheets/edit-date-of-birth')}
             />
           </SettingsSection>
 
@@ -58,12 +57,12 @@ const SettingsScreen = () => {
             <SettingsRow
               label="Height"
               value={formatHeight(profile?.height, profile?.heightUnit)}
-              onPress={() => router.push('/(protected)/sheets/edit-body-measurements')}
+              onPress={() => router.push('/(protected)/sheets/edit-height')}
             />
             <SettingsRow
               label="Weight"
               value={formatWeight(profile?.weight, profile?.weightUnit)}
-              onPress={() => router.push('/(protected)/sheets/edit-body-measurements')}
+              onPress={() => router.push('/(protected)/sheets/edit-weight')}
             />
           </SettingsSection>
 
@@ -82,7 +81,6 @@ const SettingsScreen = () => {
           </View>
         </ScrollView>
       )}
-
     </View>
   )
 }

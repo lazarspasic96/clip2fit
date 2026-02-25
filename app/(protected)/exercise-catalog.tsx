@@ -19,9 +19,9 @@ const ExerciseCatalogScreen = () => {
   const selectionVersion = useSyncExternalStore(builder.subscribe, builder.getSnapshot)
   const selectedCount = builder.getSelectedCount()
 
-  // Subscribe to catalog filter store
-  useSyncExternalStore(catalogFilterStore.subscribe, catalogFilterStore.getSnapshot)
-  const filters = catalogFilterStore.getFilters()
+  // Subscribe to catalog filter store — getFilters is the snapshot so the
+  // React Compiler treats `filters` as a reactive value (prevents stale memoization).
+  const filters = useSyncExternalStore(catalogFilterStore.subscribe, catalogFilterStore.getFilters)
 
   const debouncedSearch = useDebouncedValue(filters.search, 300)
   const activeFilters: CatalogFilters = { ...filters, search: debouncedSearch }

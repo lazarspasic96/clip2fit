@@ -1,13 +1,13 @@
 import { useRouter } from 'expo-router'
 import { useState } from 'react'
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native'
+import { Pressable, Text, TextInput, View } from 'react-native'
 
 import { cn } from '@/components/ui/cn'
 import { SegmentedControl } from '@/components/ui/segmented-control'
 import { Colors } from '@/constants/colors'
 import { useSaveProfileMutation } from '@/hooks/use-api'
 import { useProfileQuery } from '@/hooks/use-profile-query'
-import type { HeightUnit, UserProfile, WeightUnit } from '@/types/profile'
+import type { HeightUnit, UserProfile } from '@/types/profile'
 import { feetInchesToInches, inchesToFeetInches } from '@/utils/format-profile'
 import { computeProfileDiff } from '@/utils/profile-diff'
 
@@ -15,12 +15,8 @@ const HEIGHT_UNITS = [
   { label: 'cm', value: 'cm' as const },
   { label: 'ft', value: 'ft' as const },
 ]
-const WEIGHT_UNITS = [
-  { label: 'kg', value: 'kg' as const },
-  { label: 'lbs', value: 'lbs' as const },
-]
 
-const EditBodyMeasurementsScreen = () => {
+const EditHeightScreen = () => {
   const router = useRouter()
   const { profile } = useProfileQuery()
   const saveMutation = useSaveProfileMutation()
@@ -40,15 +36,13 @@ const EditBodyMeasurementsScreen = () => {
     if (initUnit === 'ft' && currentValues.height !== undefined) return String(inchesToFeetInches(currentValues.height).inches)
     return ''
   })
-  const [weightUnit, setWeightUnit] = useState<WeightUnit>(currentValues.weightUnit ?? 'kg')
-  const [weight, setWeight] = useState(currentValues.weight !== undefined ? String(currentValues.weight) : '')
   const [validationError, setValidationError] = useState<string | null>(null)
 
   const saving = saveMutation.isPending
   const apiError = saveMutation.error instanceof Error ? saveMutation.error.message : null
 
   const handleSave = () => {
-    const updated: Partial<UserProfile> = { heightUnit, weightUnit }
+    const updated: Partial<UserProfile> = { heightUnit }
 
     if (heightUnit === 'cm' && heightCm.length > 0) {
       const val = parseFloat(heightCm)
@@ -75,15 +69,6 @@ const EditBodyMeasurementsScreen = () => {
       }
     }
 
-    if (weight.length > 0) {
-      const val = parseFloat(weight)
-      if (isNaN(val) || val <= 0 || val > 700) {
-        setValidationError('Weight must be between 1 and 700')
-        return
-      }
-      updated.weight = val
-    }
-
     setValidationError(null)
 
     const diff = computeProfileDiff(currentValues, updated)
@@ -96,14 +81,11 @@ const EditBodyMeasurementsScreen = () => {
   }
 
   return (
-    <ScrollView
-      contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 32, paddingTop: 16 }}
-      keyboardShouldPersistTaps="handled"
-    >
-      <Text className="text-lg font-inter-bold text-content-primary mb-6">Body Measurements</Text>
+    <View className="px-6 pt-4 pb-8">
+      <Text className="text-lg font-inter-bold text-content-primary mb-6">Height</Text>
 
       <View className="flex-row items-center justify-between mb-2">
-        <Text className="text-sm font-inter-semibold text-content-secondary">Height</Text>
+        <Text className="text-sm font-inter-semibold text-content-secondary">Unit</Text>
         <View className="w-28">
           <SegmentedControl options={HEIGHT_UNITS} value={heightUnit} onChange={setHeightUnit} />
         </View>
@@ -114,6 +96,7 @@ const EditBodyMeasurementsScreen = () => {
           value={heightCm}
           onChangeText={setHeightCm}
           keyboardType="decimal-pad"
+          autoFocus
           placeholder="e.g. 175"
           style={inputStyle}
           placeholderTextColor={Colors.content.tertiary}
@@ -125,6 +108,7 @@ const EditBodyMeasurementsScreen = () => {
               value={heightFeet}
               onChangeText={setHeightFeet}
               keyboardType="number-pad"
+              autoFocus
               placeholder="5"
               style={[inputStyle, { flex: 1 }]}
               placeholderTextColor={Colors.content.tertiary}
@@ -145,22 +129,6 @@ const EditBodyMeasurementsScreen = () => {
         </View>
       )}
 
-      <View className="flex-row items-center justify-between mb-2 mt-6">
-        <Text className="text-sm font-inter-semibold text-content-secondary">Weight</Text>
-        <View className="w-28">
-          <SegmentedControl options={WEIGHT_UNITS} value={weightUnit} onChange={setWeightUnit} />
-        </View>
-      </View>
-
-      <TextInput
-        value={weight}
-        onChangeText={setWeight}
-        keyboardType="decimal-pad"
-        placeholder={weightUnit === 'kg' ? 'e.g. 70' : 'e.g. 154'}
-        style={inputStyle}
-        placeholderTextColor={Colors.content.tertiary}
-      />
-
       {(validationError !== null || apiError !== null) && (
         <Text className="text-sm font-inter text-red-400 mt-3">{validationError ?? apiError}</Text>
       )}
@@ -174,7 +142,7 @@ const EditBodyMeasurementsScreen = () => {
           {saving ? 'Saving...' : 'Save'}
         </Text>
       </Pressable>
-    </ScrollView>
+    </View>
   )
 }
 
@@ -187,4 +155,4 @@ const inputStyle = {
   color: Colors.content.primary,
 }
 
-export default EditBodyMeasurementsScreen
+export default EditHeightScreen

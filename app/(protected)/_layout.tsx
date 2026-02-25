@@ -46,11 +46,11 @@ const ProtectedLayout = () => {
           <Stack.Screen name="workout-proposal" options={{ presentation: 'card', headerShown: false }} />
           <Stack.Screen name="exercise-history" options={{ presentation: 'card' }} />
           {/* --- formSheet routes --- */}
-          <Stack.Screen name="sheets/edit-personal-info" options={{ ...sheetOptions, sheetAllowedDetents: [0.6] }} />
-          <Stack.Screen
-            name="sheets/edit-body-measurements"
-            options={{ ...sheetOptions, sheetAllowedDetents: [0.7] }}
-          />
+          <Stack.Screen name="sheets/edit-name" options={{ ...sheetOptions, sheetAllowedDetents: [0.35] }} />
+          <Stack.Screen name="sheets/edit-gender" options={{ ...sheetOptions, sheetAllowedDetents: 'fitToContents' }} />
+          <Stack.Screen name="sheets/edit-date-of-birth" options={{ ...sheetOptions, sheetAllowedDetents: [0.4] }} />
+          <Stack.Screen name="sheets/edit-height" options={{ ...sheetOptions, sheetAllowedDetents: [0.45] }} />
+          <Stack.Screen name="sheets/edit-weight" options={{ ...sheetOptions, sheetAllowedDetents: [0.4] }} />
           <Stack.Screen
             name="sheets/edit-fitness-goal"
             options={{ ...sheetOptions, sheetAllowedDetents: 'fitToContents' }}
