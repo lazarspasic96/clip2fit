@@ -11,7 +11,8 @@ interface WorkoutCardProps {
 }
 
 export const WorkoutCard = ({ workout }: WorkoutCardProps) => {
-  const difficultyColor = Colors.difficulty[workout.difficulty as keyof typeof Colors.difficulty] ?? Colors.content.tertiary
+  const difficultyColor =
+    Colors.difficulty[workout.difficulty as keyof typeof Colors.difficulty] ?? Colors.content.tertiary
 
   return (
     <View className="rounded-2xl overflow-hidden bg-background-secondary p-4 flex-row">
@@ -39,16 +40,12 @@ export const WorkoutCard = ({ workout }: WorkoutCardProps) => {
         <View className="flex-row items-center gap-4">
           <View className="flex-row items-center gap-1">
             <Dumbbell size={13} color={Colors.brand.accent} pointerEvents="none" />
-            <Text className="text-xs font-inter text-content-secondary">
-              {workout.exercises.length}
-            </Text>
+            <Text className="text-xs font-inter text-content-secondary">{workout.exercises.length}</Text>
           </View>
           {workout.estimatedDurationMinutes > 0 && (
             <View className="flex-row items-center gap-1">
               <Clock size={13} color={Colors.brand.accent} pointerEvents="none" />
-              <Text className="text-xs font-inter text-content-secondary">
-                {workout.estimatedDurationMinutes} min
-              </Text>
+              <Text className="text-xs font-inter text-content-secondary">{workout.estimatedDurationMinutes} min</Text>
             </View>
           )}
           <View className="flex-row items-center gap-1">

@@ -1,14 +1,8 @@
+import * as Haptics from 'expo-haptics'
 import { type ReactNode } from 'react'
 import { Dimensions } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
-import * as Haptics from 'expo-haptics'
-import Animated, {
-  interpolate,
-  runOnJS,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from 'react-native-reanimated'
+import Animated, { interpolate, runOnJS, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 const SPRING_CONFIG = { damping: 20, stiffness: 200, mass: 0.8 }
@@ -103,7 +97,7 @@ export const SwipeableRow = ({
   }
 
   return (
-    <Animated.View style={{ position: 'relative' }}>
+    <Animated.View style={{ position: 'relative', width: '100%' }}>
       {/* Action behind */}
       <Animated.View
         style={[
@@ -132,9 +126,7 @@ export const SwipeableRow = ({
 
       {/* Swipeable card */}
       <GestureDetector gesture={pan}>
-        <Animated.View style={[{ borderCurve: 'continuous', overflow: 'hidden' }, cardStyle]}>
-          {children}
-        </Animated.View>
+        <Animated.View style={[{ borderCurve: 'continuous', overflow: 'hidden' }, cardStyle]}>{children}</Animated.View>
       </GestureDetector>
     </Animated.View>
   )

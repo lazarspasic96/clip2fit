@@ -48,7 +48,7 @@ export const useTabBarPolicy = (): TabBarPolicy => {
   const shouldUseLiquid = LIQUID_AVAILABLE && !reduceTransparency
   const shouldForceOpaqueForAccessibility = IS_IOS && reduceTransparency
   const shouldUseBlurFallback = IS_IOS && !shouldUseLiquid && !shouldForceOpaqueForAccessibility
-  const useExpoBlurTabsFallback = IS_IOS && !LIQUID_AVAILABLE && !reduceTransparency
+  const useExpoBlurTabsFallback = IS_ANDROID || (IS_IOS && !LIQUID_AVAILABLE && !reduceTransparency)
   const backgroundColor = (() => {
     if (IS_ANDROID) {
       return Colors.background.secondary

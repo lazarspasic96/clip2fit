@@ -2,16 +2,23 @@ import { Tabs } from 'expo-router'
 import { BlurView } from 'expo-blur'
 import { NativeTabs } from 'expo-router/unstable-native-tabs'
 import { CalendarDays, ChartColumn, Dumbbell, House } from 'lucide-react-native'
-import { StyleSheet, View } from 'react-native'
+import { Platform, StyleSheet, View } from 'react-native'
 
 import { Colors } from '@/constants/colors'
 import { useTabBarPolicy } from '@/hooks/use-tab-bar-policy'
+
+const IS_ANDROID = Platform.OS === 'android'
 
 const styles = StyleSheet.create({
   legacyTabBar: {
     position: 'absolute',
     borderTopWidth: 0,
     backgroundColor: 'transparent',
+  },
+  androidTabBar: {
+    borderTopWidth: 0,
+    backgroundColor: Colors.background.secondary,
+    elevation: 8,
   },
   blurBackground: {
     position: 'absolute',
@@ -41,17 +48,19 @@ const TabLayout = () => {
           headerShown: false,
           tabBarActiveTintColor: Colors.brand.accent,
           tabBarInactiveTintColor: Colors.content.secondary,
-          tabBarStyle: styles.legacyTabBar,
-          tabBarBackground: () => (
-            <View style={styles.blurBackground}>
-              <BlurView
-                tint="systemChromeMaterialDark"
-                intensity={95}
-                style={StyleSheet.absoluteFill}
-              />
-              <View style={styles.blurOverlay} />
-            </View>
-          ),
+          tabBarStyle: IS_ANDROID ? styles.androidTabBar : styles.legacyTabBar,
+          tabBarBackground: IS_ANDROID
+            ? undefined
+            : () => (
+                <View style={styles.blurBackground}>
+                  <BlurView
+                    tint="systemChromeMaterialDark"
+                    intensity={95}
+                    style={StyleSheet.absoluteFill}
+                  />
+                  <View style={styles.blurOverlay} />
+                </View>
+              ),
         }}
       >
         <Tabs.Screen

@@ -65,7 +65,12 @@ const ScheduleScreen = () => {
         <Text className="text-2xl font-inter-bold text-content-primary">My Schedule</Text>
       </View>
 
-      <StackLayout schedule={schedule} onDayPress={handleDayPress} flashDay={flash?.day ?? null} flashAction={flash?.action ?? 'assign'} />
+      <StackLayout
+        schedule={schedule}
+        onDayPress={handleDayPress}
+        flashDay={flash?.day ?? null}
+        flashAction={flash?.action ?? 'assign'}
+      />
     </View>
   )
 }

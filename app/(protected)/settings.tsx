@@ -20,7 +20,7 @@ const SettingsScreen = () => {
 
   return (
     <View className="flex-1 bg-background-primary px-5" style={{ paddingTop: insets.top }}>
-      <View className="flex-row items-center justify-between px-6 pt-4 pb-2">
+      <View className="flex-row items-center justify-between pt-4 pb-2">
         <Text className="text-2xl font-inter-bold text-content-primary">Settings</Text>
         <Pressable onPress={() => router.back()} hitSlop={12} className="p-1">
           <X size={24} color={Colors.content.primary} pointerEvents="none" />
@@ -32,7 +32,7 @@ const SettingsScreen = () => {
           <ActivityIndicator color={Colors.brand.accent} size="large" />
         </View>
       ) : (
-        <ScrollView className="flex-1" contentContainerClassName="px-6 pt-2 pb-8">
+        <ScrollView className="flex-1" contentContainerClassName=" pt-2 pb-8">
           <ProfileHeader fullName={profile?.fullName} email={user?.email} />
 
           <SettingsSection title="Personal Info">

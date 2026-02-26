@@ -53,10 +53,7 @@ const NewWorkoutHighlight = ({ children }: { children: React.ReactNode }) => {
   return (
     <View>
       {children}
-      <Animated.View
-        className="absolute inset-0 rounded-2xl pointer-events-none"
-        style={animatedStyle}
-      />
+      <Animated.View className="absolute inset-0 rounded-2xl pointer-events-none" style={animatedStyle} />
     </View>
   )
 }
@@ -109,8 +106,8 @@ const MyWorkoutsScreen = () => {
   return (
     <View className="flex-1 bg-background-primary px-5" style={{ paddingTop: insets.top }} collapsable={false}>
       {/* Header */}
-      <View className="px-5 pt-4 pb-2">
-        <Text className="text-2xl font-inter-bold text-content-primary">My Schedule</Text>
+      <View className="pt-4 pb-6">
+        <Text className="text-2xl font-inter-bold text-content-primary">My Workouts</Text>
       </View>
       {workouts.length === 0 ? (
         <EmptyState />
@@ -139,7 +136,7 @@ const MyWorkoutsScreen = () => {
             )
 
             return (
-              <Animated.View entering={entering} layout={LinearTransition.springify()} className="mx-5">
+              <Animated.View entering={entering} layout={LinearTransition.springify()}>
                 {isNew ? <NewWorkoutHighlight>{card}</NewWorkoutHighlight> : card}
               </Animated.View>
             )
@@ -151,7 +148,6 @@ const MyWorkoutsScreen = () => {
           }
         />
       )}
-
     </View>
   )
 }
