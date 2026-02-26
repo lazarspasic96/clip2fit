@@ -1,6 +1,7 @@
 import { Pressable, Text, View } from 'react-native'
 
 import { cn } from '@/components/ui/cn'
+import { MuscleChip } from '@/components/ui/muscle-chip'
 import type { DayOfWeek } from '@/types/schedule'
 import type { WorkoutPlan } from '@/types/workout'
 import { DAY_SHORT_LABELS } from '@/utils/schedule'
@@ -34,9 +35,7 @@ export const WorkoutPickerItem = ({
           {workout.targetMuscles !== undefined && workout.targetMuscles.length > 0 && (
             <View className="flex-row gap-1">
               {workout.targetMuscles.slice(0, 2).map((m) => (
-                <View key={m} className="px-1.5 py-0.5 rounded-full bg-background-tertiary">
-                  <Text className="text-xs font-inter capitalize text-brand-accent">{m}</Text>
-                </View>
+                <MuscleChip key={m} muscle={m} size="xs" tone="soft" maxWidth={86} />
               ))}
             </View>
           )}

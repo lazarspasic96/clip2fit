@@ -2,12 +2,10 @@ import { useLocalSearchParams } from 'expo-router'
 import { ActivityIndicator, ScrollView, Text, View } from 'react-native'
 
 import { ExerciseInstructions } from '@/components/catalog/exercise-instructions'
+import { MuscleChip } from '@/components/ui/muscle-chip'
 import { ExerciseMotionPreview } from '@/components/workout/shared/exercise-motion-preview'
 import { SourceVideoButton } from '@/components/workout/source-video-button'
 import { useCatalogDetail } from '@/hooks/use-catalog'
-import { MUSCLE_GROUP_LABELS } from '@/types/catalog'
-
-const formatMuscle = (muscle: string): string => MUSCLE_GROUP_LABELS[muscle] ?? muscle
 
 const ExerciseLearningScreen = () => {
   const params = useLocalSearchParams<{
@@ -54,9 +52,7 @@ const ExerciseLearningScreen = () => {
           {primaryMuscles.length > 0 && (
             <View className="flex-row flex-wrap gap-2">
               {primaryMuscles.map((muscle) => (
-                <View key={muscle} className="bg-background-tertiary rounded-full px-3 py-1.5">
-                  <Text className="text-xs font-inter-medium text-content-secondary">{formatMuscle(muscle)}</Text>
-                </View>
+                <MuscleChip key={muscle} muscle={muscle} size="sm" tone="soft" />
               ))}
             </View>
           )}

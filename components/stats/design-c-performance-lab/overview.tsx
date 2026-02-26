@@ -1,80 +1,32 @@
-import Svg, { Circle, Polygon } from 'react-native-svg'
+import { useMemo } from 'react'
 import { ScrollView, Text, View } from 'react-native'
 
 import { formatCompactNumber } from '@/components/stats/shared/stats-formatters'
 import type { StatsOverviewProps } from '@/components/stats/shared/stats-view-types'
 import { TopExerciseCard } from '@/components/stats/shared/top-exercise-card'
-import { Colors } from '@/constants/colors'
 import { formatMuscleLabel } from '@/types/stats'
-
-const RADAR_SIZE = 210
-const RADAR_RADIUS = 82
-const RADAR_CENTER = RADAR_SIZE / 2
-
-const MUSCLE_COLORS = [
-  Colors.chart.lime,
-  Colors.chart.cyan,
-  Colors.chart.blue,
-  Colors.chart.amber,
-  Colors.chart.pink,
-  Colors.chart.purple,
-]
-
-const toRadarPoint = (angle: number, radius: number) => {
-  const x = RADAR_CENTER + radius * Math.cos(angle)
-  const y = RADAR_CENTER + radius * Math.sin(angle)
-  return { x, y }
-}
+import { getMuscleColor } from '@/utils/muscle-color'
 
 export const PerformanceLabOverview = ({ summary, onPressExercise }: StatsOverviewProps) => {
-  const muscles = summary.muscleGroupDistribution.slice(0, 6)
-  const maxPercent = muscles[0]?.percentage ?? 1
+  const muscleRows = useMemo(() => {
+    const sorted = summary.muscleGroupDistribution
+      .slice()
+      .sort((a, b) => b.percentage - a.percentage)
+      .slice(0, 6)
 
-  const radarRows = muscles.map((muscle, index) => {
-    const angle = (-Math.PI / 2) + (Math.PI * 2 * index) / Math.max(1, muscles.length)
-    const ratio = maxPercent > 0 ? muscle.percentage / maxPercent : 0
-    const valuePoint = toRadarPoint(angle, RADAR_RADIUS * ratio)
-    const outerPoint = toRadarPoint(angle, RADAR_RADIUS)
-    return {
-      muscle,
-      angle,
-      ratio,
-      valuePoint,
-      outerPoint,
-      color: MUSCLE_COLORS[index % MUSCLE_COLORS.length] ?? '#84cc16',
-    }
-  })
+    const maxPercent = sorted[0]?.percentage ?? 0
 
-  const renderRadar = () => (
-    <Svg width={RADAR_SIZE} height={RADAR_SIZE}>
-      <Circle cx={RADAR_CENTER} cy={RADAR_CENTER} r={RADAR_RADIUS} fill="none" stroke="#3f3f46" strokeWidth={1} />
-      <Circle cx={RADAR_CENTER} cy={RADAR_CENTER} r={RADAR_RADIUS * 0.55} fill="none" stroke="#3f3f46" strokeWidth={1} />
-      {radarRows.map((row, index) => {
-        const next = radarRows[(index + 1) % Math.max(1, radarRows.length)]
-        if (next === undefined) return null
-        return (
-          <Polygon
-            key={`slice-${row.muscle.muscleGroup}`}
-            points={`${RADAR_CENTER},${RADAR_CENTER} ${row.valuePoint.x},${row.valuePoint.y} ${next.valuePoint.x},${next.valuePoint.y}`}
-            fill={row.color}
-            fillOpacity={0.2}
-            stroke={row.color}
-            strokeOpacity={0.5}
-            strokeWidth={1}
-          />
-        )
-      })}
-      {radarRows.map((row) => (
-        <Circle
-          key={`dot-${row.muscle.muscleGroup}`}
-          cx={row.valuePoint.x}
-          cy={row.valuePoint.y}
-          r={4}
-          fill={row.color}
-        />
-      ))}
-    </Svg>
-  )
+    return sorted.map((muscle) => {
+      const relativePercent = maxPercent > 0 ? (muscle.percentage / maxPercent) * 100 : 0
+      return {
+        muscle,
+        color: getMuscleColor(muscle.muscleGroup),
+        relativePercent,
+      }
+    })
+  }, [summary.muscleGroupDistribution])
+
+  const topMuscle = muscleRows[0]?.muscle ?? null
 
   return (
     <View className="px-5 gap-4">
@@ -116,23 +68,39 @@ export const PerformanceLabOverview = ({ summary, onPressExercise }: StatsOvervi
         </ScrollView>
       </View>
 
-      <View className="bg-background-secondary rounded-2xl p-4 gap-4 border border-border-secondary items-center">
-        <Text className="text-base font-inter-semibold text-content-primary self-start">Muscle Radar</Text>
-        <View className="items-center justify-center">
-          {renderRadar()}
+      <View className="bg-background-secondary rounded-2xl p-4 gap-4 border border-border-secondary">
+        <View className="gap-1">
+          <Text className="text-base font-inter-semibold text-content-primary">Muscle Focus</Text>
+          <Text className="text-xs font-inter text-content-tertiary">
+            {topMuscle !== null
+              ? `Top focus: ${formatMuscleLabel(topMuscle.muscleGroup)} (${topMuscle.percentage.toFixed(1)}%)`
+              : 'Complete workouts to unlock muscle focus breakdown.'}
+          </Text>
         </View>
-        <View className="w-full gap-2">
-          {radarRows.map((row) => (
-            <View key={row.muscle.muscleGroup} className="flex-row items-center justify-between">
-              <View className="flex-row items-center gap-2">
-                <View className="w-2 h-2 rounded-full" style={{ backgroundColor: row.color }} />
-                <Text className="text-xs font-inter text-content-secondary">
-                  {formatMuscleLabel(row.muscle.muscleGroup)}
+
+        <View className="gap-3">
+          {muscleRows.map((row) => (
+            <View key={row.muscle.muscleGroup} className="gap-1.5">
+              <View className="flex-row items-center justify-between gap-3">
+                <View className="flex-row items-center gap-2 flex-1 min-w-0">
+                  <View className="w-2 h-2 rounded-full" style={{ backgroundColor: row.color }} />
+                  <Text numberOfLines={1} className="text-sm font-inter text-content-secondary">
+                    {formatMuscleLabel(row.muscle.muscleGroup)}
+                  </Text>
+                </View>
+                <Text className="text-xs font-inter-semibold text-content-primary">
+                  {row.muscle.percentage.toFixed(1)}%
                 </Text>
               </View>
-              <Text className="text-xs font-inter-semibold text-content-primary">
-                {row.muscle.percentage.toFixed(1)}%
-              </Text>
+              <View className="h-2 rounded-full bg-background-primary overflow-hidden">
+                <View
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${Math.min(100, Math.max(6, row.relativePercent))}%`,
+                    backgroundColor: row.color,
+                  }}
+                />
+              </View>
             </View>
           ))}
         </View>

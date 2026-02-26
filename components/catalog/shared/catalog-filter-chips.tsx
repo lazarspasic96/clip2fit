@@ -1,71 +1,62 @@
 import * as Haptics from 'expo-haptics'
 import { Pressable, ScrollView, Text, View } from 'react-native'
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated'
 
+import { Colors } from '@/constants/colors'
 import {
   MUSCLE_GROUPS_ORDERED,
   MUSCLE_GROUP_LABELS,
   REGION_BREAK_INDICES,
 } from '@/types/catalog'
+import { getMuscleChipColors } from '@/utils/muscle-color'
 
 interface CatalogFilterChipsProps {
   selectedMuscle: string | null
   onSelectMuscle: (muscle: string | null) => void
 }
 
-const SPRING_CONFIG = { damping: 15, stiffness: 300 }
-
-const AnimatedChip = ({
+const FilterChip = ({
   label,
+  muscle,
   isActive,
   onPress,
 }: {
   label: string
+  muscle: string | null
   isActive: boolean
   onPress: () => void
 }) => {
-  const scale = useSharedValue(1)
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }))
-
-  const handlePressIn = () => {
-    scale.value = withSpring(0.93, SPRING_CONFIG)
-  }
-
-  const handlePressOut = () => {
-    scale.value = withSpring(1, SPRING_CONFIG)
-  }
-
   const handlePress = () => {
     Haptics.selectionAsync()
     onPress()
   }
+  const selectedMuscleColors = muscle !== null ? getMuscleChipColors(muscle, 'solid') : null
 
   return (
-    <Animated.View style={animatedStyle}>
-      <Pressable
-        onPress={handlePress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        className={
+    <Pressable
+      onPress={handlePress}
+      className="rounded-full px-3.5 py-1.5 border"
+      style={{
+        backgroundColor:
           isActive
-            ? 'bg-brand-accent rounded-full px-3.5 py-1.5'
-            : 'bg-background-tertiary rounded-full px-3.5 py-1.5'
+            ? (selectedMuscleColors?.backgroundColor ?? Colors.brand.accent)
+            : Colors.background.tertiary,
+        borderColor:
+          isActive
+            ? (selectedMuscleColors?.borderColor ?? Colors.brand.accent)
+            : Colors.border.secondary,
+      }}
+    >
+      <Text
+        className={isActive ? 'text-sm font-inter-semibold' : 'text-sm font-inter-medium text-content-primary'}
+        style={
+          isActive
+            ? { color: selectedMuscleColors?.textColor ?? Colors.background.primary }
+            : { color: Colors.content.primary }
         }
       >
-        <Text
-          className={
-            isActive
-              ? 'text-sm font-inter-semibold text-background-primary'
-              : 'text-sm font-inter text-content-secondary'
-          }
-        >
-          {label}
-        </Text>
-      </Pressable>
-    </Animated.View>
+        {label}
+      </Text>
+    </Pressable>
   )
 }
 
@@ -80,8 +71,9 @@ export const CatalogFilterChips = ({
       contentContainerStyle={{ paddingHorizontal: 20 }}
     >
       {/* "All" chip */}
-      <AnimatedChip
+      <FilterChip
         label="All"
+        muscle={null}
         isActive={selectedMuscle === null}
         onPress={() => onSelectMuscle(null)}
       />
@@ -95,8 +87,9 @@ export const CatalogFilterChips = ({
 
         return (
           <View key={muscle} style={{ marginLeft }}>
-            <AnimatedChip
+            <FilterChip
               label={MUSCLE_GROUP_LABELS[muscle] ?? muscle}
+              muscle={muscle}
               isActive={isActive}
               onPress={() => onSelectMuscle(isActive ? null : muscle)}
             />

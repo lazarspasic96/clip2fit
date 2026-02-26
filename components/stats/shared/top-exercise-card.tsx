@@ -3,6 +3,7 @@ import { Pressable, Text, View } from 'react-native'
 
 import { Colors } from '@/constants/colors'
 import type { StatsTopExercise } from '@/types/stats'
+import { getMuscleColor } from '@/utils/muscle-color'
 
 type TopExerciseCardTone = 'default' | 'journal' | 'lab' | 'flow' | 'tiles'
 
@@ -24,6 +25,11 @@ const toneClasses: Record<TopExerciseCardTone, string> = {
 const trendMultipliers = [0.4, 0.55, 0.78, 0.65, 0.92, 0.72, 1]
 
 export const TopExerciseCard = ({ exercise, index, tone = 'default', onPress }: TopExerciseCardProps) => {
+  const trendColor =
+    exercise.primaryMuscleGroup !== null && exercise.primaryMuscleGroup !== undefined
+      ? getMuscleColor(exercise.primaryMuscleGroup)
+      : Colors.content.tertiary
+
   return (
     <Pressable
       onPress={() => onPress(exercise)}
@@ -50,10 +56,11 @@ export const TopExerciseCard = ({ exercise, index, tone = 'default', onPress }: 
         {trendMultipliers.map((multiplier, trendIndex) => (
           <View
             key={`${exercise.exerciseName}-${trendIndex}`}
-            className="flex-1 bg-brand-accent rounded-sm"
+            className="flex-1 rounded-sm"
             style={{
               height: 6 + Math.round(multiplier * 16) + (index % 3),
               opacity: 0.32 + multiplier * 0.68,
+              backgroundColor: trendColor,
             }}
           />
         ))}

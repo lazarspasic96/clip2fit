@@ -107,13 +107,32 @@
   --color-chart-pink: #f472b6;
   --color-chart-purple: #a78bfa;
 
+  /* Canonical muscle colors */
+  --color-muscle-abdominals: #eab308;
+  --color-muscle-abductors: #38bdf8;
+  --color-muscle-adductors: #1e40af;
+  --color-muscle-biceps: #f472b6;
+  --color-muscle-calves: #60a5fa;
+  --color-muscle-chest: #f97316;
+  --color-muscle-forearms: #db2777;
+  --color-muscle-glutes: #1d4ed8;
+  --color-muscle-hamstrings: #2563eb;
+  --color-muscle-lats: #22d3ee;
+  --color-muscle-lower-back: #0891b2;
+  --color-muscle-middle-back: #06b6d4;
+  --color-muscle-neck: #a1a1aa;
+  --color-muscle-quadriceps: #3b82f6;
+  --color-muscle-shoulders: #8b5cf6;
+  --color-muscle-traps: #0ea5e9;
+  --color-muscle-triceps: #ec4899;
+
   /* Heatmap categories */
-  --color-heatmap-chest: #f97316;
-  --color-heatmap-back: #06b6d4;
-  --color-heatmap-shoulders: #8b5cf6;
-  --color-heatmap-arms: #ec4899;
-  --color-heatmap-legs: #3b82f6;
-  --color-heatmap-core: #eab308;
+  --color-heatmap-chest: var(--color-muscle-chest);
+  --color-heatmap-back: var(--color-muscle-middle-back);
+  --color-heatmap-shoulders: var(--color-muscle-shoulders);
+  --color-heatmap-arms: var(--color-muscle-triceps);
+  --color-heatmap-legs: var(--color-muscle-quadriceps);
+  --color-heatmap-core: var(--color-muscle-abdominals);
   --color-heatmap-full-body: #71717a;
 
   /* Overlay */

@@ -1,3 +1,5 @@
+import { normalizeMuscleGroup } from '@/utils/muscle-color'
+
 export type StatsPeriod = '7d' | '30d' | '6m' | '1y' | 'all'
 
 export interface ApiWeeklyFrequencyPoint {
@@ -10,6 +12,7 @@ export interface ApiTopExercise {
   catalog_exercise_id: string | null
   exercise_name: string
   session_count: number
+  primary_muscle_group?: string | null
 }
 
 export interface ApiMuscleGroupDistributionPoint {
@@ -60,6 +63,7 @@ export interface StatsTopExercise {
   catalogExerciseId: string | null
   exerciseName: string
   sessionCount: number
+  primaryMuscleGroup?: string | null
 }
 
 export interface StatsMuscleGroupDistributionPoint {
@@ -101,7 +105,7 @@ export interface StatsPRs {
   totalPrCount: number
 }
 
-export const PERIOD_OPTIONS: Array<{ label: string; value: StatsPeriod }> = [
+export const PERIOD_OPTIONS: { label: string; value: StatsPeriod }[] = [
   { label: '7D', value: '7d' },
   { label: '30D', value: '30d' },
   { label: '6M', value: '6m' },
@@ -172,6 +176,13 @@ const getNullableNumber = (record: AnyRecord, ...keys: string[]) => {
     }
   }
   return null
+}
+
+const normalizeMuscleValue = (raw: string): string => {
+  const trimmed = raw.trim()
+  if (trimmed.length === 0) return ''
+  const normalized = normalizeMuscleGroup(trimmed)
+  return normalized ?? trimmed.toLowerCase().replace(/\s+/g, '_')
 }
 
 const normalizeUtcInstant = (value: string): string => {
@@ -257,17 +268,23 @@ export const mapSummaryResponse = (api: unknown): StatsSummary => {
 
   const topExercises = rawTopExercises.map((item) => {
     const row = asRecord(item)
+    const primaryMuscleRaw = getNullableString(row, 'primary_muscle_group', 'primaryMuscleGroup', 'muscle_group')
     return {
       catalogExerciseId: getNullableString(row, 'catalog_exercise_id', 'catalogExerciseId'),
       exerciseName: getString(row, 'exercise_name', 'exerciseName', 'name'),
       sessionCount: getNumber(row, 'session_count', 'sessionCount', 'sessions'),
+      primaryMuscleGroup:
+        primaryMuscleRaw !== null && primaryMuscleRaw.trim().length > 0
+          ? normalizeMuscleValue(primaryMuscleRaw)
+          : null,
     }
   })
 
   const mappedMuscles = rawMuscles.map((item) => {
     const row = asRecord(item)
+    const rawMuscleGroup = getString(row, 'muscle_group', 'muscleGroup', 'name')
     return {
-      muscleGroup: getString(row, 'muscle_group', 'muscleGroup', 'name'),
+      muscleGroup: normalizeMuscleValue(rawMuscleGroup),
       sessionCount: getNumber(row, 'session_count', 'sessionCount', 'sessions'),
       rawPercentage: getNumber(row, 'percentage'),
     }

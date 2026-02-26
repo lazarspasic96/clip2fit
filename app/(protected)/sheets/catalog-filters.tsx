@@ -9,8 +9,6 @@ import { Colors } from '@/constants/colors'
 import { catalogFilterStore } from '@/stores/catalog-filter-store'
 import type { CatalogFilters, CatalogForce, CatalogLevel, CatalogMechanic, FilterPresetDef } from '@/types/catalog'
 import {
-  CATEGORY_LABELS,
-  CATEGORY_OPTIONS,
   FILTER_PRESETS,
   FORCE_DISPLAY_LABELS,
   LEVEL_DISPLAY_LABELS,
@@ -120,22 +118,22 @@ const CatalogFiltersScreen = () => {
             <Pressable
               key={preset.label}
               onPress={() => handlePreset(preset)}
+            className={cn(
+              'rounded-full px-4 py-2 border',
+              isActive
+                ? 'border-brand-accent bg-brand-accent'
+                : 'border-border-secondary bg-background-tertiary',
+            )}
+          >
+            <Text
               className={cn(
-                'rounded-full px-4 py-2 border',
+                'text-sm',
                 isActive
-                  ? 'border-brand-accent bg-background-tertiary'
-                  : 'border-border-primary bg-background-tertiary',
+                  ? 'font-inter-semibold text-background-primary'
+                  : 'font-inter-medium text-content-primary',
               )}
             >
-              <Text
-                className={cn(
-                  'text-sm',
-                  isActive
-                    ? 'font-inter-semibold text-brand-accent'
-                    : 'font-inter text-content-secondary',
-                )}
-              >
-                {preset.label}
+              {preset.label}
               </Text>
             </Pressable>
           )
@@ -148,10 +146,13 @@ const CatalogFiltersScreen = () => {
         {REGION_TABS.map((tab) => (
           <Pressable
             key={tab}
-            onPress={() => setRegionTab(tab)}
+            onPress={() => {
+              setRegionTab(tab)
+              setMuscle(null)
+            }}
             className={cn(
-              'rounded-full px-3 py-1',
-              regionTab === tab ? 'bg-brand-accent' : 'bg-background-tertiary',
+              'rounded-full px-3 py-1 border',
+              regionTab === tab ? 'bg-brand-accent border-brand-accent' : 'bg-background-tertiary border-border-secondary',
             )}
           >
             <Text
@@ -159,7 +160,7 @@ const CatalogFiltersScreen = () => {
                 'text-xs',
                 regionTab === tab
                   ? 'font-inter-semibold text-background-primary'
-                  : 'font-inter text-content-tertiary',
+                  : 'font-inter-medium text-content-primary',
               )}
             >
               {REGION_TAB_LABELS[tab]}
@@ -172,6 +173,7 @@ const CatalogFiltersScreen = () => {
           options={visibleMuscles}
           labels={MUSCLE_GROUP_LABELS}
           selected={muscle}
+          variant="muscle"
           onToggle={(v) => toggleValue(muscle, v, setMuscle)}
         />
       </View>
@@ -207,17 +209,6 @@ const CatalogFiltersScreen = () => {
           labels={MECHANIC_DISPLAY_LABELS}
           selected={mechanic}
           onToggle={(v) => toggleValue(mechanic, v as CatalogMechanic, setMechanic)}
-        />
-      </View>
-
-      {/* Category */}
-      <SectionLabel text="Category" />
-      <View className="mb-6">
-        <FilterChipGrid
-          options={CATEGORY_OPTIONS}
-          labels={CATEGORY_LABELS}
-          selected={category}
-          onToggle={(v) => toggleValue(category, v, setCategory)}
         />
       </View>
 

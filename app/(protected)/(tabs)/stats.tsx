@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Pressable, RefreshControl, ScrollView, Text, View } from 'react-native'
+import { useQueryClient } from '@tanstack/react-query'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { PerformanceLabOverview } from '@/components/stats/design-c-performance-lab/overview'
@@ -10,7 +11,7 @@ import { PeriodSelector } from '@/components/stats/shared/period-selector'
 import { StatsHeader } from '@/components/stats/shared/stats-header'
 import { Colors } from '@/constants/colors'
 
-import { useStatsSummary } from '@/hooks/use-stats'
+import { exerciseHistoryOptions, useStatsSummary } from '@/hooks/use-stats'
 import type { StatsPeriod, StatsTopExercise } from '@/types/stats'
 
 const TAB_BAR_CLEARANCE = 64
@@ -20,8 +21,19 @@ const StatsScreen = () => {
   const insets = useSafeAreaInsets()
 
   const [period, setPeriod] = useState<StatsPeriod>('30d')
+  const queryClient = useQueryClient()
   const { summary, isLoading, isRefetching, error, refetch } = useStatsSummary(period)
   const totalSessions = summary?.totalSessions ?? 0
+
+  useEffect(() => {
+    if (summary === null || summary.topExercises.length === 0) return
+
+    summary.topExercises.slice(0, 3).forEach((exercise) => {
+      void queryClient.prefetchQuery(
+        exerciseHistoryOptions(exercise.catalogExerciseId, exercise.exerciseName, '30d'),
+      )
+    })
+  }, [summary, queryClient])
 
   const subtitle = useMemo(() => {
     if (summary === null) return 'Track top exercises, muscle focus, and progression trends.'

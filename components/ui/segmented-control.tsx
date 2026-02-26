@@ -12,7 +12,13 @@ interface SegmentedControlProps<T extends string> {
   onChange: (value: T) => void
 }
 
-export const SegmentedControl = <T extends string>({ options, value, onChange }: SegmentedControlProps<T>) => {
+export const SegmentedControl = <T extends string>({
+  options,
+  value,
+  onChange,
+}: SegmentedControlProps<T>) => {
+  if (options.length === 0) return null
+
   return (
     <View className="flex-row bg-background-secondary rounded-md p-1">
       {options.map((option) => {

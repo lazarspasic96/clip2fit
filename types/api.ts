@@ -1,5 +1,6 @@
 import type { FitnessGoal, Gender, UserProfile } from '@/types/profile'
 import type { WorkoutExercise, WorkoutPlan, WorkoutSet } from '@/types/workout'
+import { normalizeMuscleGroup } from '@/utils/muscle-color'
 
 // --- API response shapes (match what the server returns) ---
 
@@ -145,10 +146,25 @@ const buildSets = (
     status: 'pending' as const,
   }))
 
+const normalizeMuscleName = (value: string): string => {
+  const trimmed = value.trim()
+  if (trimmed.length === 0) return ''
+
+  const normalized = normalizeMuscleGroup(trimmed)
+  if (normalized !== null) return normalized
+
+  return trimmed.toLowerCase().replace(/\s+/g, '_')
+}
+
+const normalizeMuscleList = (values: string[] | null | undefined): string[] =>
+  (values ?? [])
+    .map((value) => normalizeMuscleName(value))
+    .filter((value) => value.length > 0)
+
 const mapExercise = (api: ApiExercise): WorkoutExercise => ({
   id: api.id,
   name: api.name,
-  muscleGroups: api.muscleGroups,
+  muscleGroups: normalizeMuscleList(api.muscleGroups),
   sets: buildSets(api.sets, api.reps, api.targetWeight),
   order: api.order,
   status: 'pending',
@@ -188,7 +204,7 @@ export const mapApiWorkout = (api: ApiWorkout): WorkoutPlan => ({
   exercises: api.exercises.map((ex) => mapExercise(ex)),
   estimatedDurationMinutes: api.estimatedDurationMinutes ?? 0,
   difficulty: toDifficulty(api.difficulty),
-  targetMuscles: api.targetMuscles ?? [],
+  targetMuscles: normalizeMuscleList(api.targetMuscles),
   equipment: api.equipment ?? [],
   isPersonalCopy: api.isPersonalCopy,
   templateId: api.templateId,

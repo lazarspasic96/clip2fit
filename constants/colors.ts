@@ -1,3 +1,8 @@
+import {
+  CATEGORY_COLORS as MUSCLE_CATEGORY_COLORS,
+  MUSCLE_GROUP_COLORS,
+} from '@/constants/muscle-colors'
+
 /**
  * Color tokens for use in style props and component color props
  * where NativeWind/Tailwind classes can't be used.
@@ -62,13 +67,14 @@ export const Colors = {
     pink: '#f472b6',
     purple: '#a78bfa',
   },
+  muscle: MUSCLE_GROUP_COLORS,
   heatmap: {
-    chest: '#f97316',
-    back: '#06b6d4',
-    shoulders: '#8b5cf6',
-    arms: '#ec4899',
-    legs: '#3b82f6',
-    core: '#eab308',
-    fullBody: '#71717a',
+    chest: MUSCLE_CATEGORY_COLORS.chest,
+    back: MUSCLE_CATEGORY_COLORS.back,
+    shoulders: MUSCLE_CATEGORY_COLORS.shoulders,
+    arms: MUSCLE_CATEGORY_COLORS.arms,
+    legs: MUSCLE_CATEGORY_COLORS.legs,
+    core: MUSCLE_CATEGORY_COLORS.core,
+    fullBody: MUSCLE_CATEGORY_COLORS.full_body,
   },
 } as const

@@ -2,6 +2,7 @@ import { Clock, Dumbbell, Flame } from 'lucide-react-native'
 import { Text, View } from 'react-native'
 
 import { PlatformBadge } from '@/components/processing/platform-badge'
+import { MuscleChip } from '@/components/ui/muscle-chip'
 import { Colors } from '@/constants/colors'
 import type { WorkoutPlan } from '@/types/workout'
 
@@ -60,9 +61,7 @@ export const ProposalHeader = ({ workout, exerciseCount }: ProposalHeaderProps) 
       {workout.targetMuscles !== undefined && workout.targetMuscles.length > 0 && (
         <View className="flex-row flex-wrap gap-2 mt-3">
           {workout.targetMuscles.map((muscle) => (
-            <View key={muscle} className="bg-background-tertiary rounded-full px-3 py-1">
-              <Text className="text-xs font-inter text-content-secondary">{muscle}</Text>
-            </View>
+            <MuscleChip key={muscle} muscle={muscle} size="sm" tone="soft" />
           ))}
         </View>
       )}

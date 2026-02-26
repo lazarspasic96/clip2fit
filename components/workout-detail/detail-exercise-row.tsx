@@ -1,6 +1,7 @@
 import { Pencil, Trash2 } from 'lucide-react-native'
 import { Pressable, Text, View } from 'react-native'
 
+import { MuscleChip } from '@/components/ui/muscle-chip'
 import { SwipeableRow } from '@/components/ui/swipeable-row'
 import { Colors } from '@/constants/colors'
 import type { ApiExercise } from '@/types/api'
@@ -40,9 +41,7 @@ export const DetailExerciseRow = ({ exercise, onEdit, onDelete }: DetailExercise
         {exercise.muscleGroups.length > 0 && (
           <View className="flex-row flex-wrap gap-1.5 ml-7 mb-2">
             {exercise.muscleGroups.map((muscle) => (
-              <View key={muscle} className="bg-background-tertiary rounded-full px-2.5 py-0.5">
-                <Text className="text-xs font-inter text-content-secondary">{muscle}</Text>
-              </View>
+              <MuscleChip key={muscle} muscle={muscle} size="xs" tone="soft" />
             ))}
           </View>
         )}

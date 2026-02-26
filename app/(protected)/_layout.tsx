@@ -12,7 +12,6 @@ const sheetOptions = {
   presentation: 'formSheet' as const,
   gestureDirection: 'vertical' as const,
   sheetGrabberVisible: true,
-  sheetCornerRadius: 20,
   headerShown: false,
   contentStyle: { backgroundColor: Colors.background.secondary },
 }

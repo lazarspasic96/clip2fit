@@ -2,9 +2,9 @@ import { Image } from 'expo-image'
 import { Dumbbell, Info } from 'lucide-react-native'
 import { Pressable, Text, View } from 'react-native'
 
+import { MuscleChip } from '@/components/ui/muscle-chip'
 import { Colors } from '@/constants/colors'
 import type { CatalogExerciseDetail } from '@/types/catalog'
-import { MUSCLE_GROUP_LABELS } from '@/types/catalog'
 
 const THUMB_SIZE = 56
 
@@ -44,11 +44,7 @@ export const ExerciseInfoBar = ({ catalogExercise, isLoading, onInfoPress }: Exe
       {/* Muscle group pills */}
       <View className="flex-1 flex-row flex-wrap gap-1.5">
         {muscles.slice(0, 3).map((m) => (
-          <View key={m} className="bg-background-tertiary rounded-full px-2.5 py-1">
-            <Text className="text-[11px] font-inter-medium text-content-secondary">
-              {MUSCLE_GROUP_LABELS[m] ?? m}
-            </Text>
-          </View>
+          <MuscleChip key={m} muscle={m} size="xs" tone="soft" />
         ))}
         {muscles.length === 0 && (
           <Text className="text-xs font-inter text-content-tertiary">No muscle data</Text>

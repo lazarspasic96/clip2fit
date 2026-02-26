@@ -3,6 +3,7 @@ import { Pressable, Text, View } from 'react-native'
 import Animated, { FadeInUp } from 'react-native-reanimated'
 
 import { cn } from '@/components/ui/cn'
+import { MuscleChip } from '@/components/ui/muscle-chip'
 import { Colors } from '@/constants/colors'
 import type { FlashAction } from '@/stores/schedule-flash-store'
 import type { DayOfWeek, ScheduleEntry } from '@/types/schedule'
@@ -46,9 +47,7 @@ export const ScheduleDayRow = ({ entry, dayOfWeek, isToday, onPress, flashIcon, 
                   {entry.workout.targetMuscles !== undefined && entry.workout.targetMuscles.length > 0 && (
                     <View className="flex-row gap-1">
                       {entry.workout.targetMuscles.slice(0, 3).map((m) => (
-                        <View key={m} className="px-2 py-0.5 rounded-full bg-background-tertiary">
-                          <Text className="text-xs font-inter text-content-secondary capitalize">{m}</Text>
-                        </View>
+                        <MuscleChip key={m} muscle={m} size="xs" tone="soft" maxWidth={94} />
                       ))}
                     </View>
                   )}

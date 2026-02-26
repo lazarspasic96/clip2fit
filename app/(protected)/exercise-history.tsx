@@ -1,19 +1,19 @@
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { ChevronLeft } from 'lucide-react-native'
-import { useMemo, useState } from 'react'
-import { ActivityIndicator, Pressable, ScrollView, Text, View, useWindowDimensions } from 'react-native'
-import Svg, { Circle, Line, Polyline } from 'react-native-svg'
+import { useEffect, useMemo, useState } from 'react'
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
+import { HistoryChart } from '@/components/stats/history-chart'
 import { PeriodSelector } from '@/components/stats/shared/period-selector'
-import { formatCompactNumber } from '@/components/stats/shared/stats-formatters'
+import { formatCompactNumber, formatInstantDate } from '@/components/stats/shared/stats-formatters'
 import { Colors } from '@/constants/colors'
 import { useExerciseHistory } from '@/hooks/use-stats'
 import { parseUtcInstantMs, type StatsPRTimelinePoint, type StatsPeriod } from '@/types/stats'
 
 const parseSingleParam = (value: string | string[] | undefined) => {
   if (value === undefined) return null
-  return Array.isArray(value) ? value[0] ?? null : value
+  return Array.isArray(value) ? (value[0] ?? null) : value
 }
 
 const filterTimelineByPeriod = (timeline: StatsPRTimelinePoint[], period: StatsPeriod) => {
@@ -35,82 +35,18 @@ const filterTimelineByPeriod = (timeline: StatsPRTimelinePoint[], period: StatsP
   })
 }
 
-const sortTimelineByInstant = (timeline: StatsPRTimelinePoint[]): StatsPRTimelinePoint[] => (
-  timeline
-    .slice()
-    .sort((a, b) => parseUtcInstantMs(a.date) - parseUtcInstantMs(b.date))
-)
-
-const formatInstantDate = (value: string): string => {
-  const timestamp = parseUtcInstantMs(value)
-  if (!Number.isFinite(timestamp)) return 'N/A'
-  return new Date(timestamp).toLocaleDateString()
-}
-
-interface HistoryChartProps {
-  points: StatsPRTimelinePoint[]
-  width: number
-}
-
-const HistoryChart = ({ points, width }: HistoryChartProps) => {
-  const chartHeight = 210
-  const chartPadding = 20
-
-  if (points.length === 0) {
-    return (
-      <View className="h-[210] items-center justify-center bg-background-primary rounded-2xl">
-        <Text className="text-sm font-inter text-content-tertiary">No PR points in selected period</Text>
-      </View>
-    )
-  }
-
-  const weights = points.map((point) => point.weight)
-  const minWeight = Math.min(...weights)
-  const maxWeight = Math.max(...weights)
-  const range = Math.max(1, maxWeight - minWeight)
-
-  const chartPoints = points.map((point, index) => {
-    const x = chartPadding + (index / Math.max(1, points.length - 1)) * (width - chartPadding * 2)
-    const y = chartPadding + ((maxWeight - point.weight) / range) * (chartHeight - chartPadding * 2)
-    return { x, y, point }
-  })
-
-  const polylinePoints = chartPoints.map((point) => `${point.x},${point.y}`).join(' ')
-
-  return (
-    <View className="bg-background-primary rounded-2xl p-2">
-      <Svg width={width} height={chartHeight}>
-        <Line x1={chartPadding} y1={chartPadding} x2={chartPadding} y2={chartHeight - chartPadding} stroke={Colors.border.secondary} strokeWidth={1} />
-        <Line
-          x1={chartPadding}
-          y1={chartHeight - chartPadding}
-          x2={width - chartPadding}
-          y2={chartHeight - chartPadding}
-          stroke={Colors.border.secondary}
-          strokeWidth={1}
-        />
-        <Polyline points={polylinePoints} fill="none" stroke={Colors.brand.accent} strokeWidth={3} strokeLinejoin="round" strokeLinecap="round" />
-        {chartPoints.map(({ x, y, point }) => (
-          <Circle key={point.sessionId} cx={x} cy={y} r={4.5} fill={Colors.brand.logo} />
-        ))}
-      </Svg>
-      <View className="flex-row justify-between px-2">
-        <Text className="text-xs font-inter text-content-tertiary">{formatInstantDate(points[0]?.date ?? '')}</Text>
-        <Text className="text-xs font-inter text-content-tertiary">{formatInstantDate(points[points.length - 1]?.date ?? '')}</Text>
-      </View>
-    </View>
-  )
-}
+const sortTimelineByInstant = (timeline: StatsPRTimelinePoint[]): StatsPRTimelinePoint[] =>
+  timeline.slice().sort((a, b) => parseUtcInstantMs(a.date) - parseUtcInstantMs(b.date))
 
 const ExerciseHistoryScreen = () => {
   const router = useRouter()
   const insets = useSafeAreaInsets()
-  const { width: windowWidth } = useWindowDimensions()
   const params = useLocalSearchParams<{ catalogExerciseId?: string; exerciseName?: string }>()
 
   const catalogExerciseId = parseSingleParam(params.catalogExerciseId)
   const exerciseName = parseSingleParam(params.exerciseName)
   const [period, setPeriod] = useState<StatsPeriod>('30d')
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null)
 
   const { history, isLoading, error, refetch } = useExerciseHistory(catalogExerciseId, exerciseName, period)
 
@@ -121,6 +57,21 @@ const ExerciseHistoryScreen = () => {
   }, [history, period])
 
   const latestPoint = filteredTimeline[filteredTimeline.length - 1] ?? null
+  const selectedPoint = useMemo(() => {
+    if (selectedSessionId === null) return latestPoint
+    return filteredTimeline.find((point) => point.sessionId === selectedSessionId) ?? latestPoint
+  }, [filteredTimeline, latestPoint, selectedSessionId])
+
+  useEffect(() => {
+    if (filteredTimeline.length === 0) {
+      if (selectedSessionId !== null) setSelectedSessionId(null)
+      return
+    }
+
+    if (selectedSessionId === null || !filteredTimeline.some((point) => point.sessionId === selectedSessionId)) {
+      setSelectedSessionId(filteredTimeline[filteredTimeline.length - 1]?.sessionId ?? null)
+    }
+  }, [filteredTimeline, selectedSessionId])
 
   return (
     <View className="flex-1 bg-background-primary">
@@ -151,8 +102,9 @@ const ExerciseHistoryScreen = () => {
 
       <ScrollView
         contentInsetAdjustmentBehavior="never"
-        contentContainerClassName="px-5 gap-4"
         contentContainerStyle={{
+          paddingHorizontal: 20,
+          gap: 16,
           paddingBottom: Math.max(insets.bottom, 16),
         }}
         showsVerticalScrollIndicator={false}
@@ -165,9 +117,16 @@ const ExerciseHistoryScreen = () => {
 
         {error !== null && !isLoading && (
           <View className="bg-background-secondary rounded-3xl p-5 gap-3">
-            <Text className="text-base font-inter-semibold text-content-primary">Couldn{`'`}t load exercise history</Text>
+            <Text className="text-base font-inter-semibold text-content-primary">
+              Couldn{`'`}t load exercise history
+            </Text>
             <Text className="text-sm font-inter text-content-secondary">{error}</Text>
-            <Pressable className="bg-brand-accent rounded-xl py-3 items-center" onPress={() => { void refetch() }}>
+            <Pressable
+              className="bg-brand-accent rounded-xl py-3 items-center"
+              onPress={() => {
+                void refetch()
+              }}
+            >
               <Text className="text-sm font-inter-semibold text-background-primary">Retry</Text>
             </Pressable>
           </View>
@@ -176,21 +135,29 @@ const ExerciseHistoryScreen = () => {
         {!isLoading && error === null && history !== null && (
           <View className="gap-4">
             <View className="bg-background-secondary rounded-3xl p-5 gap-4">
-              <HistoryChart points={filteredTimeline} width={windowWidth - 62} />
+              <HistoryChart
+                points={filteredTimeline}
+                selectedSessionId={selectedSessionId}
+                onSelectSessionId={setSelectedSessionId}
+              />
 
               <View className="flex-row gap-3">
                 <View className="flex-1 bg-background-primary rounded-2xl p-3 gap-1">
                   <Text className="text-xs font-inter text-content-tertiary">Current PR</Text>
-                  <Text className="text-xl font-inter-bold text-content-primary">{formatCompactNumber(history.currentPr)}</Text>
+                  <Text className="text-xl font-inter-bold text-content-primary">
+                    {formatCompactNumber(history.currentPr)}
+                  </Text>
                 </View>
                 <View className="flex-1 bg-background-primary rounded-2xl p-3 gap-1">
                   <Text className="text-xs font-inter text-content-tertiary">PR Entries</Text>
                   <Text className="text-xl font-inter-bold text-content-primary">{history.prTimeline.length}</Text>
                 </View>
                 <View className="flex-1 bg-background-primary rounded-2xl p-3 gap-1">
-                  <Text className="text-xs font-inter text-content-tertiary">Latest</Text>
+                  <Text className="text-xs font-inter text-content-tertiary">
+                    {selectedPoint?.sessionId === latestPoint?.sessionId ? 'Latest' : 'Selected'}
+                  </Text>
                   <Text className="text-base font-inter-semibold text-content-primary">
-                    {latestPoint !== null ? `${latestPoint.weight}kg x ${latestPoint.reps}` : 'N/A'}
+                    {selectedPoint !== null ? `${selectedPoint.weight}kg x ${selectedPoint.reps}` : 'N/A'}
                   </Text>
                 </View>
               </View>
@@ -199,19 +166,31 @@ const ExerciseHistoryScreen = () => {
             <View className="bg-background-secondary rounded-3xl p-5 gap-3">
               <Text className="text-base font-inter-semibold text-content-primary">PR Milestones</Text>
               {filteredTimeline.length === 0 && (
-                <Text className="text-sm font-inter text-content-secondary">No PR milestones found in selected period.</Text>
+                <Text className="text-sm font-inter text-content-secondary">
+                  No PR milestones found in selected period.
+                </Text>
               )}
-              {filteredTimeline.slice().reverse().map((point) => (
-                <View key={point.sessionId} className="bg-background-primary rounded-2xl p-3 flex-row items-center justify-between">
-                  <View>
-                    <Text className="text-sm font-inter-semibold text-content-primary">{point.weight}kg x {point.reps}</Text>
-                    <Text className="text-xs font-inter text-content-tertiary">{formatInstantDate(point.date)}</Text>
+              {filteredTimeline
+                .slice()
+                .reverse()
+                .map((point) => (
+                  <View
+                    key={point.sessionId}
+                    className="bg-background-primary rounded-2xl p-3 flex-row items-center justify-between"
+                  >
+                    <View>
+                      <Text className="text-sm font-inter-semibold text-content-primary">
+                        {point.weight}kg x {point.reps}
+                      </Text>
+                      <Text className="text-xs font-inter text-content-tertiary">{formatInstantDate(point.date)}</Text>
+                    </View>
+                    <Text className="text-xs font-inter-semibold text-brand-accent">
+                      {point.previousWeight !== null
+                        ? `+${(point.weight - point.previousWeight).toFixed(1)}kg`
+                        : 'First PR'}
+                    </Text>
                   </View>
-                  <Text className="text-xs font-inter-semibold text-brand-accent">
-                    {point.previousWeight !== null ? `+${(point.weight - point.previousWeight).toFixed(1)}kg` : 'First PR'}
-                  </Text>
-                </View>
-              ))}
+                ))}
             </View>
           </View>
         )}

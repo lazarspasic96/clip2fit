@@ -2,6 +2,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useState } from 'react'
 import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from 'react-native'
 
+import { MuscleChip } from '@/components/ui/muscle-chip'
 import { Colors } from '@/constants/colors'
 import { useUpdateWorkoutMutation, useWorkoutQuery } from '@/hooks/use-api'
 
@@ -68,9 +69,7 @@ const EditExerciseScreen = () => {
       {exercise.muscleGroups.length > 0 && (
         <View className="flex-row flex-wrap gap-1.5 mb-4">
           {exercise.muscleGroups.map((muscle) => (
-            <View key={muscle} className="bg-background-tertiary rounded-full px-2.5 py-0.5">
-              <Text className="text-xs font-inter text-content-secondary">{muscle}</Text>
-            </View>
+            <MuscleChip key={muscle} muscle={muscle} size="xs" tone="soft" />
           ))}
         </View>
       )}

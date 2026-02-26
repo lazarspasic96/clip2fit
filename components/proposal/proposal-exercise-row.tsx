@@ -2,6 +2,7 @@ import { Trash2 } from 'lucide-react-native'
 import { Pressable, Text, TextInput, View } from 'react-native'
 import Animated, { FadeInDown, Layout, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated'
 
+import { MuscleChip } from '@/components/ui/muscle-chip'
 import { Colors } from '@/constants/colors'
 import type { ApiExercise } from '@/types/api'
 
@@ -67,9 +68,7 @@ export const ProposalExerciseRow = ({ exercise, index, onUpdate, onDelete }: Pro
           {exercise.muscleGroups.length > 0 && (
             <View className="flex-row flex-wrap gap-1.5 mb-3">
               {exercise.muscleGroups.map((muscle) => (
-                <View key={muscle} className="bg-background-tertiary rounded-full px-2.5 py-0.5">
-                  <Text className="text-xs font-inter text-content-secondary">{muscle}</Text>
-                </View>
+                <MuscleChip key={muscle} muscle={muscle} size="xs" tone="soft" />
               ))}
             </View>
           )}

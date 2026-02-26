@@ -2,6 +2,7 @@ import { AccordionHeader } from '@/components/workout/command-center/accordion-h
 import { SetTable } from '@/components/workout/command-center/set-table'
 import { ExerciseNotes } from '@/components/workout/exercise-notes'
 import { SourceVideoButton } from '@/components/workout/source-video-button'
+import { MuscleChip } from '@/components/ui/muscle-chip'
 import { useActiveWorkout } from '@/contexts/active-workout-context'
 import type { WorkoutExercise } from '@/types/workout'
 import { Pressable, Text, View } from 'react-native'
@@ -29,9 +30,7 @@ export const ExerciseAccordion = ({ exercise, isExpanded, onToggle }: ExerciseAc
           {/* Muscle pills */}
           <View className="flex-row gap-1.5 px-4 mb-2">
             {exercise.muscleGroups.map((mg) => (
-              <View key={mg} className="bg-background-tertiary rounded-full px-2 py-0.5">
-                <Text className="text-xs font-inter text-content-secondary">{mg}</Text>
-              </View>
+              <MuscleChip key={mg} muscle={mg} size="xs" tone="soft" />
             ))}
           </View>
 

@@ -5,6 +5,7 @@ import { ActivityIndicator, Alert, Linking, Pressable, ScrollView, Text, View } 
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { PlatformBadge } from '@/components/processing/platform-badge'
+import { MuscleChip } from '@/components/ui/muscle-chip'
 import { DetailExerciseRow } from '@/components/workout-detail/detail-exercise-row'
 import { DetailHeader } from '@/components/workout-detail/detail-header'
 import { Colors } from '@/constants/colors'
@@ -156,9 +157,7 @@ export const WorkoutDetailContent = () => {
           {workout.targetMuscles !== undefined && workout.targetMuscles.length > 0 && (
             <View className="flex-row flex-wrap gap-2 mt-3">
               {workout.targetMuscles.map((muscle) => (
-                <View key={muscle} className="bg-background-tertiary rounded-full px-3 py-1">
-                  <Text className="text-xs font-inter text-content-secondary">{muscle}</Text>
-                </View>
+                <MuscleChip key={muscle} muscle={muscle} size="sm" tone="soft" />
               ))}
             </View>
           )}

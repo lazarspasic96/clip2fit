@@ -1,6 +1,6 @@
 import { Text, View } from 'react-native'
 
-import { MUSCLE_GROUP_LABELS } from '@/types/catalog'
+import { MuscleChip } from '@/components/ui/muscle-chip'
 
 interface ExerciseMuscleGroupsProps {
   primary: string[]
@@ -17,11 +17,7 @@ export const ExerciseMuscleGroups = ({ primary, secondary }: ExerciseMuscleGroup
         </Text>
         <View className="flex-row flex-wrap gap-2">
           {primary.map((muscle) => (
-            <View key={muscle} className="bg-background-badge-success rounded-full px-3 py-1.5">
-              <Text className="text-xs font-inter-semibold text-content-badge-success">
-                {MUSCLE_GROUP_LABELS[muscle] ?? muscle}
-              </Text>
-            </View>
+            <MuscleChip key={muscle} muscle={muscle} size="sm" tone="soft" />
           ))}
         </View>
       </View>
@@ -34,11 +30,7 @@ export const ExerciseMuscleGroups = ({ primary, secondary }: ExerciseMuscleGroup
           </Text>
           <View className="flex-row flex-wrap gap-2">
             {secondary.map((muscle) => (
-              <View key={muscle} className="bg-background-tertiary rounded-full px-3 py-1.5">
-                <Text className="text-xs font-inter text-content-secondary">
-                  {MUSCLE_GROUP_LABELS[muscle] ?? muscle}
-                </Text>
-              </View>
+              <MuscleChip key={muscle} muscle={muscle} size="sm" tone="soft" />
             ))}
           </View>
         </View>

@@ -2,10 +2,11 @@ import { Image } from 'expo-image'
 import { Dumbbell, GripVertical, Trash2 } from 'lucide-react-native'
 import { Pressable, Text, TextInput, View } from 'react-native'
 
-import { Colors } from '@/constants/colors'
+import { cn } from '@/components/ui/cn'
+import { MuscleChip } from '@/components/ui/muscle-chip'
 import { SwipeableRow } from '@/components/ui/swipeable-row'
+import { Colors } from '@/constants/colors'
 import type { SelectedExercise } from '@/types/catalog'
-import { MUSCLE_GROUP_LABELS } from '@/types/catalog'
 
 interface BuilderExerciseRowProps {
   exercise: SelectedExercise
@@ -19,13 +20,9 @@ interface BuilderExerciseRowProps {
 }
 
 const DELETE_ACTION_WIDTH = 70
-const IMAGE_SIZE = 88
 
 const deleteActionContent = (
-  <View
-    className="bg-red-500/20 rounded-xl items-center justify-center"
-    style={{ width: DELETE_ACTION_WIDTH, height: '100%' }}
-  >
+  <View className="bg-red-500/20 rounded-xl items-center justify-center w-[70px] h-full">
     <Trash2 size={20} color="#f87171" pointerEvents="none" />
   </View>
 )
@@ -56,11 +53,7 @@ export const BuilderExerciseRow = ({
 
   return (
     <View className="mb-2.5">
-      <SwipeableRow
-        actionWidth={DELETE_ACTION_WIDTH}
-        actionContent={deleteActionContent}
-        onAction={onDelete}
-      >
+      <SwipeableRow actionWidth={DELETE_ACTION_WIDTH} actionContent={deleteActionContent} onAction={onDelete}>
         <View
           className="mx-5 bg-background-secondary rounded-2xl flex-row overflow-hidden"
           style={{ borderCurve: 'continuous' }}
@@ -71,18 +64,14 @@ export const BuilderExerciseRow = ({
               onPress={onMoveUp}
               disabled={isFirst}
               hitSlop={6}
-              style={{ opacity: isFirst ? 0.2 : 0.5 }}
+              className={cn(isFirst ? 'opacity-20' : 'opacity-50')}
             >
               <GripVertical size={14} color={Colors.content.tertiary} pointerEvents="none" />
             </Pressable>
             <View className="w-[22px] h-[22px] rounded-full bg-brand-accent items-center justify-center">
               <Text
-                style={{
-                  fontSize: 11,
-                  fontFamily: 'Inter_700Bold',
-                  color: Colors.background.primary,
-                  fontVariant: ['tabular-nums'],
-                }}
+                className="text-[11px] font-inter-bold text-background-primary"
+                style={{ fontVariant: ['tabular-nums'] }}
               >
                 {index + 1}
               </Text>
@@ -91,7 +80,7 @@ export const BuilderExerciseRow = ({
               onPress={onMoveDown}
               disabled={isLast}
               hitSlop={6}
-              style={{ opacity: isLast ? 0.2 : 0.5 }}
+              className={cn(isLast ? 'opacity-20' : 'opacity-50')}
             >
               <GripVertical size={14} color={Colors.content.tertiary} pointerEvents="none" />
             </Pressable>
@@ -99,25 +88,14 @@ export const BuilderExerciseRow = ({
 
           {/* Content: name, muscles, sets/reps */}
           <View className="flex-1 py-3.5 pr-3 gap-2">
-            <Text
-              className="text-[15px] font-inter-semibold text-content-primary"
-              numberOfLines={2}
-            >
+            <Text className="text-[15px] font-inter-semibold text-content-primary" numberOfLines={2}>
               {exercise.catalogExercise.name}
             </Text>
 
             {muscleGroups.length > 0 && (
               <View className="flex-row gap-1">
                 {muscleGroups.map((muscle) => (
-                  <View
-                    key={muscle}
-                    className="bg-brand-accent/10 rounded-md px-[7px] py-0.5"
-                    style={{ borderCurve: 'continuous' }}
-                  >
-                    <Text className="text-[10px] font-inter-medium text-brand-accent tracking-wide">
-                      {MUSCLE_GROUP_LABELS[muscle] ?? muscle}
-                    </Text>
-                  </View>
+                  <MuscleChip key={muscle} muscle={muscle} size="xs" tone="soft" maxWidth={110} />
                 ))}
               </View>
             )}
@@ -128,19 +106,10 @@ export const BuilderExerciseRow = ({
                 className="flex-row items-center bg-background-tertiary rounded-[10px] px-2.5 h-[34px] gap-1"
                 style={{ borderCurve: 'continuous' }}
               >
-                <Text className="text-[11px] font-inter-medium text-content-tertiary">
-                  Sets
-                </Text>
+                <Text className="text-[11px] font-inter-medium text-content-tertiary">Sets</Text>
                 <TextInput
-                  style={{
-                    fontSize: 15,
-                    fontFamily: 'Inter_600SemiBold',
-                    color: Colors.content.primary,
-                    width: 28,
-                    textAlign: 'center',
-                    padding: 0,
-                    fontVariant: ['tabular-nums'],
-                  }}
+                  className="text-[15px] font-inter-semibold text-content-primary w-[28px] text-center p-0"
+                  style={{ fontVariant: ['tabular-nums'] }}
                   keyboardType="number-pad"
                   value={String(exercise.sets)}
                   onChangeText={handleSetsChange}
@@ -150,27 +119,16 @@ export const BuilderExerciseRow = ({
                 />
               </View>
 
-              <Text className="text-[13px] font-inter-medium text-content-tertiary">
-                ×
-              </Text>
+              <Text className="text-[13px] font-inter-medium text-content-tertiary">×</Text>
 
               <View
                 className="flex-row items-center bg-background-tertiary rounded-[10px] px-2.5 h-[34px] gap-1"
                 style={{ borderCurve: 'continuous' }}
               >
-                <Text className="text-[11px] font-inter-medium text-content-tertiary">
-                  Reps
-                </Text>
+                <Text className="text-[11px] font-inter-medium text-content-tertiary">Reps</Text>
                 <TextInput
-                  style={{
-                    fontSize: 15,
-                    fontFamily: 'Inter_600SemiBold',
-                    color: Colors.content.primary,
-                    width: 36,
-                    textAlign: 'center',
-                    padding: 0,
-                    fontVariant: ['tabular-nums'],
-                  }}
+                  className="text-[15px] font-inter-semibold text-content-primary w-[36px] text-center p-0"
+                  style={{ fontVariant: ['tabular-nums'] }}
                   value={exercise.reps}
                   onChangeText={handleRepsChange}
                   selectTextOnFocus
@@ -181,30 +139,23 @@ export const BuilderExerciseRow = ({
           </View>
 
           {/* Exercise image — right side */}
-          <View style={{ width: IMAGE_SIZE, justifyContent: 'center', paddingRight: 12, paddingVertical: 12 }}>
+          <View className="w-[88px] justify-center pr-3 py-3">
             {hasImage ? (
-              <Image
-                source={{ uri: exercise.catalogExercise.images?.start }}
-                style={{
-                  width: IMAGE_SIZE - 12,
-                  height: IMAGE_SIZE,
-                  borderRadius: 12,
-                  borderCurve: 'continuous',
-                }}
-                contentFit="cover"
-                cachePolicy="memory-disk"
-              />
+              <View
+                className="w-[76px] h-[88px] rounded-[12px] overflow-hidden"
+                style={{ borderCurve: 'continuous' }}
+              >
+                <Image
+                  source={{ uri: exercise.catalogExercise.images?.start }}
+                  className="w-full h-full"
+                  contentFit="cover"
+                  cachePolicy="memory-disk"
+                />
+              </View>
             ) : (
               <View
-                style={{
-                  width: IMAGE_SIZE - 12,
-                  height: IMAGE_SIZE,
-                  borderRadius: 12,
-                  borderCurve: 'continuous',
-                  backgroundColor: Colors.background.tertiary,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
+                className="w-[76px] h-[88px] rounded-[12px] bg-background-tertiary items-center justify-center"
+                style={{ borderCurve: 'continuous' }}
               >
                 <Dumbbell size={24} color={Colors.content.tertiary} />
               </View>
