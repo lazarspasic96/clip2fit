@@ -60,7 +60,7 @@ const ScheduleScreen = () => {
   }
 
   return (
-    <View className="flex-1 bg-background-primary" style={{ paddingTop: insets.top }}>
+    <View className="flex-1 bg-background-primary" style={{ paddingTop: insets.top }} collapsable={false}>
       <View className="px-5 pt-4 pb-2">
         <Text className="text-2xl font-inter-bold text-content-primary">My Schedule</Text>
       </View>

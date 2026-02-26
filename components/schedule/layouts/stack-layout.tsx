@@ -2,6 +2,7 @@ import { ScrollView } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { ScheduleDayRow } from '@/components/schedule/schedule-day-row'
+import { TAB_CONTENT_BOTTOM_CLEARANCE } from '@/constants/tab-bar'
 
 import type { FlashAction } from '@/stores/schedule-flash-store'
 import type { DayOfWeek, WeeklySchedule } from '@/types/schedule'
@@ -21,7 +22,7 @@ export const StackLayout = ({ schedule, onDayPress, flashDay, flashAction }: Sta
   return (
     <ScrollView
       className="flex-1"
-      contentContainerStyle={{ paddingTop: 16, paddingBottom: insets.bottom + 24 }}
+      contentContainerStyle={{ paddingTop: 16, paddingBottom: insets.bottom + TAB_CONTENT_BOTTOM_CLEARANCE }}
       showsVerticalScrollIndicator={false}
     >
       {schedule.entries.map((entry, i) => {

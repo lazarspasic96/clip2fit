@@ -14,12 +14,11 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { Colors } from '@/constants/colors'
+import { TAB_BAR_FLOATING_OFFSET, TAB_BAR_HEIGHT } from '@/constants/tab-bar'
 import { useConversion } from '@/contexts/conversion-context'
 import { MiniProgressRing } from '@/components/processing/mini-progress-ring'
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
-
-const TAB_BAR_HEIGHT = 60
 
 export const FloatingConversionPill = () => {
   const { state } = useConversion()
@@ -37,7 +36,7 @@ export const FloatingConversionPill = () => {
   const isError = state.jobState === 'error'
 
   const inTabs = segments[0] === '(protected)' && segments[1] === '(tabs)'
-  const bottomOffset = insets.bottom + (inTabs ? TAB_BAR_HEIGHT + 12 : 12)
+  const bottomOffset = insets.bottom + (inTabs ? TAB_BAR_HEIGHT + TAB_BAR_FLOATING_OFFSET : TAB_BAR_FLOATING_OFFSET)
 
   useEffect(() => {
     show.value = withTiming(isVisible ? 1 : 0, {

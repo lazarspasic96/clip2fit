@@ -10,6 +10,7 @@ import { ImportFromSocialsCard } from '@/components/home/import-from-socials-car
 import { RestDayCard } from '@/components/home/rest-day-card'
 import { TodaysWorkoutCard } from '@/components/home/todays-workout-card'
 import { WeeklyTrainingPlan } from '@/components/home/weekly-training-plan'
+import { TAB_CONTENT_BOTTOM_CLEARANCE } from '@/constants/tab-bar'
 
 import { useActiveWorkout } from '@/contexts/active-workout-context'
 import { useWorkoutsQuery } from '@/hooks/use-api'
@@ -44,13 +45,13 @@ const HomeScreen = () => {
   }
 
   return (
-    <View className="flex-1 bg-background-primary" style={{ paddingTop: insets.top + 12 }}>
+    <View className="flex-1 bg-background-primary" style={{ paddingTop: insets.top + 12 }} collapsable={false}>
       <HomeHeader subtitle={subtitle} />
 
       <ScrollView
         contentContainerStyle={{
           paddingTop: 20,
-          paddingBottom: insets.bottom + 24,
+          paddingBottom: insets.bottom + TAB_CONTENT_BOTTOM_CLEARANCE,
           gap: 20,
         }}
         showsVerticalScrollIndicator={false}

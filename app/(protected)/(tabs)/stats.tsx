@@ -10,11 +10,10 @@ import { StatsLoadingSkeletons } from '@/components/stats/shared/loading-skeleto
 import { PeriodSelector } from '@/components/stats/shared/period-selector'
 import { StatsHeader } from '@/components/stats/shared/stats-header'
 import { Colors } from '@/constants/colors'
+import { TAB_CONTENT_BOTTOM_CLEARANCE } from '@/constants/tab-bar'
 
 import { exerciseHistoryOptions, useStatsSummary } from '@/hooks/use-stats'
 import type { StatsPeriod, StatsTopExercise } from '@/types/stats'
-
-const TAB_BAR_CLEARANCE = 64
 
 const StatsScreen = () => {
   const router = useRouter()
@@ -49,7 +48,7 @@ const StatsScreen = () => {
   }
 
   return (
-    <View className="flex-1 bg-background-primary">
+    <View className="flex-1 bg-background-primary" collapsable={false}>
       <View
         className="gap-4"
         style={{
@@ -66,7 +65,7 @@ const StatsScreen = () => {
       <ScrollView
         contentInsetAdjustmentBehavior="never"
         contentContainerStyle={{
-          paddingBottom: insets.bottom + TAB_BAR_CLEARANCE,
+          paddingBottom: insets.bottom + TAB_CONTENT_BOTTOM_CLEARANCE,
           gap: 16,
         }}
         showsVerticalScrollIndicator={false}

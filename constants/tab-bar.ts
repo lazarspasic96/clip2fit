@@ -1,0 +1,3 @@
+export const TAB_BAR_HEIGHT = 60
+export const TAB_BAR_FLOATING_OFFSET = 12
+export const TAB_CONTENT_BOTTOM_CLEARANCE = TAB_BAR_HEIGHT + 24

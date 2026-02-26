@@ -16,6 +16,7 @@ import { EmptyState } from '@/components/my-workouts/empty-state'
 import { WorkoutCard } from '@/components/my-workouts/workout-card'
 import { SwipeableRow } from '@/components/ui/swipeable-row'
 import { Colors } from '@/constants/colors'
+import { TAB_CONTENT_BOTTOM_CLEARANCE } from '@/constants/tab-bar'
 
 import { useDeleteWorkoutMutation, useWorkoutsQuery } from '@/hooks/use-api'
 
@@ -106,7 +107,7 @@ const MyWorkoutsScreen = () => {
   }
 
   return (
-    <View className="flex-1 bg-background-primary px-5" style={{ paddingTop: insets.top }}>
+    <View className="flex-1 bg-background-primary px-5" style={{ paddingTop: insets.top }} collapsable={false}>
       {/* Header */}
       <View className="px-5 pt-4 pb-2">
         <Text className="text-2xl font-inter-bold text-content-primary">My Schedule</Text>
@@ -143,7 +144,7 @@ const MyWorkoutsScreen = () => {
               </Animated.View>
             )
           }}
-          contentContainerStyle={{ paddingBottom: insets.bottom + 24, gap: 12 }}
+          contentContainerStyle={{ paddingBottom: insets.bottom + TAB_CONTENT_BOTTOM_CLEARANCE, gap: 12 }}
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={Colors.content.secondary} />
