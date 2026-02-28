@@ -1,19 +1,25 @@
 import { Stack } from 'expo-router'
+import { Platform } from 'react-native'
 
 import { Colors } from '@/constants/colors'
 import { ActiveWorkoutProvider } from '@/contexts/active-workout-context'
 import { WorkoutBuilderProvider } from '@/contexts/workout-builder-context'
 
+const IS_ANDROID = Platform.OS === 'android'
+
 export const unstable_settings = {
   anchor: '(tabs)',
 }
 
+// formSheet guaranteed on Expo 54 (iOS 16+, Android via react-native-screens 4.23).
+// Fallback: presentation 'modal' + animation 'slide_from_bottom' (see add-workout screen).
 const sheetOptions = {
   presentation: 'formSheet' as const,
   gestureDirection: 'vertical' as const,
   sheetGrabberVisible: true,
   headerShown: false,
   contentStyle: { backgroundColor: Colors.background.secondary },
+  ...(IS_ANDROID && { sheetCornerRadius: 20 }),
 }
 
 const ProtectedLayout = () => {
