@@ -46,7 +46,7 @@ export const ExerciseMotionPreview = ({ images, height = 120 }: ExerciseMotionPr
   }
 
   return (
-    <View className="rounded-xl overflow-hidden" style={{ height }}>
+    <View className="overflow-hidden" style={{ height }}>
       <Image
         source={{ uri: images.end }}
         style={{ position: 'absolute', width: '100%', height }}

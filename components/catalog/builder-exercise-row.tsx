@@ -54,10 +54,7 @@ export const BuilderExerciseRow = ({
   return (
     <View className="mb-2.5">
       <SwipeableRow actionWidth={DELETE_ACTION_WIDTH} actionContent={deleteActionContent} onAction={onDelete}>
-        <View
-          className="mx-5 bg-background-secondary rounded-2xl flex-row overflow-hidden"
-          style={{ borderCurve: 'continuous' }}
-        >
+        <View className="mx-5 bg-background-secondary flex-row overflow-hidden">
           {/* Reorder grip + index badge */}
           <View className="w-9 items-center justify-center gap-1.5">
             <Pressable
@@ -108,8 +105,15 @@ export const BuilderExerciseRow = ({
               >
                 <Text className="text-[11px] font-inter-medium text-content-tertiary">Sets</Text>
                 <TextInput
-                  className="text-[15px] font-inter-semibold text-content-primary w-[28px] text-center p-0"
-                  style={{ fontVariant: ['tabular-nums'] }}
+                  style={{
+                    fontSize: 15,
+                    fontFamily: 'Inter_600SemiBold',
+                    color: Colors.content.primary,
+                    width: 28,
+                    textAlign: 'center',
+                    padding: 0,
+                    fontVariant: ['tabular-nums'],
+                  }}
                   keyboardType="number-pad"
                   value={String(exercise.sets)}
                   onChangeText={handleSetsChange}
@@ -127,8 +131,15 @@ export const BuilderExerciseRow = ({
               >
                 <Text className="text-[11px] font-inter-medium text-content-tertiary">Reps</Text>
                 <TextInput
-                  className="text-[15px] font-inter-semibold text-content-primary w-[36px] text-center p-0"
-                  style={{ fontVariant: ['tabular-nums'] }}
+                  style={{
+                    fontSize: 15,
+                    fontFamily: 'Inter_600SemiBold',
+                    color: Colors.content.primary,
+                    width: 36,
+                    textAlign: 'center',
+                    padding: 0,
+                    fontVariant: ['tabular-nums'],
+                  }}
                   value={exercise.reps}
                   onChangeText={handleRepsChange}
                   selectTextOnFocus

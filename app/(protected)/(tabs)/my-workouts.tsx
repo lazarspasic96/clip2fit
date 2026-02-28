@@ -23,7 +23,7 @@ import { useDeleteWorkoutMutation, useWorkoutsQuery } from '@/hooks/use-api'
 const DELETE_ACTION_WIDTH = 80
 
 const DeleteAction = () => (
-  <View className="items-center justify-center w-[80px] h-full bg-red-600 rounded-tr-2xl rounded-br-2xl">
+  <View className="items-center justify-center w-[80px] h-full bg-red-600 rounded-2xl">
     <Trash2 size={20} color="#fff" pointerEvents="none" />
     <Text className="text-xs font-inter-semibold text-white mt-1">Delete</Text>
   </View>

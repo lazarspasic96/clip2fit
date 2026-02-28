@@ -34,9 +34,9 @@ const ExerciseLearningScreen = () => {
 
   return (
     <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
-      <View className="px-5 pt-2">
-        <ExerciseMotionPreview images={exercise?.images ?? null} height={230} />
-        <View className="flex-row items-center justify-between mt-3 px-1">
+      <ExerciseMotionPreview images={exercise?.images ?? null} height={230} />
+      <View className="px-5 mt-3">
+        <View className="flex-row items-center justify-between px-1">
           <Text className="text-xs font-inter-medium text-content-tertiary">Looping movement preview</Text>
           <Text className="text-[11px] font-inter-semibold text-brand-accent">{'Start -> End -> Repeat'}</Text>
         </View>

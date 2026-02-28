@@ -15,7 +15,7 @@ export const WorkoutCard = ({ workout }: WorkoutCardProps) => {
     Colors.difficulty[workout.difficulty as keyof typeof Colors.difficulty] ?? Colors.content.tertiary
 
   return (
-    <View className="rounded-2xl overflow-hidden bg-background-secondary p-4 flex-row">
+    <View className="overflow-hidden bg-background-secondary p-4 flex-row">
       {/* Left accent bar */}
       <View className="w-[3px] rounded-sm bg-brand-accent mr-3" />
 

@@ -2,7 +2,7 @@ import * as Haptics from 'expo-haptics'
 import { type ReactNode } from 'react'
 import { Dimensions } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
-import Animated, { interpolate, runOnJS, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated'
+import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 const SPRING_CONFIG = { damping: 20, stiffness: 200, mass: 0.8 }
@@ -10,6 +10,7 @@ const SPRING_CONFIG = { damping: 20, stiffness: 200, mass: 0.8 }
 interface SwipeableRowProps {
   children: ReactNode
   actionWidth?: number
+  gap?: number
   actionContent: ReactNode
   onAction: () => void
   enabled?: boolean
@@ -19,6 +20,7 @@ interface SwipeableRowProps {
 export const SwipeableRow = ({
   children,
   actionWidth = 80,
+  gap = 10,
   actionContent,
   onAction,
   enabled = true,
@@ -29,7 +31,8 @@ export const SwipeableRow = ({
   const isOpen = useSharedValue(false)
   const didCrossThreshold = useSharedValue(false)
 
-  const threshold = actionWidth * 0.3
+  const totalSwipe = actionWidth + gap
+  const threshold = totalSwipe * 0.3
 
   const triggerHaptic = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
@@ -65,7 +68,7 @@ export const SwipeableRow = ({
     })
     .onEnd(() => {
       if (Math.abs(translateX.value) >= threshold) {
-        translateX.value = withSpring(-actionWidth, SPRING_CONFIG)
+        translateX.value = withSpring(-totalSwipe, SPRING_CONFIG)
         isOpen.value = true
         runOnJS(notifyOpen)()
       } else {
@@ -76,18 +79,11 @@ export const SwipeableRow = ({
 
   const cardStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: translateX.value }],
-    borderTopRightRadius: interpolate(translateX.value, [0, -actionWidth], [16, 0], 'clamp'),
-    borderBottomRightRadius: interpolate(translateX.value, [0, -actionWidth], [16, 0], 'clamp'),
-    borderTopLeftRadius: 16,
-    borderBottomLeftRadius: 16,
+    borderRadius: 16,
   }))
 
   const actionStyle = useAnimatedStyle(() => ({
     width: Math.abs(translateX.value),
-    borderTopLeftRadius: 0,
-    borderBottomLeftRadius: 0,
-    borderTopRightRadius: 16,
-    borderBottomRightRadius: 16,
   }))
 
   // Close the row programmatically
@@ -97,7 +93,7 @@ export const SwipeableRow = ({
   }
 
   return (
-    <Animated.View style={{ position: 'relative', width: '100%' }}>
+    <Animated.View style={{ position: 'relative' }}>
       {/* Action behind */}
       <Animated.View
         style={[
@@ -107,14 +103,14 @@ export const SwipeableRow = ({
             top: 0,
             bottom: 0,
             justifyContent: 'center',
-            alignItems: 'center',
+            alignItems: 'flex-end',
             overflow: 'hidden',
           },
           actionStyle,
         ]}
       >
         <Animated.View
-          style={{ width: actionWidth, height: '100%', justifyContent: 'center', alignItems: 'center' }}
+          style={{ width: actionWidth, flex: 1, justifyContent: 'center', alignItems: 'center' }}
           onTouchEnd={() => {
             close()
             triggerAction()

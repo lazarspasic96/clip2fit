@@ -11,7 +11,7 @@ interface ExercisePlaceholderProps {
 export const ExercisePlaceholder = ({ size = 32, height = 80 }: ExercisePlaceholderProps) => {
   return (
     <View
-      className="bg-background-tertiary items-center justify-center rounded-xl"
+      className="bg-background-tertiary items-center justify-center"
       style={{ height }}
     >
       <Dumbbell size={size} color={Colors.content.tertiary} pointerEvents="none" />
