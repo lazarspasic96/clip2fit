@@ -6,7 +6,7 @@ import { DateOfBirthPicker } from '@/components/ui/native-ui/date-of-birth-picke
 import { cn } from '@/components/ui/cn'
 import { useSaveProfileMutation } from '@/hooks/use-api'
 import { useProfileQuery } from '@/hooks/use-profile-query'
-import { dobToAge, formatDateToISO } from '@/utils/format-profile'
+import { isDobInAllowedRange, isDobIsoDate, type DobIsoDate } from '@/utils/dob-date'
 import { computeProfileDiff } from '@/utils/profile-diff'
 
 const EditDateOfBirthScreen = () => {
@@ -14,8 +14,10 @@ const EditDateOfBirthScreen = () => {
   const { profile } = useProfileQuery()
   const saveMutation = useSaveProfileMutation()
 
-  const [dateOfBirth, setDateOfBirth] = useState<Date | undefined>(
-    profile?.dateOfBirth !== undefined ? new Date(profile.dateOfBirth + 'T00:00:00') : undefined,
+  const [dateOfBirth, setDateOfBirth] = useState<DobIsoDate | undefined>(
+    profile?.dateOfBirth !== undefined && isDobIsoDate(profile.dateOfBirth)
+      ? profile.dateOfBirth
+      : undefined,
   )
   const [validationError, setValidationError] = useState<string | null>(null)
 
@@ -23,16 +25,13 @@ const EditDateOfBirthScreen = () => {
   const apiError = saveMutation.error instanceof Error ? saveMutation.error.message : null
 
   const handleSave = () => {
-    if (dateOfBirth !== undefined) {
-      const age = dobToAge(dateOfBirth.toISOString().split('T')[0])
-      if (age < 13 || age > 120) {
-        setValidationError('Age must be between 13 and 120')
-        return
-      }
+    if (dateOfBirth !== undefined && !isDobInAllowedRange(dateOfBirth)) {
+      setValidationError('Age must be between 13 and 120')
+      return
     }
     setValidationError(null)
 
-    const updated = dateOfBirth !== undefined ? { dateOfBirth: formatDateToISO(dateOfBirth) } : {}
+    const updated = dateOfBirth !== undefined ? { dateOfBirth } : {}
     const current = profile?.dateOfBirth !== undefined ? { dateOfBirth: profile.dateOfBirth } : {}
 
     const diff = computeProfileDiff(current, updated)

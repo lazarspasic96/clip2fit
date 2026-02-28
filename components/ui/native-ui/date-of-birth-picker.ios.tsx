@@ -1,21 +1,20 @@
-import { subYears } from 'date-fns'
 import * as Haptics from 'expo-haptics'
 import { Calendar } from 'lucide-react-native'
 import { Pressable, Text, View } from 'react-native'
 
 import { Colors } from '@/constants/colors'
+import { clampDobDate, dobMaxDate, dobMinDate, formatDobIso, type DobIsoDate, parseDobIso } from '@/utils/dob-date'
 import { DatePicker, Host } from '@expo/ui/swift-ui'
 import { datePickerStyle, labelsHidden, tint } from '@expo/ui/swift-ui/modifiers'
 
 import { Label } from '../label'
 
-const NOW = new Date()
-const MIN_DATE = subYears(NOW, 120)
-const MAX_DATE = subYears(NOW, 13)
+const MIN_DATE = dobMinDate()
+const MAX_DATE = dobMaxDate()
 
 interface DateOfBirthPickerProps {
-  value: Date | undefined
-  onChange: (date: Date) => void
+  value: DobIsoDate | undefined
+  onChange: (date: DobIsoDate) => void
   label?: string
   placeholder?: string
   error?: string
@@ -29,6 +28,7 @@ export const DateOfBirthPicker = ({
   error,
 }: DateOfBirthPickerProps) => {
   const hasError = error !== undefined
+  const selectedDate = value !== undefined ? parseDobIso(value) : null
 
   const borderClass = hasError
     ? 'border-content-badge-error bg-background-secondary'
@@ -36,19 +36,19 @@ export const DateOfBirthPicker = ({
 
   const handleDateChange = (date: Date) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-    onChange(date)
+    onChange(formatDobIso(clampDobDate(date)))
   }
 
   const handleInitialSelect = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-    onChange(MAX_DATE)
+    onChange(formatDobIso(MAX_DATE))
   }
 
   return (
     <View className="gap-1.5">
       <Label text={label} />
 
-      {value === undefined ? (
+      {selectedDate === null ? (
         <Pressable
           onPress={handleInitialSelect}
           accessibilityRole="button"
@@ -75,7 +75,7 @@ export const DateOfBirthPicker = ({
           <View className="ml-3">
             <Host matchContents colorScheme="dark">
               <DatePicker
-                selection={value}
+                selection={selectedDate}
                 onDateChange={handleDateChange}
                 displayedComponents={['date']}
                 range={{ start: MIN_DATE, end: MAX_DATE }}

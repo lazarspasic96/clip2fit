@@ -10,7 +10,7 @@ import { useProfileForm } from '@/contexts/profile-form-context'
 import { useZodForm } from '@/hooks/use-zod-form'
 import type { Gender, HeightUnit, WeightUnit } from '@/types/profile'
 import { GENDERS } from '@/types/profile'
-import { formatDateToISO } from '@/utils/format-profile'
+import type { DobIsoDate } from '@/utils/dob-date'
 import { useRouter } from 'expo-router'
 import { FormProvider } from 'react-hook-form'
 import { Text, View } from 'react-native'
@@ -34,7 +34,7 @@ const DemographicsScreen = () => {
   const { updateField } = useProfileForm()
   const insets = useSafeAreaInsets()
 
-  const [dateOfBirth, setDateOfBirth] = useState<Date | undefined>()
+  const [dateOfBirth, setDateOfBirth] = useState<DobIsoDate | undefined>()
 
   const form = useZodForm({
     schema: userInfoSchema,
@@ -54,7 +54,7 @@ const DemographicsScreen = () => {
   const onNext = (data: UserInfoValues) => {
     if (data.fullName) updateField('fullName', data.fullName)
     if (data.gender) updateField('gender', data.gender as Gender)
-    if (dateOfBirth !== undefined) updateField('dateOfBirth', formatDateToISO(dateOfBirth))
+    if (dateOfBirth !== undefined) updateField('dateOfBirth', dateOfBirth)
     if (data.height) {
       updateField('height', parseFloat(data.height))
       updateField('heightUnit', data.heightUnit as HeightUnit)
