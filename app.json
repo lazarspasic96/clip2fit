@@ -89,9 +89,26 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "063aaaa6-1910-4882-96ab-a62c0ec5f5af"
+        "projectId": "8b552f56-5b90-4f13-a447-47838703d467",
+        "build": {
+          "experimental": {
+            "ios": {
+              "appExtensions": [
+                {
+                  "targetName": "expo-sharing-extension",
+                  "bundleIdentifier": "com.lazarspasic96.clip2fit.share-extension",
+                  "entitlements": {
+                    "com.apple.security.application-groups": [
+                      "group.com.lazarspasic96.clip2fit"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        }
       }
     },
-    "owner": "lazarspasic96s-organization"
+    "owner": "clip2fit"
   }
 }
