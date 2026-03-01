@@ -169,7 +169,7 @@ export const ConversionProvider = ({ children }: { children: React.ReactNode }) 
           setState((prev) => ({
             ...prev,
             stage,
-            progress: job.progress,
+            progress: Math.max(prev.progress, job.progress),
             message: STAGE_MESSAGES[stage],
           }))
         }
@@ -220,7 +220,7 @@ export const ConversionProvider = ({ children }: { children: React.ReactNode }) 
       sourceUrl: validation.cleanUrl,
       platform: validation.platform,
       stage: 'validating',
-      progress: 5,
+      progress: 0,
       message: STAGE_MESSAGES.validating,
     })
 

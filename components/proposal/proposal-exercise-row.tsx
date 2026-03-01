@@ -38,11 +38,7 @@ export const ProposalExerciseRow = ({ exercise, index, onUpdate, onDelete }: Pro
   }))
 
   return (
-    <Animated.View
-      entering={FadeInDown.delay(index * 50).duration(300)}
-      layout={Layout.springify()}
-      className="mx-5"
-    >
+    <Animated.View entering={FadeInDown.delay(index * 50).duration(300)} layout={Layout.springify()}>
       <View className="overflow-hidden rounded-2xl">
         {/* Delete button revealed behind */}
         <View className="absolute right-0 top-0 bottom-0 justify-center" style={{ width: SLIDE_WIDTH }}>
@@ -88,7 +84,8 @@ export const ProposalExerciseRow = ({ exercise, index, onUpdate, onDelete }: Pro
                   }
                 }}
                 keyboardType="number-pad"
-                className="text-sm font-inter text-content-primary border-b border-border-secondary w-10 text-center py-0.5"
+                style={{ textAlign: 'center' }}
+                className="text-sm font-inter text-content-primary border-b border-border-secondary w-10 py-0.5"
                 placeholderTextColor={Colors.content.tertiary}
               />
             </View>
@@ -98,7 +95,8 @@ export const ProposalExerciseRow = ({ exercise, index, onUpdate, onDelete }: Pro
               <TextInput
                 value={exercise.reps}
                 onChangeText={(text) => onUpdate({ ...exercise, reps: text })}
-                className="text-sm font-inter text-content-primary border-b border-border-secondary w-16 text-center py-0.5"
+                style={{ textAlign: 'center' }}
+                className="text-sm font-inter text-content-primary border-b border-border-secondary w-16 py-0.5"
                 placeholderTextColor={Colors.content.tertiary}
                 placeholder="e.g. 8-10"
               />
