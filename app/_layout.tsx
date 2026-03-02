@@ -62,30 +62,26 @@ const RootNavigator = () => {
   const router = useRouter()
 
   useEffect(() => {
-    console.log('[RootNav] auth effect — initialized:', initialized, 'session:', !!session, 'onboardingComplete:', onboardingComplete, 'segments:', segments)
     if (!initialized) return
 
     const inAuthGroup = segments[0] === '(auth)'
     const inOnboarding = segments.includes('onboarding' as never)
 
     if (!session && !inAuthGroup) {
-      console.log('[RootNav] → redirect to welcome (no session)')
       router.replace('/(auth)/welcome')
       return
     }
 
     if (session && !onboardingComplete && !inOnboarding) {
-      console.log('[RootNav] → redirect to onboarding')
       router.replace('/(protected)/onboarding/demographics')
       return
     }
 
     if (session && onboardingComplete && inAuthGroup) {
-      console.log('[RootNav] → redirect to home (in auth group but authenticated)')
       router.replace('/(protected)/(tabs)/(home)' as never)
       return
     }
-  }, [initialized, session, onboardingComplete, segments])
+  }, [initialized, session, onboardingComplete, segments, router])
 
   if (!initialized) return null
 
