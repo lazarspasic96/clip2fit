@@ -66,6 +66,7 @@ const ProtectedLayout = () => {
           <Stack.Screen name="sheets/exercise-learning" options={{ ...sheetOptions, sheetAllowedDetents: [0.8, 1] }} />
           <Stack.Screen name="sheets/edit-exercise" options={{ ...sheetOptions, sheetAllowedDetents: [0.6] }} />
           <Stack.Screen name="sheets/catalog-filters" options={{ ...sheetOptions, sheetAllowedDetents: [0.7, 0.9] }} />
+          <Stack.Screen name="sheets/exercise-picker" options={{ ...sheetOptions, sheetAllowedDetents: [0.7, 0.9] }} />
         </Stack>
       </ActiveWorkoutProvider>
     </WorkoutBuilderProvider>

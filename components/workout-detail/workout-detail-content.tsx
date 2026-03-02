@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { Clock, Dumbbell, ExternalLink, Flame } from 'lucide-react-native'
-import { useState } from 'react'
+import { Clock, Dumbbell, ExternalLink, Flame, Plus } from 'lucide-react-native'
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { ActivityIndicator, Alert, Linking, Pressable, ScrollView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -10,6 +10,11 @@ import { DetailExerciseRow } from '@/components/workout-detail/detail-exercise-r
 import { DetailHeader } from '@/components/workout-detail/detail-header'
 import { Colors } from '@/constants/colors'
 import { useUpdateWorkoutMutation, useWorkoutQuery } from '@/hooks/use-api'
+import { useDraggableList } from '@/hooks/use-draggable-list'
+import { exercisePickerStore } from '@/stores/exercise-picker-store'
+import { mapCatalogToApiExercise } from '@/utils/exercise-mapper'
+
+const ITEM_HEIGHT = 100
 
 export const WorkoutDetailContent = () => {
   const { id } = useLocalSearchParams<{ id: string }>()
@@ -19,6 +24,45 @@ export const WorkoutDetailContent = () => {
   const updateMutation = useUpdateWorkoutMutation()
 
   const [descriptionExpanded, setDescriptionExpanded] = useState(false)
+
+  const reorderRef = useRef<(from: number, to: number) => void>(() => {})
+  const { createGesture, dragState } = useDraggableList({
+    itemCount: rawWorkout?.exercises.length ?? 0,
+    itemHeight: ITEM_HEIGHT,
+    onReorder: (from, to) => reorderRef.current(from, to),
+  })
+
+  // Subscribe to picker store for adding exercises
+  const pickerVersion = useSyncExternalStore(
+    exercisePickerStore.subscribe,
+    exercisePickerStore.getSnapshot,
+  )
+  const lastPickerVersion = useRef(pickerVersion)
+
+  useEffect(() => {
+    if (pickerVersion === lastPickerVersion.current) return
+    lastPickerVersion.current = pickerVersion
+
+    const selected = exercisePickerStore.consume()
+    if (selected.length === 0 || rawWorkout === null || workout === null) return
+
+    const startOrder = rawWorkout.exercises.length + 1
+    const mapped = selected.map((c, i) => mapCatalogToApiExercise(c, startOrder + i))
+    const updated = [...rawWorkout.exercises, ...mapped]
+
+    const workoutId = workout.id
+    updateMutation.mutate(
+      { id: workoutId, payload: { exercises: updated } },
+      {
+        onSuccess: (data: { id: string }) => {
+          if (data.id !== workoutId) {
+            router.replace(`/(protected)/workout-detail?id=${data.id}`)
+          }
+        },
+      },
+    )
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- only react to picker version changes
+  }, [pickerVersion])
 
   if (isLoading) {
     return (
@@ -51,6 +95,30 @@ export const WorkoutDetailContent = () => {
     if (data.id !== workout.id) {
       router.replace(`/(protected)/workout-detail?id=${data.id}`)
     }
+  }
+
+  const existingCatalogIds = exercises
+    .map((e) => e.catalogExerciseId)
+    .filter((cid): cid is string => cid !== null)
+    .join(',')
+
+  const handleAddExercises = () => {
+    router.push({
+      pathname: '/(protected)/sheets/exercise-picker',
+      params: existingCatalogIds.length > 0 ? { existingIds: existingCatalogIds } : undefined,
+    })
+  }
+
+  reorderRef.current = (fromIndex: number, toIndex: number) => {
+    const next = [...exercises]
+    const [moved] = next.splice(fromIndex, 1)
+    next.splice(toIndex, 0, moved)
+    const reordered = next.map((ex, i) => ({ ...ex, order: i + 1 }))
+
+    updateMutation.mutate(
+      { id: workout.id, payload: { exercises: reordered } },
+      { onSuccess: navigateToForkIfNeeded },
+    )
   }
 
   const handleDeleteExercise = (index: number) => {
@@ -169,10 +237,24 @@ export const WorkoutDetailContent = () => {
           <DetailExerciseRow
             key={exercise.id}
             exercise={exercise}
+            index={index}
             onEdit={() => router.push({ pathname: '/(protected)/sheets/edit-exercise', params: { workoutId: id!, exerciseIndex: String(index) } })}
             onDelete={() => handleDeleteExercise(index)}
+            dragGesture={createGesture(index)}
+            dragState={dragState}
+            itemHeight={ITEM_HEIGHT}
           />
         ))}
+
+        {/* Add exercises button */}
+        <Pressable
+          onPress={handleAddExercises}
+          className="mx-5 mt-2 mb-4 rounded-2xl border border-dashed border-border-secondary py-4 flex-row items-center justify-center gap-2"
+          style={{ borderCurve: 'continuous' }}
+        >
+          <Plus size={18} color={Colors.content.tertiary} pointerEvents="none" />
+          <Text className="text-sm font-inter-semibold text-content-tertiary">Add Exercises</Text>
+        </Pressable>
       </ScrollView>
 
     </View>

@@ -1,12 +1,20 @@
-import { useState } from 'react'
-import { ActivityIndicator, Alert, Text, View } from 'react-native'
+import { useRouter } from 'expo-router'
+import { Plus } from 'lucide-react-native'
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { ActivityIndicator, Alert, Pressable, Text, View } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 
 import { ProposalActions } from '@/components/proposal/proposal-actions'
 import { ProposalExerciseRow } from '@/components/proposal/proposal-exercise-row'
 import { ProposalHeader } from '@/components/proposal/proposal-header'
+import { Colors } from '@/constants/colors'
 import { useUpdateWorkoutMutation, useWorkoutQuery } from '@/hooks/use-api'
+import { useDraggableList } from '@/hooks/use-draggable-list'
+import { exercisePickerStore } from '@/stores/exercise-picker-store'
 import type { ApiExercise } from '@/types/api'
+import { mapCatalogToApiExercise } from '@/utils/exercise-mapper'
+
+const ITEM_HEIGHT = 140
 
 interface WorkoutProposalProps {
   workoutId: string
@@ -16,10 +24,49 @@ interface WorkoutProposalProps {
 }
 
 export const WorkoutProposal = ({ workoutId, mode = 'proposal', onSaved, onDiscard }: WorkoutProposalProps) => {
+  const router = useRouter()
   const { workout, rawWorkout, isLoading } = useWorkoutQuery(workoutId)
   const updateMutation = useUpdateWorkoutMutation()
 
   const [editableExercises, setEditableExercises] = useState<ApiExercise[] | null>(null)
+
+  const handleReorder = (fromIndex: number, toIndex: number) => {
+    setEditableExercises((prev) => {
+      if (prev === null) return prev
+      const next = [...prev]
+      const [moved] = next.splice(fromIndex, 1)
+      next.splice(toIndex, 0, moved)
+      return next.map((e, i) => ({ ...e, order: i + 1 }))
+    })
+  }
+
+  const { createGesture, dragState } = useDraggableList({
+    itemCount: editableExercises?.length ?? 0,
+    itemHeight: ITEM_HEIGHT,
+    onReorder: handleReorder,
+  })
+
+  // Subscribe to picker store version to detect new selections
+  const pickerVersion = useSyncExternalStore(
+    exercisePickerStore.subscribe,
+    exercisePickerStore.getSnapshot,
+  )
+  const lastPickerVersion = useRef(pickerVersion)
+
+  useEffect(() => {
+    if (pickerVersion === lastPickerVersion.current) return
+    lastPickerVersion.current = pickerVersion
+
+    const selected = exercisePickerStore.consume()
+    if (selected.length === 0) return
+
+    setEditableExercises((prev) => {
+      const base = prev ?? []
+      const startOrder = base.length + 1
+      const mapped = selected.map((c, i) => mapCatalogToApiExercise(c, startOrder + i))
+      return [...base, ...mapped]
+    })
+  }, [pickerVersion])
 
   // Initialize editable state from raw workout data (once)
   if (rawWorkout !== null && editableExercises === null) {
@@ -35,6 +82,18 @@ export const WorkoutProposal = ({ workoutId, mode = 'proposal', onSaved, onDisca
   }
 
   const isDirty = JSON.stringify(editableExercises) !== JSON.stringify(rawWorkout?.exercises)
+
+  const existingCatalogIds = editableExercises
+    .map((e) => e.catalogExerciseId)
+    .filter((id): id is string => id !== null)
+    .join(',')
+
+  const handleAddExercises = () => {
+    router.push({
+      pathname: '/(protected)/sheets/exercise-picker',
+      params: existingCatalogIds.length > 0 ? { existingIds: existingCatalogIds } : undefined,
+    })
+  }
 
   const handleUpdateExercise = (index: number, updated: ApiExercise) => {
     setEditableExercises((prev) => {
@@ -97,6 +156,9 @@ export const WorkoutProposal = ({ workoutId, mode = 'proposal', onSaved, onDisca
               index={index}
               onUpdate={(updated) => handleUpdateExercise(index, updated)}
               onDelete={() => handleDeleteExercise(index)}
+              dragGesture={createGesture(index)}
+              dragState={dragState}
+              itemHeight={ITEM_HEIGHT}
             />
           ))}
         </View>
@@ -106,6 +168,16 @@ export const WorkoutProposal = ({ workoutId, mode = 'proposal', onSaved, onDisca
             <Text className="text-sm font-inter text-content-tertiary">No exercises remaining</Text>
           </View>
         )}
+
+        {/* Add exercises button */}
+        <Pressable
+          onPress={handleAddExercises}
+          className="mt-4 rounded-2xl border border-dashed border-border-secondary py-4 flex-row items-center justify-center gap-2"
+          style={{ borderCurve: 'continuous' }}
+        >
+          <Plus size={18} color={Colors.content.tertiary} pointerEvents="none" />
+          <Text className="text-sm font-inter-semibold text-content-tertiary">Add Exercises</Text>
+        </Pressable>
       </KeyboardAwareScrollView>
 
       <ProposalActions
