@@ -48,8 +48,9 @@ export const BuilderExerciseRow = ({
     onUpdate({ reps: text })
   }
 
-  const hasImage = exercise.catalogExercise.images !== null
-  const muscleGroups = exercise.catalogExercise.primaryMuscleGroups.slice(0, 2)
+  const hasThumbnail = exercise.catalogExercise.thumbnailUrl !== null
+  const targetMuscle = exercise.catalogExercise.target
+  const secondaryMuscles = exercise.catalogExercise.secondaryMuscles.slice(0, 1)
 
   return (
     <View className="mb-2.5">
@@ -89,9 +90,10 @@ export const BuilderExerciseRow = ({
               {exercise.catalogExercise.name}
             </Text>
 
-            {muscleGroups.length > 0 && (
+            {targetMuscle.length > 0 && (
               <View className="flex-row gap-1">
-                {muscleGroups.map((muscle) => (
+                <MuscleChip key={targetMuscle} muscle={targetMuscle} size="xs" tone="soft" maxWidth={110} />
+                {secondaryMuscles.map((muscle) => (
                   <MuscleChip key={muscle} muscle={muscle} size="xs" tone="soft" maxWidth={110} />
                 ))}
               </View>
@@ -149,15 +151,15 @@ export const BuilderExerciseRow = ({
             </View>
           </View>
 
-          {/* Exercise image — right side */}
+          {/* Exercise thumbnail — right side */}
           <View className="w-[88px] justify-center pr-3 py-3">
-            {hasImage ? (
+            {hasThumbnail ? (
               <View
                 className="w-[76px] h-[88px] rounded-[12px] overflow-hidden"
                 style={{ borderCurve: 'continuous' }}
               >
                 <Image
-                  source={{ uri: exercise.catalogExercise.images?.start }}
+                  source={{ uri: exercise.catalogExercise.thumbnailUrl ?? undefined }}
                   className="w-full h-full"
                   contentFit="cover"
                   cachePolicy="memory-disk"

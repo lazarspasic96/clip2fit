@@ -54,9 +54,9 @@ export const ExerciseRelatedList = ({ exerciseId, primaryMuscle }: ExerciseRelat
               onPress={() => router.push(`/(protected)/exercise-detail?id=${item.id}`)}
               style={{ width: CARD_WIDTH }}
             >
-              {item.images !== null ? (
+              {item.thumbnailUrl !== null ? (
                 <Image
-                  source={{ uri: item.images.start }}
+                  source={{ uri: item.thumbnailUrl }}
                   style={{ width: CARD_WIDTH, height: IMAGE_HEIGHT, borderRadius: 12 }}
                   contentFit="cover"
                   cachePolicy="memory-disk"

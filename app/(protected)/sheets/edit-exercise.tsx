@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from 'react-native'
 
 import { MuscleChip } from '@/components/ui/muscle-chip'
+import { SheetTitle } from '@/components/ui/sheet-title'
 import { Colors } from '@/constants/colors'
 import { useUpdateWorkoutMutation, useWorkoutQuery } from '@/hooks/use-api'
 
@@ -64,7 +65,7 @@ const EditExerciseScreen = () => {
       contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 32, paddingTop: 16 }}
       keyboardShouldPersistTaps="handled"
     >
-      <Text className="text-lg font-inter-bold text-content-primary mb-1">{exercise.name}</Text>
+      <SheetTitle>{exercise.name}</SheetTitle>
 
       {exercise.muscleGroups.length > 0 && (
         <View className="flex-row flex-wrap gap-1.5 mb-4">

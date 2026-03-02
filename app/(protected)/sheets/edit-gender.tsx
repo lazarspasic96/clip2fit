@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Pressable, Text, View } from 'react-native'
 
 import { cn } from '@/components/ui/cn'
+import { SheetTitle } from '@/components/ui/sheet-title'
 import { useSaveProfileMutation } from '@/hooks/use-api'
 import { useProfileQuery } from '@/hooks/use-profile-query'
 import type { Gender } from '@/types/profile'
@@ -29,7 +30,7 @@ const EditGenderScreen = () => {
 
   return (
     <View className="px-6 pt-4 pb-8">
-      <Text className="text-lg font-inter-bold text-content-primary mb-6">Gender</Text>
+      <SheetTitle>Gender</SheetTitle>
 
       <View className="flex-row flex-wrap gap-2 mb-4">
         {GENDERS.map((option) => {

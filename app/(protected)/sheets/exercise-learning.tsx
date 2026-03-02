@@ -3,6 +3,7 @@ import { ActivityIndicator, ScrollView, Text, View } from 'react-native'
 
 import { ExerciseInstructions } from '@/components/catalog/exercise-instructions'
 import { MuscleChip } from '@/components/ui/muscle-chip'
+import { SheetTitle } from '@/components/ui/sheet-title'
 import { ExerciseMotionPreview } from '@/components/workout/shared/exercise-motion-preview'
 import { SourceVideoButton } from '@/components/workout/source-video-button'
 import { useCatalogDetail } from '@/hooks/use-catalog'
@@ -30,28 +31,31 @@ const ExerciseLearningScreen = () => {
   }
 
   const instructions = exercise?.instructions ?? []
-  const primaryMuscles = showPrimaryMuscles ? (exercise?.primaryMuscleGroups ?? []) : []
+  const targetMuscle = showPrimaryMuscles ? (exercise?.target ?? '') : ''
+  const secondaryMuscles = showPrimaryMuscles ? (exercise?.secondaryMuscles ?? []) : []
 
   return (
     <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
-      <ExerciseMotionPreview images={exercise?.images ?? null} height={230} />
+      <ExerciseMotionPreview gifUrl={exercise?.gifUrl ?? null} height={260} />
       <View className="px-5 mt-3">
         <View className="flex-row items-center justify-between px-1">
-          <Text className="text-xs font-inter-medium text-content-tertiary">Looping movement preview</Text>
-          <Text className="text-[11px] font-inter-semibold text-brand-accent">{'Start -> End -> Repeat'}</Text>
+          <Text className="text-xs font-inter-medium text-content-tertiary">Animated exercise preview</Text>
         </View>
       </View>
 
       <View className="px-5 mt-4 gap-4">
         <View>
-          <Text className="text-lg font-inter-bold text-content-primary">{title}</Text>
-          <Text className="text-xs font-inter text-content-tertiary mt-1">Exercise guide</Text>
+          <SheetTitle className="mb-0">{title}</SheetTitle>
+          <Text className="text-xs font-inter text-content-tertiary mt-1 text-center">Exercise guide</Text>
         </View>
 
         <View className="gap-4">
-          {primaryMuscles.length > 0 && (
+          {(targetMuscle.length > 0 || secondaryMuscles.length > 0) && (
             <View className="flex-row flex-wrap gap-2">
-              {primaryMuscles.map((muscle) => (
+              {targetMuscle.length > 0 && (
+                <MuscleChip key={targetMuscle} muscle={targetMuscle} size="sm" tone="soft" />
+              )}
+              {secondaryMuscles.map((muscle) => (
                 <MuscleChip key={muscle} muscle={muscle} size="sm" tone="soft" />
               ))}
             </View>

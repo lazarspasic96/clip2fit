@@ -2,37 +2,6 @@ import { normalizeMuscleGroup } from '@/utils/muscle-color'
 
 export type StatsPeriod = '7d' | '30d' | '6m' | '1y' | 'all'
 
-export interface ApiWeeklyFrequencyPoint {
-  week: string
-  sessions: number
-  volume: number
-}
-
-export interface ApiTopExercise {
-  catalog_exercise_id: string | null
-  exercise_name: string
-  session_count: number
-  primary_muscle_group?: string | null
-}
-
-export interface ApiMuscleGroupDistributionPoint {
-  muscle_group: string
-  session_count: number
-}
-
-export interface ApiStatsSummaryResponse {
-  total_sessions: number
-  completed_sessions: number
-  partial_sessions: number
-  avg_duration_seconds: number
-  total_volume: number
-  current_streak_weeks: number
-  best_streak_weeks: number
-  weekly_frequency: ApiWeeklyFrequencyPoint[]
-  top_exercises: ApiTopExercise[]
-  muscle_group_distribution: ApiMuscleGroupDistributionPoint[]
-}
-
 export interface ApiPRTimelinePoint {
   date: string
   weight: number
@@ -178,6 +147,23 @@ const getNullableNumber = (record: AnyRecord, ...keys: string[]) => {
   return null
 }
 
+const tryParseArrayString = (value: string): string[] => {
+  const trimmed = value.trim()
+  if (trimmed.startsWith('[')) {
+    try {
+      const parsed: unknown = JSON.parse(trimmed)
+      if (Array.isArray(parsed)) {
+        return parsed
+          .filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
+          .map((item) => item.trim())
+      }
+    } catch {
+      // not valid JSON — fall through
+    }
+  }
+  return trimmed.length > 0 ? [trimmed] : []
+}
+
 const normalizeMuscleValue = (raw: string): string => {
   const trimmed = raw.trim()
   if (trimmed.length === 0) return ''
@@ -280,15 +266,24 @@ export const mapSummaryResponse = (api: unknown): StatsSummary => {
     }
   })
 
-  const mappedMuscles = rawMuscles.map((item) => {
+  const muscleAccumulator = new Map<string, number>()
+  for (const item of rawMuscles) {
     const row = asRecord(item)
     const rawMuscleGroup = getString(row, 'muscle_group', 'muscleGroup', 'name')
-    return {
-      muscleGroup: normalizeMuscleValue(rawMuscleGroup),
-      sessionCount: getNumber(row, 'session_count', 'sessionCount', 'sessions'),
-      rawPercentage: getNumber(row, 'percentage'),
+    const sessionCount = getNumber(row, 'session_count', 'sessionCount', 'sessions')
+    const individualMuscles = tryParseArrayString(rawMuscleGroup)
+    for (const muscle of individualMuscles) {
+      const key = normalizeMuscleValue(muscle)
+      if (key.length > 0) {
+        muscleAccumulator.set(key, (muscleAccumulator.get(key) ?? 0) + sessionCount)
+      }
     }
-  })
+  }
+  const mappedMuscles = Array.from(muscleAccumulator, ([muscleGroup, sessionCount]) => ({
+    muscleGroup,
+    sessionCount,
+    rawPercentage: 0,
+  }))
 
   const totalMuscleSessions = mappedMuscles.reduce((acc, row) => acc + row.sessionCount, 0)
 

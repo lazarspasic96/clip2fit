@@ -1,31 +1,29 @@
 // --- Catalog API response types ---
 
-export type CatalogLevel = 'beginner' | 'intermediate' | 'expert'
+export type CatalogDifficulty = 'beginner' | 'intermediate' | 'advanced'
 export type CatalogForce = 'push' | 'pull' | 'static'
 export type CatalogMechanic = 'compound' | 'isolation'
 
-export interface CatalogExerciseImages {
-  start: string
-  end: string
-}
-
 export interface CatalogExercise {
   id: string
+  exerciseDbId: string
   name: string
   aliases: string[]
-  primaryMuscleGroups: string[]
-  secondaryMuscleGroups: string[]
-  equipment: string[]
-  isBodyweight: boolean
+  bodyPart: string
+  target: string
+  secondaryMuscles: string[]
+  equipment: string
   category: string
-  level: CatalogLevel | null
+  difficulty: CatalogDifficulty | null
   force: CatalogForce | null
   mechanic: CatalogMechanic | null
-  images: CatalogExerciseImages | null
+  gifUrl: string | null
+  thumbnailUrl: string | null
 }
 
 export interface CatalogExerciseDetail extends CatalogExercise {
   instructions: string[]
+  description: string
 }
 
 export interface CatalogPagination {
@@ -46,8 +44,9 @@ export interface CatalogListResponse {
 export interface CatalogFilters {
   search: string
   muscle: string | null
+  bodyPart: string | null
   equipment: string | null
-  level: CatalogLevel | null
+  difficulty: CatalogDifficulty | null
   category: string | null
   force: CatalogForce | null
   mechanic: CatalogMechanic | null
@@ -56,8 +55,9 @@ export interface CatalogFilters {
 export const EMPTY_FILTERS: CatalogFilters = {
   search: '',
   muscle: null,
+  bodyPart: null,
   equipment: null,
-  level: null,
+  difficulty: null,
   category: null,
   force: null,
   mechanic: null,
@@ -74,7 +74,7 @@ export interface SelectedExercise {
 
 export interface CreateWorkoutPayload {
   title: string
-  exercises: Array<{
+  exercises: {
     catalogExerciseId: string
     sets: number
     reps: string
@@ -83,119 +83,85 @@ export interface CreateWorkoutPayload {
     notes: string | null
     order: number
     isBodyweight: boolean
-  }>
+  }[]
 }
 
 // --- Constants for filter options ---
 
-export const MUSCLE_GROUPS = [
-  'abdominals',
-  'abductors',
-  'adductors',
-  'biceps',
-  'calves',
-  'chest',
-  'forearms',
-  'glutes',
-  'hamstrings',
-  'lats',
-  'lower_back',
-  'middle_back',
-  'neck',
-  'quadriceps',
-  'shoulders',
-  'traps',
-  'triceps',
-] as const
-
 // Body-region clustered order for inline chips
 export const MUSCLE_GROUPS_ORDERED = [
-  'chest',
-  'shoulders',
+  'pectorals',
+  'delts',
   // -- region break (upper back) --
   'lats',
-  'middle_back',
+  'upper back',
   'traps',
-  'lower_back',
+  'spine',
   // -- region break (arms) --
   'biceps',
   'triceps',
   'forearms',
   // -- region break (legs) --
-  'quadriceps',
+  'quads',
   'hamstrings',
   'glutes',
   'calves',
   // -- region break (core/other) --
-  'abdominals',
+  'abs',
   'abductors',
   'adductors',
-  'neck',
+  'serratus anterior',
 ] as const
 
 // Indices in MUSCLE_GROUPS_ORDERED where a wider gap (12px) separates body regions
-// After: shoulders(1), lower_back(5), forearms(8), calves(12)
+// After: delts(1), spine(5), forearms(8), calves(12)
 export const REGION_BREAK_INDICES = new Set([1, 5, 8, 12])
 
 export const MUSCLE_GROUP_LABELS: Record<string, string> = {
-  abdominals: 'Abs',
+  // ExerciseDB target names (primary keys)
+  abs: 'Abs',
   abductors: 'Abductors',
   adductors: 'Adductors',
   biceps: 'Biceps',
   calves: 'Calves',
-  chest: 'Chest',
+  delts: 'Shoulders',
   forearms: 'Forearms',
   glutes: 'Glutes',
   hamstrings: 'Hamstrings',
   lats: 'Lats',
+  pectorals: 'Chest',
+  quads: 'Quads',
+  'serratus anterior': 'Serratus',
+  spine: 'Lower Back',
+  traps: 'Traps',
+  triceps: 'Triceps',
+  'upper back': 'Upper Back',
+  // Legacy keys (used by normalizeMuscleGroup)
+  abdominals: 'Abs',
+  chest: 'Chest',
   lower_back: 'Lower Back',
-  middle_back: 'Mid Back',
+  middle_back: 'Upper Back',
   neck: 'Neck',
   quadriceps: 'Quads',
   shoulders: 'Shoulders',
-  traps: 'Traps',
-  triceps: 'Triceps',
 }
-
-export const EQUIPMENT_OPTIONS = [
-  'barbell',
-  'dumbbell',
-  'cable',
-  'machine',
-  'kettlebells',
-  'bands',
-  'body only',
-  'e-z curl bar',
-  'medicine ball',
-  'exercise ball',
-  'foam roll',
-  'other',
-] as const
 
 export const EQUIPMENT_LABELS: Record<string, string> = {
   barbell: 'Barbell',
   dumbbell: 'Dumbbell',
   cable: 'Cable',
-  machine: 'Machine',
-  kettlebells: 'Kettlebells',
-  bands: 'Bands',
-  'body only': 'Bodyweight',
-  'e-z curl bar': 'EZ Bar',
+  'leverage machine': 'Machine',
+  'smith machine': 'Smith Machine',
+  kettlebell: 'Kettlebell',
+  band: 'Band',
+  'body weight': 'Bodyweight',
+  'ez barbell': 'EZ Bar',
   'medicine ball': 'Med Ball',
-  'exercise ball': 'Stability Ball',
-  'foam roll': 'Foam Roll',
-  other: 'Other',
+  'stability ball': 'Stability Ball',
+  rope: 'Rope',
+  weighted: 'Weighted',
+  assisted: 'Assisted',
 }
-
-export const CATEGORY_OPTIONS = [
-  'strength',
-  'stretching',
-  'plyometrics',
-  'strongman',
-  'powerlifting',
-  'cardio',
-  'olympic weightlifting',
-] as const
 
 export const CATEGORY_LABELS: Record<string, string> = {
   strength: 'Strength',
@@ -217,8 +183,8 @@ export interface FilterPresetDef {
 export const FILTER_PRESETS: FilterPresetDef[] = [
   { label: 'Push Day', filters: { force: 'push', category: 'strength' } },
   { label: 'Pull Day', filters: { force: 'pull', category: 'strength' } },
-  { label: 'Leg Day', filters: { muscle: 'quadriceps', category: 'strength' } },
-  { label: 'Bodyweight Only', filters: { equipment: 'body only' } },
+  { label: 'Leg Day', filters: { muscle: 'quads', category: 'strength' } },
+  { label: 'Bodyweight Only', filters: { equipment: 'body weight' } },
 ]
 
 // --- Label maps for building filter descriptions ---
@@ -229,10 +195,10 @@ export const FORCE_DISPLAY_LABELS: Record<string, string> = {
   static: 'Static',
 }
 
-export const LEVEL_DISPLAY_LABELS: Record<string, string> = {
+export const DIFFICULTY_DISPLAY_LABELS: Record<string, string> = {
   beginner: 'Beginner',
   intermediate: 'Intermediate',
-  expert: 'Expert',
+  advanced: 'Advanced',
 }
 
 export const MECHANIC_DISPLAY_LABELS: Record<string, string> = {

@@ -1,6 +1,7 @@
 import { Alert, Pressable, View } from 'react-native'
-import { ChevronDown, X } from 'lucide-react-native'
+import { ChevronDown } from 'lucide-react-native'
 
+import { DismissButton } from '@/components/ui/dismiss-button'
 import { Colors } from '@/constants/colors'
 import type { ConversionJobState } from '@/types/processing'
 
@@ -43,9 +44,7 @@ export const ProcessUrlHeader = ({ jobState, onMinimize, onClose, onCancelWithCo
 
       {/* Right: X button */}
       <View style={{ width: 32, alignItems: 'flex-end' }}>
-        <Pressable onPress={handleXPress} hitSlop={12} className="p-1">
-          <X size={24} color={Colors.content.primary} pointerEvents="none" />
-        </Pressable>
+        <DismissButton onPress={handleXPress} />
       </View>
     </View>
   )

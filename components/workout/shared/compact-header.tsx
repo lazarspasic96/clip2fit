@@ -1,8 +1,7 @@
-import { ChevronLeft } from 'lucide-react-native'
 import { Pressable, Text, View } from 'react-native'
 
+import { BackButton } from '@/components/ui/back-button'
 import { useElapsedTimer } from '@/components/workout/shared/use-elapsed-timer'
-import { Colors } from '@/constants/colors'
 import { useActiveWorkout } from '@/contexts/active-workout-context'
 
 interface CompactHeaderProps {
@@ -27,9 +26,7 @@ export const CompactHeader = ({ onBack, onFinish, isEditMode }: CompactHeaderPro
 
   return (
     <View className="flex-row items-center px-4 py-2.5 gap-3">
-      <Pressable onPress={onBack} hitSlop={8}>
-        <ChevronLeft size={22} color={Colors.content.primary} pointerEvents="none" />
-      </Pressable>
+      <BackButton onPress={onBack} />
 
       <Text className="text-sm font-inter-semibold text-content-primary">{formatted}</Text>
 

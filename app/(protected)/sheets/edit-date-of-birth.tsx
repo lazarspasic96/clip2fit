@@ -4,6 +4,7 @@ import { Pressable, Text, View } from 'react-native'
 
 import { DateOfBirthPicker } from '@/components/ui/native-ui/date-of-birth-picker'
 import { cn } from '@/components/ui/cn'
+import { SheetTitle } from '@/components/ui/sheet-title'
 import { useSaveProfileMutation } from '@/hooks/use-api'
 import { useProfileQuery } from '@/hooks/use-profile-query'
 import { isDobInAllowedRange, isDobIsoDate, type DobIsoDate } from '@/utils/dob-date'
@@ -45,7 +46,7 @@ const EditDateOfBirthScreen = () => {
 
   return (
     <View className="px-6 pt-4 pb-8">
-      <Text className="text-lg font-inter-bold text-content-primary mb-6">Date of Birth</Text>
+      <SheetTitle>Date of Birth</SheetTitle>
 
       <DateOfBirthPicker value={dateOfBirth} onChange={setDateOfBirth} />
 

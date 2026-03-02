@@ -63,7 +63,7 @@ const ProtectedLayout = () => {
           <Stack.Screen name="sheets/day-options" options={{ ...sheetOptions, sheetAllowedDetents: 'fitToContents' }} />
           <Stack.Screen name="sheets/workout-picker" options={{ ...sheetOptions, sheetAllowedDetents: [0.7, 0.9] }} />
           <Stack.Screen name="sheets/finish-workout" options={{ ...sheetOptions, sheetAllowedDetents: [0.34, 0.8] }} />
-          <Stack.Screen name="sheets/exercise-learning" options={{ ...sheetOptions, sheetAllowedDetents: [0.8] }} />
+          <Stack.Screen name="sheets/exercise-learning" options={{ ...sheetOptions, sheetAllowedDetents: [0.8, 1] }} />
           <Stack.Screen name="sheets/edit-exercise" options={{ ...sheetOptions, sheetAllowedDetents: [0.6] }} />
           <Stack.Screen name="sheets/catalog-filters" options={{ ...sheetOptions, sheetAllowedDetents: [0.7, 0.9] }} />
         </Stack>

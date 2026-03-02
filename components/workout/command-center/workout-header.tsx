@@ -1,7 +1,6 @@
-import { ChevronLeft } from 'lucide-react-native'
 import { Pressable, Text, View } from 'react-native'
 
-import { Colors } from '@/constants/colors'
+import { BackButton } from '@/components/ui/back-button'
 import { SegmentedProgressBar } from '@/components/workout/segmented-progress-bar'
 import { useActiveWorkout } from '@/contexts/active-workout-context'
 
@@ -19,9 +18,7 @@ export const WorkoutHeader = ({ onBack, onFinish, isEditMode }: WorkoutHeaderPro
   return (
     <View className="px-5 mb-3">
       <View className="flex-row items-center mb-2">
-        <Pressable onPress={onBack} hitSlop={12} className="p-1 mr-2">
-          <ChevronLeft size={24} color={Colors.content.primary} pointerEvents="none" />
-        </Pressable>
+        <BackButton onPress={onBack} className="mr-2" />
         <Text className="flex-1 text-xl font-inter-bold text-content-primary" numberOfLines={1}>
           {session.plan.title}
         </Text>

@@ -1,5 +1,4 @@
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { ChevronLeft } from 'lucide-react-native'
 import { useEffect, useMemo, useState } from 'react'
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -7,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { HistoryChart } from '@/components/stats/history-chart'
 import { PeriodSelector } from '@/components/stats/shared/period-selector'
 import { formatCompactNumber, formatInstantDate } from '@/components/stats/shared/stats-formatters'
-import { Colors } from '@/constants/colors'
+import { BackButton } from '@/components/ui/back-button'
 import { useExerciseHistory } from '@/hooks/use-stats'
 import { parseUtcInstantMs, type StatsPRTimelinePoint, type StatsPeriod } from '@/types/stats'
 
@@ -82,12 +81,9 @@ const ExerciseHistoryScreen = () => {
         }}
       >
         <View className="flex-row items-center justify-between">
-          <Pressable
+          <BackButton
             onPress={() => (router.canGoBack() ? router.back() : router.replace('/(protected)/(tabs)/stats' as never))}
-            className="w-10 h-10 rounded-full bg-background-secondary items-center justify-center"
-          >
-            <ChevronLeft size={18} color={Colors.content.primary} />
-          </Pressable>
+          />
         </View>
 
         <View className="gap-1">

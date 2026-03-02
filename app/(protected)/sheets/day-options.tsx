@@ -1,9 +1,10 @@
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import * as Haptics from 'expo-haptics'
 import { CalendarDays, XCircle } from 'lucide-react-native'
-import { Text, View } from 'react-native'
+import { View } from 'react-native'
 
 import { OptionRow } from '@/components/schedule/option-row'
+import { SheetTitle } from '@/components/ui/sheet-title'
 import { Colors } from '@/constants/colors'
 import { useAssignScheduleDay, useScheduleQuery } from '@/hooks/use-schedule'
 import { scheduleFlashStore } from '@/stores/schedule-flash-store'
@@ -42,9 +43,7 @@ const DayOptionsScreen = () => {
 
   return (
     <View className="px-6 pb-8 pt-2">
-      <Text className="text-lg font-inter-bold text-content-primary text-center mb-4">
-        {DAY_LABELS[dayOfWeek] ?? ''}
-      </Text>
+      <SheetTitle>{DAY_LABELS[dayOfWeek] ?? ''}</SheetTitle>
 
       <View className="gap-2">
         {hasWorkout ? (

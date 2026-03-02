@@ -4,9 +4,11 @@ import { useAuth } from '@/contexts/auth-context'
 import { useCountdown } from '@/hooks/use-countdown'
 import { Image } from 'expo-image'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { ArrowLeft, Mail } from 'lucide-react-native'
+import { Mail } from 'lucide-react-native'
 import { useState } from 'react'
 import { Linking, Pressable, Text, View } from 'react-native'
+
+import { BackButton } from '@/components/ui/back-button'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 const RESEND_COOLDOWN_SECONDS = 30
@@ -57,9 +59,7 @@ const CheckEmailScreen = () => {
 
       <View className="flex-1" style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}>
         <View className="px-6 pt-4">
-          <Pressable onPress={handleGoBack} hitSlop={8}>
-            <ArrowLeft size={24} color="#fafafa" />
-          </Pressable>
+          <BackButton onPress={handleGoBack} />
         </View>
 
         <View className="flex-1 items-center justify-center px-6">

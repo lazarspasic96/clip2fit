@@ -5,13 +5,14 @@ import { Pressable, ScrollView, Text, View } from 'react-native'
 import { FilterChipGrid } from '@/components/catalog/shared/filter-chip-grid'
 import { FilterSegmentedRow } from '@/components/catalog/shared/filter-segmented-row'
 import { cn } from '@/components/ui/cn'
+import { SheetTitle } from '@/components/ui/sheet-title'
 import { Colors } from '@/constants/colors'
 import { catalogFilterStore } from '@/stores/catalog-filter-store'
-import type { CatalogFilters, CatalogForce, CatalogLevel, CatalogMechanic, FilterPresetDef } from '@/types/catalog'
+import type { CatalogDifficulty, CatalogFilters, CatalogForce, CatalogMechanic, FilterPresetDef } from '@/types/catalog'
 import {
+  DIFFICULTY_DISPLAY_LABELS,
   FILTER_PRESETS,
   FORCE_DISPLAY_LABELS,
-  LEVEL_DISPLAY_LABELS,
   MECHANIC_DISPLAY_LABELS,
   MUSCLE_GROUPS_ORDERED,
   MUSCLE_GROUP_LABELS,
@@ -28,19 +29,19 @@ const REGION_TAB_LABELS: Record<RegionTab, string> = {
 
 const REGION_MUSCLES: Record<RegionTab, readonly string[]> = {
   all: MUSCLE_GROUPS_ORDERED,
-  upper: ['chest', 'shoulders', 'lats', 'middle_back', 'traps', 'lower_back', 'biceps', 'triceps', 'forearms'],
-  lower: ['quadriceps', 'hamstrings', 'glutes', 'calves', 'abductors', 'adductors'],
-  core: ['abdominals', 'neck'],
+  upper: ['pectorals', 'delts', 'lats', 'upper back', 'traps', 'spine', 'biceps', 'triceps', 'forearms'],
+  lower: ['quads', 'hamstrings', 'glutes', 'calves', 'abductors', 'adductors'],
+  core: ['abs', 'serratus anterior'],
 }
 
 const REGION_TABS: RegionTab[] = ['all', 'upper', 'lower', 'core']
-const LEVEL_OPTIONS: CatalogLevel[] = ['beginner', 'intermediate', 'expert']
+const DIFFICULTY_OPTIONS: CatalogDifficulty[] = ['beginner', 'intermediate', 'advanced']
 const FORCE_OPTIONS: CatalogForce[] = ['push', 'pull', 'static']
 const MECHANIC_OPTIONS: CatalogMechanic[] = ['compound', 'isolation']
 
 const presetMatchesState = (
   preset: FilterPresetDef,
-  state: Pick<CatalogFilters, 'muscle' | 'equipment' | 'level' | 'force' | 'mechanic' | 'category'>,
+  state: Pick<CatalogFilters, 'muscle' | 'equipment' | 'difficulty' | 'force' | 'mechanic' | 'category'>,
 ): boolean => {
   const entries = Object.entries(preset.filters) as [string, string][]
   return entries.every(([key, val]) => state[key as keyof typeof state] === val)
@@ -58,23 +59,23 @@ const CatalogFiltersScreen = () => {
 
   const [muscle, setMuscle] = useState<string | null>(initial.muscle)
   const [equipment, setEquipment] = useState<string | null>(initial.equipment)
-  const [level, setLevel] = useState<CatalogLevel | null>(initial.level)
+  const [difficulty, setDifficulty] = useState<CatalogDifficulty | null>(initial.difficulty)
   const [force, setForce] = useState<CatalogForce | null>(initial.force)
   const [mechanic, setMechanic] = useState<CatalogMechanic | null>(initial.mechanic)
   const [category, setCategory] = useState<string | null>(initial.category)
   const [regionTab, setRegionTab] = useState<RegionTab>('all')
 
-  const currentState = { muscle, equipment, level, force, mechanic, category }
+  const currentState = { muscle, equipment, difficulty, force, mechanic, category }
 
   const handleApply = () => {
-    catalogFilterStore.setFilters({ ...initial, muscle, equipment, level, force, mechanic, category })
+    catalogFilterStore.setFilters({ ...initial, muscle, equipment, difficulty, force, mechanic, category })
     router.back()
   }
 
   const handleClearAll = () => {
     setMuscle(null)
     setEquipment(null)
-    setLevel(null)
+    setDifficulty(null)
     setForce(null)
     setMechanic(null)
     setCategory(null)
@@ -86,7 +87,7 @@ const CatalogFiltersScreen = () => {
     if (preset.filters.equipment !== undefined) setEquipment(preset.filters.equipment)
     if (preset.filters.force !== undefined) setForce(preset.filters.force as CatalogForce)
     if (preset.filters.category !== undefined) setCategory(preset.filters.category)
-    if (preset.filters.level !== undefined) setLevel(preset.filters.level as CatalogLevel)
+    if (preset.filters.difficulty !== undefined) setDifficulty(preset.filters.difficulty as CatalogDifficulty)
     if (preset.filters.mechanic !== undefined) setMechanic(preset.filters.mechanic as CatalogMechanic)
   }
 
@@ -104,7 +105,7 @@ const CatalogFiltersScreen = () => {
     <ScrollView
       contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 32, paddingTop: 8 }}
     >
-      <Text className="text-lg font-inter-bold text-content-primary mb-5">Filters</Text>
+      <SheetTitle>Filters</SheetTitle>
 
       {/* Gym-split presets */}
       <ScrollView
@@ -141,7 +142,7 @@ const CatalogFiltersScreen = () => {
       </ScrollView>
 
       {/* Muscle Group */}
-      <SectionLabel text="Muscle Group" />
+      <SectionLabel text="Target Muscle" />
       <View className="flex-row gap-1.5 mb-3">
         {REGION_TABS.map((tab) => (
           <Pressable
@@ -178,14 +179,14 @@ const CatalogFiltersScreen = () => {
         />
       </View>
 
-      {/* Level */}
-      <SectionLabel text="Level" />
+      {/* Difficulty */}
+      <SectionLabel text="Difficulty" />
       <View className="mb-5">
         <FilterSegmentedRow
-          options={LEVEL_OPTIONS}
-          labels={LEVEL_DISPLAY_LABELS}
-          selected={level}
-          onToggle={(v) => toggleValue(level, v as CatalogLevel, setLevel)}
+          options={DIFFICULTY_OPTIONS}
+          labels={DIFFICULTY_DISPLAY_LABELS}
+          selected={difficulty}
+          onToggle={(v) => toggleValue(difficulty, v as CatalogDifficulty, setDifficulty)}
           dotColors={Colors.level}
         />
       </View>

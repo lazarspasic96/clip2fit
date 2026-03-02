@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router'
 import { ActivityIndicator, Pressable, Text, View } from 'react-native'
 
+import { SheetTitle } from '@/components/ui/sheet-title'
 import { Colors } from '@/constants/colors'
 import { useActiveWorkout } from '@/contexts/active-workout-context'
 import { useFinishWorkout } from '@/hooks/use-finish-workout'
@@ -31,7 +32,7 @@ const FinishWorkoutScreen = () => {
 
   return (
     <View className="px-6 pb-8 pt-6">
-      <Text className="text-lg font-inter-bold text-content-primary text-center">Finish Workout?</Text>
+      <SheetTitle>Finish Workout?</SheetTitle>
 
       <View className="mt-4 gap-2 pt-10">
         <View className="flex-row justify-between">

@@ -2,6 +2,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react-native'
 import { Pressable, ScrollView, Text, View } from 'react-native'
 import Animated, { FadeIn } from 'react-native-reanimated'
 
+import { BackButton } from '@/components/ui/back-button'
 import { PulseRing } from '@/components/workout/designs/design-b-pulse/pulse-ring'
 import { PulseSetCard } from '@/components/workout/designs/design-b-pulse/pulse-set-card'
 import { SegmentedProgressBar } from '@/components/workout/segmented-progress-bar'
@@ -38,9 +39,7 @@ export const PulseDashboard = ({ onBack, onFinish, isEditMode, learningPill }: D
     <View className="flex-1">
       {/* Header */}
       <View className="flex-row items-center justify-between px-4 py-3">
-        <Pressable onPress={onBack} hitSlop={8}>
-          <ChevronLeft size={24} color={Colors.content.primary} pointerEvents="none" />
-        </Pressable>
+        <BackButton onPress={onBack} />
         <Text className="text-base font-inter-bold text-content-primary flex-1 text-center" numberOfLines={1}>
           {session.plan.title}
         </Text>

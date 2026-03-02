@@ -5,25 +5,25 @@ import { Colors } from '@/constants/colors'
 import type { CatalogFilters } from '@/types/catalog'
 import {
   CATEGORY_LABELS,
+  DIFFICULTY_DISPLAY_LABELS,
   EQUIPMENT_LABELS,
   FORCE_DISPLAY_LABELS,
-  LEVEL_DISPLAY_LABELS,
   MECHANIC_DISPLAY_LABELS,
   MUSCLE_GROUP_LABELS,
 } from '@/types/catalog'
 
-type FilterKey = 'muscle' | 'equipment' | 'level' | 'category' | 'force' | 'mechanic'
+type FilterKey = 'muscle' | 'equipment' | 'difficulty' | 'category' | 'force' | 'mechanic'
 
 const LABEL_MAPS: Record<FilterKey, Record<string, string>> = {
   muscle: MUSCLE_GROUP_LABELS,
   equipment: EQUIPMENT_LABELS,
-  level: LEVEL_DISPLAY_LABELS,
+  difficulty: DIFFICULTY_DISPLAY_LABELS,
   category: CATEGORY_LABELS,
   force: FORCE_DISPLAY_LABELS,
   mechanic: MECHANIC_DISPLAY_LABELS,
 }
 
-const FILTER_KEYS: FilterKey[] = ['muscle', 'equipment', 'level', 'category', 'force', 'mechanic']
+const FILTER_KEYS: FilterKey[] = ['muscle', 'equipment', 'difficulty', 'category', 'force', 'mechanic']
 
 const getActiveFilterLabels = (filters: CatalogFilters): { key: FilterKey; label: string }[] => {
   return FILTER_KEYS.filter((key) => filters[key] !== null).map((key) => {

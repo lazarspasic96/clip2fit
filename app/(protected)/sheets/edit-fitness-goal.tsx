@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Pressable, Text, View } from 'react-native'
 
 import { cn } from '@/components/ui/cn'
+import { SheetTitle } from '@/components/ui/sheet-title'
 import { RadioGroup } from '@/components/ui/radio-group'
 import { useSaveProfileMutation } from '@/hooks/use-api'
 import { useProfileQuery } from '@/hooks/use-profile-query'
@@ -30,7 +31,7 @@ const EditFitnessGoalScreen = () => {
 
   return (
     <View className="px-6 pt-4 pb-8">
-      <Text className="text-lg font-inter-bold text-content-primary mb-6">Fitness Goal</Text>
+      <SheetTitle>Fitness Goal</SheetTitle>
 
       <RadioGroup options={FITNESS_GOALS} value={goal} onChange={setGoal} />
 

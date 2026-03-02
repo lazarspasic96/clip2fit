@@ -1,12 +1,12 @@
 import { useRouter } from 'expo-router'
-import { X } from 'lucide-react-native'
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native'
+import { ActivityIndicator, ScrollView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { ProfileHeader } from '@/components/settings/profile-header'
 import { SettingsRow } from '@/components/settings/settings-row'
 import { SettingsSection } from '@/components/settings/settings-section'
 import { Button } from '@/components/ui/button'
+import { DismissButton } from '@/components/ui/dismiss-button'
 import { Colors } from '@/constants/colors'
 import { useAuth } from '@/contexts/auth-context'
 import { useProfileQuery } from '@/hooks/use-profile-query'
@@ -22,9 +22,7 @@ const SettingsScreen = () => {
     <View className="flex-1 bg-background-primary px-5" style={{ paddingTop: insets.top }}>
       <View className="flex-row items-center justify-between pt-4 pb-2">
         <Text className="text-2xl font-inter-bold text-content-primary">Settings</Text>
-        <Pressable onPress={() => router.back()} hitSlop={12} className="p-1">
-          <X size={24} color={Colors.content.primary} pointerEvents="none" />
-        </Pressable>
+        <DismissButton onPress={() => router.back()} />
       </View>
 
       {isLoading ? (

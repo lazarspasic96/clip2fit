@@ -56,7 +56,7 @@ export const Colors = {
   level: {
     beginner: '#4ade80',
     intermediate: '#facc15',
-    expert: '#f87171',
+    advanced: '#f87171',
   },
   destructive: '#dc2626',
   chart: {

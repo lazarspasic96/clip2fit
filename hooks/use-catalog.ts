@@ -17,8 +17,9 @@ const buildQueryString = (filters: CatalogFilters, page: number): string => {
 
   if (filters.search.trim().length > 0) params.set('search', filters.search.trim())
   if (filters.muscle !== null) params.set('muscle', filters.muscle)
+  if (filters.bodyPart !== null) params.set('bodyPart', filters.bodyPart)
   if (filters.equipment !== null) params.set('equipment', filters.equipment)
-  if (filters.level !== null) params.set('level', filters.level)
+  if (filters.difficulty !== null) params.set('difficulty', filters.difficulty)
   if (filters.category !== null) params.set('category', filters.category)
   if (filters.force !== null) params.set('force', filters.force)
   if (filters.mechanic !== null) params.set('mechanic', filters.mechanic)
@@ -30,8 +31,9 @@ const filtersToHash = (filters: CatalogFilters): string =>
   JSON.stringify({
     s: filters.search.trim(),
     m: filters.muscle,
+    bp: filters.bodyPart,
     eq: filters.equipment,
-    l: filters.level,
+    d: filters.difficulty,
     c: filters.category,
     f: filters.force,
     me: filters.mechanic,
@@ -89,7 +91,7 @@ export const useCatalogDetail = (id: string | null) => {
   }
 }
 
-// --- Related exercises (same primary muscle) ---
+// --- Related exercises (same target muscle) ---
 
 export const useCatalogRelated = (excludeId: string, muscle: string | null) => {
   const query = useQuery({

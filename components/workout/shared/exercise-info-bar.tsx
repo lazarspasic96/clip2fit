@@ -17,8 +17,9 @@ interface ExerciseInfoBarProps {
 export const ExerciseInfoBar = ({ catalogExercise, isLoading, onInfoPress }: ExerciseInfoBarProps) => {
   if (isLoading) return null
 
-  const hasImage = catalogExercise !== null && catalogExercise.images !== null
-  const muscles = catalogExercise?.primaryMuscleGroups ?? []
+  const hasGif = catalogExercise !== null && catalogExercise.gifUrl !== null
+  const targetMuscle = catalogExercise?.target ?? ''
+  const secondaryMuscles = catalogExercise?.secondaryMuscles ?? []
 
   return (
     <View className="flex-row items-center px-4 gap-3">
@@ -27,12 +28,13 @@ export const ExerciseInfoBar = ({ catalogExercise, isLoading, onInfoPress }: Exe
         className="rounded-xl overflow-hidden bg-background-tertiary"
         style={{ width: THUMB_SIZE, height: THUMB_SIZE }}
       >
-        {hasImage ? (
+        {hasGif ? (
           <Image
-            source={{ uri: catalogExercise?.images?.start }}
+            source={{ uri: catalogExercise?.gifUrl ?? undefined }}
             style={{ width: THUMB_SIZE, height: THUMB_SIZE }}
             contentFit="cover"
             cachePolicy="memory-disk"
+            autoplay
           />
         ) : (
           <View className="flex-1 items-center justify-center">
@@ -43,10 +45,13 @@ export const ExerciseInfoBar = ({ catalogExercise, isLoading, onInfoPress }: Exe
 
       {/* Muscle group pills */}
       <View className="flex-1 flex-row flex-wrap gap-1.5">
-        {muscles.slice(0, 3).map((m) => (
+        {targetMuscle.length > 0 && (
+          <MuscleChip key={targetMuscle} muscle={targetMuscle} size="xs" tone="soft" />
+        )}
+        {secondaryMuscles.slice(0, 2).map((m) => (
           <MuscleChip key={m} muscle={m} size="xs" tone="soft" />
         ))}
-        {muscles.length === 0 && (
+        {targetMuscle.length === 0 && secondaryMuscles.length === 0 && (
           <Text className="text-xs font-inter text-content-tertiary">No muscle data</Text>
         )}
       </View>

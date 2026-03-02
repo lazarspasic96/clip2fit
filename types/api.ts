@@ -134,7 +134,7 @@ const buildSets = (
   reps: string,
   targetWeight: number | null,
 ): WorkoutSet[] =>
-  Array.from({ length: count }, (_, i) => ({
+  Array.from({ length: count > 0 ? count : 1 }, (_, i) => ({
     id: `set-${i + 1}`,
     setNumber: i + 1,
     targetReps: reps.length > 0 ? reps : null,

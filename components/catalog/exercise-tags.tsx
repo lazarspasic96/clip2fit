@@ -32,14 +32,12 @@ export const ExerciseTags = ({ exercise }: ExerciseTagsProps) => {
   }
 
   if (exercise.equipment.length > 0) {
-    const equipmentLabel = exercise.equipment
-      .map((eq) => EQUIPMENT_LABELS[eq] ?? capitalize(eq))
-      .join(', ')
+    const equipmentLabel = EQUIPMENT_LABELS[exercise.equipment] ?? capitalize(exercise.equipment)
     tags.push({ label: equipmentLabel })
   }
 
-  if (exercise.level !== null) {
-    tags.push({ label: capitalize(exercise.level), color: Colors.difficulty[exercise.level as keyof typeof Colors.difficulty] })
+  if (exercise.difficulty !== null) {
+    tags.push({ label: capitalize(exercise.difficulty), color: Colors.difficulty[exercise.difficulty as keyof typeof Colors.difficulty] })
   }
 
   if (tags.length === 0) return null

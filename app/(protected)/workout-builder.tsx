@@ -3,8 +3,9 @@ import { Alert, Keyboard, Pressable, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
-import { ChevronLeft, Plus } from 'lucide-react-native'
+import { Plus } from 'lucide-react-native'
 
+import { BackButton } from '@/components/ui/back-button'
 import { Colors } from '@/constants/colors'
 import { Input } from '@/components/ui/input'
 import { BuilderExerciseRow } from '@/components/catalog/builder-exercise-row'
@@ -57,7 +58,7 @@ const WorkoutBuilderScreen = () => {
         restBetweenSets: e.restSeconds !== null ? `${e.restSeconds}s` : null,
         notes: null,
         order: index + 1,
-        isBodyweight: e.catalogExercise.isBodyweight,
+        isBodyweight: e.catalogExercise.equipment === 'body weight',
       })),
     }
 
@@ -85,12 +86,7 @@ const WorkoutBuilderScreen = () => {
     <View className="flex-1 bg-background-primary" style={{ paddingTop: insets.top }}>
       {/* Header */}
       <View className="flex-row items-center px-5 py-3">
-        <Pressable
-          onPress={() => router.back()}
-          className="w-10 h-10 bg-background-secondary rounded-full items-center justify-center"
-        >
-          <ChevronLeft size={20} color={Colors.content.primary} pointerEvents="none" />
-        </Pressable>
+        <BackButton onPress={() => router.back()} />
         <Text className="text-lg font-inter-semibold text-content-primary ml-3">
           Build Workout
         </Text>

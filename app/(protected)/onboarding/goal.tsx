@@ -1,14 +1,13 @@
+import { BackButton } from '@/components/ui/back-button'
 import { Button } from '@/components/ui/button'
 import { RadioGroup } from '@/components/ui/radio-group'
-import { Colors } from '@/constants/colors'
 import { useAuth } from '@/contexts/auth-context'
 import { useProfileForm } from '@/contexts/profile-form-context'
 import type { FitnessGoal } from '@/types/profile'
 import { FITNESS_GOALS } from '@/types/profile'
 import { useRouter } from 'expo-router'
-import { ChevronLeft } from 'lucide-react-native'
 import { useState } from 'react'
-import { Alert, Pressable, ScrollView, Text, View } from 'react-native'
+import { Alert, ScrollView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 const GoalScreen = () => {
@@ -48,9 +47,7 @@ const GoalScreen = () => {
   return (
     <View className="flex-1 bg-background-primary">
       <ScrollView className="flex-1" contentContainerStyle={{ padding: 24 }} keyboardShouldPersistTaps="handled">
-        <Pressable onPress={() => router.back()} hitSlop={12} className="p-1 self-start mb-4">
-          <ChevronLeft size={24} color={Colors.content.primary} pointerEvents="none" />
-        </Pressable>
+        <BackButton onPress={() => router.back()} className="self-start mb-4" />
 
         <Text className="text-2xl font-inter-bold text-content-primary mb-2">What&apos;s your goal?</Text>
         <Text className="text-base font-inter text-content-secondary mb-8">

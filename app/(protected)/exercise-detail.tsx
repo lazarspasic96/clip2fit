@@ -1,11 +1,12 @@
+import { BlurView } from 'expo-blur'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { ChevronLeft } from 'lucide-react-native'
 import { useSyncExternalStore } from 'react'
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { ExerciseDetailContent } from '@/components/catalog/exercise-detail-content'
 import { ExerciseImagePager } from '@/components/catalog/exercise-image-pager'
+import { BackButton } from '@/components/ui/back-button'
 import { Button } from '@/components/ui/button'
 import { Colors } from '@/constants/colors'
 import { useWorkoutBuilder } from '@/contexts/workout-builder-context'
@@ -59,26 +60,26 @@ const ExerciseDetailScreen = () => {
   return (
     <View className="flex-1 bg-background-primary">
       {/* Back button */}
-      <Pressable
+      <BackButton
         onPress={handleBack}
-        className="absolute left-4 z-10 w-10 h-10 items-center justify-center rounded-full bg-background-primary/60"
+        className="absolute left-4 z-10"
         style={{ top: insets.top + 8 }}
-      >
-        <ChevronLeft size={24} color={Colors.content.primary} pointerEvents="none" />
-      </Pressable>
+      />
 
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ paddingBottom: 80 + Math.max(insets.bottom, 16) }}
         showsVerticalScrollIndicator={false}
       >
-        <ExerciseImagePager images={exercise.images} />
+        <ExerciseImagePager gifUrl={exercise.gifUrl} thumbnailUrl={exercise.thumbnailUrl} />
         <ExerciseDetailContent exercise={exercise} />
       </ScrollView>
 
       {/* Sticky bottom CTA */}
-      <View
-        className="bg-background-primary border-t border-border-primary px-5 py-3"
+      <BlurView
+        intensity={80}
+        tint="dark"
+        className="absolute bottom-0 left-0 right-0 border-t border-border-primary px-5 py-3"
         style={{ paddingBottom: Math.max(insets.bottom, 12) }}
       >
         <Button
@@ -87,7 +88,7 @@ const ExerciseDetailScreen = () => {
         >
           {selected ? 'Remove from Workout' : 'Add to Workout'}
         </Button>
-      </View>
+      </BlurView>
     </View>
   )
 }

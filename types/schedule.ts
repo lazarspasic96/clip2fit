@@ -36,5 +36,5 @@ export interface WeeklySchedule {
 }
 
 export interface UpsertSchedulePayload {
-  entries: Array<{ day_of_week: DayOfWeek; workout_id: string | null; is_rest_day: boolean }>
+  entries: { day_of_week: DayOfWeek; workout_id: string | null; is_rest_day: boolean }[]
 }

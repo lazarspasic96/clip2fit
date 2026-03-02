@@ -6,8 +6,7 @@ import { Colors } from '@/constants/colors'
 
 interface ExerciseLearningPillProps {
   title: string
-  startImageUrl: string | null
-  endImageUrl: string | null
+  gifUrl: string | null
   onPress: () => void
 }
 
@@ -26,18 +25,19 @@ const PreviewImage = ({ uri }: { uri: string | null }) => {
       style={{ width: 84, height: 84, borderRadius: 12 }}
       contentFit="cover"
       cachePolicy="memory-disk"
+      autoplay
     />
   )
 }
 
-export const ExerciseLearningPill = ({ title, startImageUrl, endImageUrl, onPress }: ExerciseLearningPillProps) => {
+export const ExerciseLearningPill = ({ title, gifUrl, onPress }: ExerciseLearningPillProps) => {
   return (
     <Pressable
       onPress={onPress}
       className="flex-row items-center rounded-3xl bg-background-secondary border border-border-secondary px-3 py-3 gap-3"
       style={{ boxShadow: '0 12px 26px rgba(0,0,0,0.32)' }}
     >
-      <PreviewImage uri={startImageUrl ?? endImageUrl} />
+      <PreviewImage uri={gifUrl} />
 
       <View className="flex-1 pr-1">
         <Text className="text-xs font-inter-medium text-content-tertiary">Current exercise</Text>

@@ -34,8 +34,7 @@ export const BaselinePulseDashboard = ({ onBack, onFinish, isEditMode }: Baselin
   const pill = (
     <ExerciseLearningPill
       title={currentExercise.name}
-      startImageUrl={catalogExercise?.images?.start ?? null}
-      endImageUrl={catalogExercise?.images?.end ?? null}
+      gifUrl={catalogExercise?.gifUrl ?? null}
       onPress={handleLearningPress}
     />
   )

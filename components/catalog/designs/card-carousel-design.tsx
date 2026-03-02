@@ -66,7 +66,7 @@ export const CardCarouselDesign = ({
   // Exclude muscle from badge count (shown inline as chips)
   const sheetFilterCount = [
     filters.equipment,
-    filters.level,
+    filters.difficulty,
     filters.category,
     filters.force,
     filters.mechanic,
@@ -85,7 +85,7 @@ export const CardCarouselDesign = ({
     setFilters((prev) => ({ ...prev, muscle }))
   }
 
-  const handleRemoveFilter = (key: 'muscle' | 'equipment' | 'level' | 'category' | 'force' | 'mechanic') => {
+  const handleRemoveFilter = (key: 'muscle' | 'equipment' | 'difficulty' | 'category' | 'force' | 'mechanic') => {
     setFilters((prev) => ({ ...prev, [key]: null }))
   }
 
@@ -93,8 +93,9 @@ export const CardCarouselDesign = ({
     setFilters((prev) => ({
       ...prev,
       muscle: null,
+      bodyPart: null,
       equipment: null,
-      level: null,
+      difficulty: null,
       category: null,
       force: null,
       mechanic: null,
@@ -126,10 +127,6 @@ export const CardCarouselDesign = ({
     if (hasNextPage) fetchNextPage()
   }
 
-  const handleExerciseNavigate = (exercise: CatalogExercise) => {
-    router.push(`/(protected)/exercise-detail?id=${exercise.id}`)
-  }
-
   const renderItem = ({ item, index }: { item: CatalogExercise; index: number }) => {
     const isLeftColumn = index % 2 === 0
 
@@ -143,7 +140,6 @@ export const CardCarouselDesign = ({
       >
         <CardMotionPreview
           exercise={item}
-          onNavigate={() => handleExerciseNavigate(item)}
           onToggle={() => onToggle(item)}
           isSelected={isSelected(item.id)}
         />

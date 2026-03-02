@@ -4,6 +4,7 @@ import { XCircle } from 'lucide-react-native'
 import { FlatList, Pressable, Text, View } from 'react-native'
 
 import { WorkoutPickerItem } from '@/components/schedule/workout-picker-item'
+import { SheetTitle } from '@/components/ui/sheet-title'
 import { Colors } from '@/constants/colors'
 import { useWorkoutsQuery } from '@/hooks/use-api'
 import { useAssignScheduleDay, useScheduleQuery } from '@/hooks/use-schedule'
@@ -44,9 +45,7 @@ const WorkoutPickerScreen = () => {
       ListHeaderComponent={
         <View>
           <View className="px-5 pt-4 pb-3">
-            <View className="flex-row items-center justify-between mb-3">
-              <Text className="text-lg font-inter-bold text-content-primary">Select Workout</Text>
-            </View>
+            <SheetTitle>Select Workout</SheetTitle>
 
             {showClear && (
               <View className="flex-row gap-2">

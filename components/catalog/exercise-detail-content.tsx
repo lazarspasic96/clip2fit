@@ -28,9 +28,21 @@ export const ExerciseDetailContent = ({ exercise }: ExerciseDetailContentProps) 
       <ExerciseTags exercise={exercise} />
 
       <ExerciseMuscleGroups
-        primary={exercise.primaryMuscleGroups}
-        secondary={exercise.secondaryMuscleGroups}
+        target={exercise.target}
+        secondaryMuscles={exercise.secondaryMuscles}
+        bodyPart={exercise.bodyPart}
       />
+
+      {exercise.description.length > 0 && (
+        <View>
+          <Text className="text-xs font-inter-bold text-content-tertiary uppercase tracking-wider mb-2">
+            Description
+          </Text>
+          <Text className="text-sm font-inter text-content-secondary leading-5">
+            {exercise.description}
+          </Text>
+        </View>
+      )}
 
       <ExerciseInstructions instructions={exercise.instructions} />
 
@@ -38,7 +50,7 @@ export const ExerciseDetailContent = ({ exercise }: ExerciseDetailContentProps) 
       <View className="-mx-5">
         <ExerciseRelatedList
           exerciseId={exercise.id}
-          primaryMuscle={exercise.primaryMuscleGroups[0] ?? null}
+          primaryMuscle={exercise.target}
         />
       </View>
     </View>

@@ -4,10 +4,11 @@ import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { Download, Link2, Video, X } from 'lucide-react-native'
+import { Download, Link2, Video } from 'lucide-react-native'
 
-import { Colors } from '@/constants/colors'
 import { Button } from '@/components/ui/button'
+import { DismissButton } from '@/components/ui/dismiss-button'
+import { Colors } from '@/constants/colors'
 
 const AddWorkoutScreen = () => {
   const insets = useSafeAreaInsets()
@@ -48,9 +49,7 @@ const AddWorkoutScreen = () => {
       <View className="flex-1 bg-background-primary" style={{ paddingTop: insets.top }}>
         <View className="flex-row items-center justify-between px-6 pt-4 pb-2">
           <Text className="text-2xl font-inter-bold text-content-primary">Add Workout</Text>
-          <Pressable onPress={() => router.back()} hitSlop={12} className="p-1">
-            <X size={24} color={Colors.content.primary} pointerEvents="none" />
-          </Pressable>
+          <DismissButton onPress={() => router.back()} />
         </View>
 
         <View className="flex-1 px-6 pt-6">
@@ -88,9 +87,7 @@ const AddWorkoutScreen = () => {
     <View className="flex-1 bg-background-primary" style={{ paddingTop: insets.top }}>
       <View className="flex-row items-center justify-between px-6 pt-4 pb-2">
         <Text className="text-2xl font-inter-bold text-content-primary">Add Workout</Text>
-        <Pressable onPress={() => router.back()} hitSlop={12} className="p-1">
-          <X size={24} color={Colors.content.primary} pointerEvents="none" />
-        </Pressable>
+        <DismissButton onPress={() => router.back()} />
       </View>
 
       <View className="flex-1 px-6 pt-6 gap-4">
