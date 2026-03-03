@@ -15,6 +15,7 @@ import { exercisePickerStore } from '@/stores/exercise-picker-store'
 import { mapCatalogToApiExercise } from '@/utils/exercise-mapper'
 
 const ITEM_HEIGHT = 100
+const CALLER_ID = 'workout-detail'
 
 export const WorkoutDetailContent = () => {
   const { id } = useLocalSearchParams<{ id: string }>()
@@ -43,8 +44,8 @@ export const WorkoutDetailContent = () => {
     if (pickerVersion === lastPickerVersion.current) return
     lastPickerVersion.current = pickerVersion
 
-    const selected = exercisePickerStore.consume()
-    if (selected.length === 0 || rawWorkout === null || workout === null) return
+    const selected = exercisePickerStore.consumeIfMine(CALLER_ID)
+    if (selected === null || selected.length === 0 || rawWorkout === null || workout === null) return
 
     const startOrder = rawWorkout.exercises.length + 1
     const mapped = selected.map((c, i) => mapCatalogToApiExercise(c, startOrder + i))
@@ -97,16 +98,14 @@ export const WorkoutDetailContent = () => {
     }
   }
 
-  const existingCatalogIds = exercises
-    .map((e) => e.catalogExerciseId)
-    .filter((cid): cid is string => cid !== null)
-    .join(',')
-
   const handleAddExercises = () => {
-    router.push({
-      pathname: '/(protected)/sheets/exercise-picker',
-      params: existingCatalogIds.length > 0 ? { existingIds: existingCatalogIds } : undefined,
-    })
+    const existingIds = new Set(
+      exercises
+        .map((e) => e.catalogExerciseId)
+        .filter((cid): cid is string => cid !== null),
+    )
+    exercisePickerStore.request(CALLER_ID, existingIds)
+    router.push('/(protected)/sheets/exercise-picker' as never)
   }
 
   reorderRef.current = (fromIndex: number, toIndex: number) => {

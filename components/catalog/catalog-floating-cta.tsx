@@ -18,9 +18,15 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
 
 interface CatalogFloatingCtaProps {
   selectedCount: number
+  label?: string
+  onPress?: () => void
 }
 
-export const CatalogFloatingCta = ({ selectedCount }: CatalogFloatingCtaProps) => {
+export const CatalogFloatingCta = ({
+  selectedCount,
+  label = 'Build Workout',
+  onPress,
+}: CatalogFloatingCtaProps) => {
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const scale = useSharedValue(1)
@@ -53,7 +59,11 @@ export const CatalogFloatingCta = ({ selectedCount }: CatalogFloatingCtaProps) =
 
   const handlePress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
-    router.push('/(protected)/workout-builder' as never)
+    if (onPress !== undefined) {
+      onPress()
+    } else {
+      router.push('/(protected)/workout-builder' as never)
+    }
   }
 
   return (
@@ -77,7 +87,7 @@ export const CatalogFloatingCta = ({ selectedCount }: CatalogFloatingCtaProps) =
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         accessibilityRole="button"
-        accessibilityLabel={`Build workout with ${selectedCount} exercises`}
+        accessibilityLabel={`${label} with ${selectedCount} exercises`}
         style={[
           pressStyle,
           {
@@ -129,10 +139,12 @@ export const CatalogFloatingCta = ({ selectedCount }: CatalogFloatingCtaProps) =
             letterSpacing: -0.2,
           }}
         >
-          Build Workout
+          {label}
         </Text>
 
-        <ArrowRight size={18} color={Colors.background.primary} pointerEvents="none" />
+        {onPress === undefined && (
+          <ArrowRight size={18} color={Colors.background.primary} pointerEvents="none" />
+        )}
       </AnimatedPressable>
     </Animated.View>
   )

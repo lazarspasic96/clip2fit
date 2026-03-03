@@ -26,8 +26,12 @@ interface CatalogDesignProps {
   setFilters: (filters: CatalogFilters | ((prev: CatalogFilters) => CatalogFilters)) => void
   onToggle: (exercise: CatalogExercise) => void
   isSelected: (id: string) => boolean
+  isDisabled?: (id: string) => boolean
   selectionVersion: number
   bottomInset?: number
+  filterSheetRoute?: string
+  navigationDisabled?: boolean
+  hideFilterButton?: boolean
 }
 
 const COLUMN_GAP = 12
@@ -58,8 +62,12 @@ export const CardCarouselDesign = ({
   setFilters,
   onToggle,
   isSelected,
+  isDisabled = () => false,
   selectionVersion,
   bottomInset,
+  filterSheetRoute = '/(protected)/sheets/catalog-filters',
+  navigationDisabled = false,
+  hideFilterButton = false,
 }: CatalogDesignProps) => {
   const router = useRouter()
 
@@ -142,6 +150,8 @@ export const CardCarouselDesign = ({
           exercise={item}
           onToggle={() => onToggle(item)}
           isSelected={isSelected(item.id)}
+          isDisabled={isDisabled(item.id)}
+          navigationDisabled={navigationDisabled}
         />
       </View>
     )
@@ -150,35 +160,37 @@ export const CardCarouselDesign = ({
   return (
     <View className="flex-1">
       {/* Search + filter row */}
-      <View className="flex-row items-center px-5 gap-2">
-        <View className="flex-1">
+      <View className={hideFilterButton ? 'px-5' : 'flex-row items-center px-5 gap-2'}>
+        <View className={hideFilterButton ? undefined : 'flex-1'}>
           <CatalogSearchBar value={filters.search} onChangeText={handleSearchChange} />
         </View>
 
-        <Pressable
-          onPress={() => router.push('/(protected)/sheets/catalog-filters')}
-          className="w-12 h-12 rounded-[14px] border bg-background-secondary items-center justify-center"
-          style={{
-            borderCurve: 'continuous',
-            borderColor: sheetFilterCount > 0 ? Colors.brand.accent : Colors.border.primary,
-          }}
-        >
-          <Sliders
-            size={18}
-            color={sheetFilterCount > 0 ? Colors.brand.accent : Colors.content.tertiary}
-            pointerEvents="none"
-          />
-          {sheetFilterCount > 0 && (
-            <View className="absolute -top-1 -right-1 w-[18px] h-[18px] rounded-full bg-brand-accent items-center justify-center">
-              <Text
-                className="text-[10px] font-inter-bold text-background-primary"
-                style={{ fontVariant: ['tabular-nums'] }}
-              >
-                {sheetFilterCount}
-              </Text>
-            </View>
-          )}
-        </Pressable>
+        {!hideFilterButton && (
+          <Pressable
+            onPress={() => router.push(filterSheetRoute as never)}
+            className="w-12 h-12 rounded-[14px] border bg-background-secondary items-center justify-center"
+            style={{
+              borderCurve: 'continuous',
+              borderColor: sheetFilterCount > 0 ? Colors.brand.accent : Colors.border.primary,
+            }}
+          >
+            <Sliders
+              size={18}
+              color={sheetFilterCount > 0 ? Colors.brand.accent : Colors.content.tertiary}
+              pointerEvents="none"
+            />
+            {sheetFilterCount > 0 && (
+              <View className="absolute -top-1 -right-1 w-[18px] h-[18px] rounded-full bg-brand-accent items-center justify-center">
+                <Text
+                  className="text-[10px] font-inter-bold text-background-primary"
+                  style={{ fontVariant: ['tabular-nums'] }}
+                >
+                  {sheetFilterCount}
+                </Text>
+              </View>
+            )}
+          </Pressable>
+        )}
       </View>
 
       {/* Inline muscle chips */}
@@ -190,7 +202,7 @@ export const CardCarouselDesign = ({
       </View>
 
       {/* Active filter pills */}
-      {sheetFilterCount > 0 && (
+      {!hideFilterButton && sheetFilterCount > 0 && (
         <View className="mt-2">
           <CatalogActiveFilters
             filters={filters}

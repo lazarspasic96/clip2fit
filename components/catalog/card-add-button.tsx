@@ -14,18 +14,22 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
 
 const BG_UNSELECTED = 'rgba(24, 24, 27, 0.85)'
 const BG_SELECTED = '#84cc16'
+const BG_DISABLED = 'rgba(24, 24, 27, 0.6)'
 const ICON_UNSELECTED = '#fafafa'
 const ICON_SELECTED = '#09090b'
+const ICON_DISABLED = '#71717a'
 const ICON_SIZE = 14
 
 interface CardAddButtonProps {
   isSelected: boolean
+  isDisabled?: boolean
   onToggle: () => void
   position?: 'bottom-right' | 'top-right'
 }
 
 export const CardAddButton = ({
   isSelected,
+  isDisabled = false,
   onToggle,
   position = 'bottom-right',
 }: CardAddButtonProps) => {
@@ -68,6 +72,27 @@ export const CardAddButton = ({
       : Haptics.ImpactFeedbackStyle.Medium
     Haptics.impactAsync(style)
     onToggle()
+  }
+
+  if (isDisabled) {
+    return (
+      <View
+        pointerEvents="none"
+        style={{
+          position: 'absolute',
+          ...(position === 'top-right' ? { top: 8 } : { bottom: 8 }),
+          right: 8,
+          width: 28,
+          height: 28,
+          borderRadius: 14,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: BG_DISABLED,
+        }}
+      >
+        <Check size={ICON_SIZE} color={ICON_DISABLED} pointerEvents="none" />
+      </View>
+    )
   }
 
   return (

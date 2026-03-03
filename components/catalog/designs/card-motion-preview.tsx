@@ -17,12 +17,16 @@ interface CardMotionPreviewProps {
   exercise: CatalogExercise
   onToggle: () => void
   isSelected: boolean
+  isDisabled?: boolean
+  navigationDisabled?: boolean
 }
 
 export const CardMotionPreview = ({
   exercise,
   onToggle,
   isSelected,
+  isDisabled = false,
+  navigationDisabled = false,
 }: CardMotionPreviewProps) => {
   const scale = useSharedValue(1)
 
@@ -46,70 +50,95 @@ export const CardMotionPreview = ({
 
   const muscleLabel = MUSCLE_GROUP_LABELS[exercise.target] ?? exercise.target
 
+  const cardContent = (
+    <>
+      {/* Exercise thumbnail */}
+      <View style={{ height: IMAGE_HEIGHT }}>
+        {hasThumbnail ? (
+          <Image
+            source={{ uri: exercise.thumbnailUrl ?? undefined }}
+            style={{ flex: 1 }}
+            contentFit="cover"
+            cachePolicy="memory-disk"
+          />
+        ) : (
+          <View className="bg-background-tertiary flex-1 items-center justify-center">
+            <Dumbbell size={24} color={Colors.content.tertiary} />
+          </View>
+        )}
+      </View>
+
+      {/* Add button — top right */}
+      <CardAddButton isSelected={isSelected} isDisabled={isDisabled} onToggle={onToggle} position="top-right" />
+
+      {/* Text area */}
+      <View className="p-2.5 gap-1">
+        <View className="flex-row items-center gap-1.5">
+          {difficultyColor !== null && (
+            <View
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: 3,
+                backgroundColor: difficultyColor,
+              }}
+            />
+          )}
+          <Text
+            className="text-sm font-inter-bold text-content-primary flex-1"
+            numberOfLines={1}
+          >
+            {exercise.name}
+          </Text>
+        </View>
+
+        {muscleLabel.length > 0 && (
+          <Text className="text-xs font-inter text-content-tertiary" numberOfLines={1}>
+            {muscleLabel}
+          </Text>
+        )}
+      </View>
+
+      {/* Disabled dim overlay — exercise already in workout */}
+      {isDisabled && (
+        <View
+          pointerEvents="none"
+          className="absolute top-0 left-0 right-0 bottom-0 bg-background-primary/[0.35]"
+        />
+      )}
+
+      {/* Selected tint overlay */}
+      {isSelected && !isDisabled && (
+        <View
+          pointerEvents="none"
+          className="absolute top-0 left-0 right-0 bottom-0 bg-brand-accent/[0.06]"
+        />
+      )}
+    </>
+  )
+
   return (
     <Animated.View style={animatedStyle}>
-      <Link href={`/(protected)/exercise-detail?id=${exercise.id}` as never} asChild push>
+      {navigationDisabled ? (
         <Pressable
+          onPress={onToggle}
           onPressIn={handlePressIn}
           onPressOut={handlePressOut}
           className="rounded-2xl overflow-hidden border border-border-primary bg-background-secondary"
         >
-          {/* Exercise thumbnail */}
-          <View style={{ height: IMAGE_HEIGHT }}>
-            {hasThumbnail ? (
-              <Image
-                source={{ uri: exercise.thumbnailUrl ?? undefined }}
-                style={{ flex: 1 }}
-                contentFit="cover"
-                cachePolicy="memory-disk"
-              />
-            ) : (
-              <View className="bg-background-tertiary flex-1 items-center justify-center">
-                <Dumbbell size={24} color={Colors.content.tertiary} />
-              </View>
-            )}
-          </View>
-
-          {/* Add button — top right */}
-          <CardAddButton isSelected={isSelected} onToggle={onToggle} position="top-right" />
-
-          {/* Text area */}
-          <View className="p-2.5 gap-1">
-            <View className="flex-row items-center gap-1.5">
-              {difficultyColor !== null && (
-                <View
-                  style={{
-                    width: 6,
-                    height: 6,
-                    borderRadius: 3,
-                    backgroundColor: difficultyColor,
-                  }}
-                />
-              )}
-              <Text
-                className="text-sm font-inter-bold text-content-primary flex-1"
-                numberOfLines={1}
-              >
-                {exercise.name}
-              </Text>
-            </View>
-
-            {muscleLabel.length > 0 && (
-              <Text className="text-xs font-inter text-content-tertiary" numberOfLines={1}>
-                {muscleLabel}
-              </Text>
-            )}
-          </View>
-
-          {/* Selected tint overlay */}
-          {isSelected && (
-            <View
-              pointerEvents="none"
-              className="absolute top-0 left-0 right-0 bottom-0 bg-brand-accent/[0.06]"
-            />
-          )}
+          {cardContent}
         </Pressable>
-      </Link>
+      ) : (
+        <Link href={`/(protected)/exercise-detail?id=${exercise.id}` as never} asChild push>
+          <Pressable
+            onPressIn={handlePressIn}
+            onPressOut={handlePressOut}
+            className="rounded-2xl overflow-hidden border border-border-primary bg-background-secondary"
+          >
+            {cardContent}
+          </Pressable>
+        </Link>
+      )}
 
       {/* Animated snake border */}
       <SnakeBorder isSelected={isSelected} borderRadius={BORDER_RADIUS} />

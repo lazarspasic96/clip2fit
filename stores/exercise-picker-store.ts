@@ -1,6 +1,13 @@
+import { pickerFilterStore } from '@/stores/picker-filter-store'
 import type { CatalogExercise } from '@/types/catalog'
 
-let selections: CatalogExercise[] = []
+interface PickerRequest {
+  callerId: string
+  existingIds: Set<string>
+}
+
+let request: PickerRequest | null = null
+let response: { callerId: string; selections: CatalogExercise[] } | null = null
 let version = 0
 const listeners = new Set<() => void>()
 
@@ -10,15 +17,28 @@ const notify = () => {
 }
 
 export const exercisePickerStore = {
-  setSelections: (next: CatalogExercise[]) => {
-    selections = [...next]
+  /** Called by parent before opening picker. Stores who's requesting + resets filters. */
+  request: (callerId: string, existingIds: Set<string>) => {
+    request = { callerId, existingIds }
+    response = null
+    pickerFilterStore.resetFilters()
+  },
+
+  /** Called by picker to read the current request (existingIds etc). */
+  getRequest: (): PickerRequest | null => request,
+
+  /** Called by picker when user taps "Add to Workout". */
+  respond: (selections: CatalogExercise[]) => {
+    if (request === null) return
+    response = { callerId: request.callerId, selections: [...selections] }
     notify()
   },
 
-  /** Read + clear in one call so each consumer processes exactly once. */
-  consume: (): CatalogExercise[] => {
-    const result = selections
-    selections = []
+  /** Called by parent. Returns selections only if response matches callerId. */
+  consumeIfMine: (callerId: string): CatalogExercise[] | null => {
+    if (response === null || response.callerId !== callerId) return null
+    const result = response.selections
+    response = null
     return result
   },
 

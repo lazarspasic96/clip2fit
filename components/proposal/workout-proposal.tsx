@@ -15,6 +15,7 @@ import type { ApiExercise } from '@/types/api'
 import { mapCatalogToApiExercise } from '@/utils/exercise-mapper'
 
 const ITEM_HEIGHT = 140
+const CALLER_ID = 'workout-proposal'
 
 interface WorkoutProposalProps {
   workoutId: string
@@ -57,8 +58,8 @@ export const WorkoutProposal = ({ workoutId, mode = 'proposal', onSaved, onDisca
     if (pickerVersion === lastPickerVersion.current) return
     lastPickerVersion.current = pickerVersion
 
-    const selected = exercisePickerStore.consume()
-    if (selected.length === 0) return
+    const selected = exercisePickerStore.consumeIfMine(CALLER_ID)
+    if (selected === null || selected.length === 0) return
 
     setEditableExercises((prev) => {
       const base = prev ?? []
@@ -83,16 +84,14 @@ export const WorkoutProposal = ({ workoutId, mode = 'proposal', onSaved, onDisca
 
   const isDirty = JSON.stringify(editableExercises) !== JSON.stringify(rawWorkout?.exercises)
 
-  const existingCatalogIds = editableExercises
-    .map((e) => e.catalogExerciseId)
-    .filter((id): id is string => id !== null)
-    .join(',')
-
   const handleAddExercises = () => {
-    router.push({
-      pathname: '/(protected)/sheets/exercise-picker',
-      params: existingCatalogIds.length > 0 ? { existingIds: existingCatalogIds } : undefined,
-    })
+    const existingIds = new Set(
+      editableExercises
+        .map((e) => e.catalogExerciseId)
+        .filter((cid): cid is string => cid !== null),
+    )
+    exercisePickerStore.request(CALLER_ID, existingIds)
+    router.push('/(protected)/sheets/exercise-picker' as never)
   }
 
   const handleUpdateExercise = (index: number, updated: ApiExercise) => {

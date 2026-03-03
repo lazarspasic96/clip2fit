@@ -7,7 +7,7 @@ import { FilterSegmentedRow } from '@/components/catalog/shared/filter-segmented
 import { cn } from '@/components/ui/cn'
 import { SheetTitle } from '@/components/ui/sheet-title'
 import { Colors } from '@/constants/colors'
-import { catalogFilterStore } from '@/stores/catalog-filter-store'
+import { pickerFilterStore } from '@/stores/picker-filter-store'
 import type { CatalogDifficulty, CatalogFilters, CatalogForce, CatalogMechanic, FilterPresetDef } from '@/types/catalog'
 import {
   DIFFICULTY_DISPLAY_LABELS,
@@ -53,9 +53,9 @@ const SectionLabel = ({ text }: { text: string }) => (
   </Text>
 )
 
-const CatalogFiltersScreen = () => {
+const PickerFiltersScreen = () => {
   const router = useRouter()
-  const initial = catalogFilterStore.getFilters()
+  const initial = pickerFilterStore.getFilters()
 
   const [muscle, setMuscle] = useState<string | null>(initial.muscle)
   const [equipment, setEquipment] = useState<string | null>(initial.equipment)
@@ -68,7 +68,7 @@ const CatalogFiltersScreen = () => {
   const currentState = { muscle, equipment, difficulty, force, mechanic, category }
 
   const handleApply = () => {
-    catalogFilterStore.setFilters({ ...catalogFilterStore.getFilters(), muscle, equipment, difficulty, force, mechanic, category })
+    pickerFilterStore.setFilters({ ...pickerFilterStore.getFilters(), muscle, equipment, difficulty, force, mechanic, category })
     router.back()
   }
 
@@ -231,4 +231,4 @@ const CatalogFiltersScreen = () => {
   )
 }
 
-export default CatalogFiltersScreen
+export default PickerFiltersScreen
