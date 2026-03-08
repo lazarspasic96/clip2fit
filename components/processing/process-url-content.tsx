@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { View } from 'react-native'
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 
 import { AlreadyConvertedView } from '@/components/processing/already-converted-view'
@@ -39,9 +40,9 @@ export const ProcessUrlContent = () => {
     dismiss(router)
   }
 
-  const handleCancelWithConfirm = () => {
-    cancelConversion()
-    dismiss(router)
+  const handleCancelWithConfirm = async () => {
+    const didCancel = await cancelConversion()
+    if (didCancel) dismiss(router)
   }
 
   // Auto-navigate to full-screen proposal when conversion completes
@@ -65,8 +66,28 @@ export const ProcessUrlContent = () => {
 
   return (
     <View className="flex-1 bg-background-primary">
+      {/* Full-screen gradient glow — behind header for seamless bleed */}
+      {state.jobState === 'processing' && (
+        <Animated.View
+          entering={FadeIn.duration(400)}
+          exiting={FadeOut.duration(300)}
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 360,
+            zIndex: 0,
+            experimental_backgroundImage:
+              'radial-gradient(circle at 50% 40%, rgba(132,204,22,0.06) 0%, transparent 60%)',
+          }}
+        />
+      )}
+
       <ProcessUrlHeader
         jobState={state.jobState}
+        isCancelling={state.isCancelling}
         onMinimize={handleMinimize}
         onClose={handleClose}
         onCancelWithConfirm={handleCancelWithConfirm}

@@ -1,11 +1,12 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react'
+import { Alert } from 'react-native'
 
 import type { ApiJob } from '@/types/api'
 import type {
   ConversionState,
   ProcessingStage,
 } from '@/types/processing'
-import { useConvertUrlMutation, useWorkoutQuery } from '@/hooks/use-api'
+import { useCancelJobMutation, useConvertUrlMutation, useWorkoutQuery } from '@/hooks/use-api'
 import { validateWorkoutUrl } from '@/utils/url-validation'
 import { apiGet } from '@/utils/api'
 
@@ -17,16 +18,39 @@ const STATUS_TO_STAGE: Record<string, ProcessingStage> = {
   downloading: 'downloading',
   transcribing: 'transcribing',
   extracting: 'extracting',
+  fetching_transcript: 'fetchingTranscript',
+  analyzing: 'analyzing',
+  ocr_extracting: 'ocrExtracting',
+  ocr_processing: 'ocrProcessing',
 }
 
 const STAGE_MESSAGES: Record<ProcessingStage, string> = {
-  validating: 'Validating URL...',
-  downloading: 'Downloading audio...',
-  transcribing: 'Transcribing with AI...',
-  extracting: 'Extracting workout...',
-  complete: 'Workout extracted!',
+  validating: 'Checking your video...',
+  downloading: 'Getting the good stuff...',
+  transcribing: 'Listening to every rep...',
+  extracting: 'Building your workout plan...',
+  fetchingTranscript: 'Fetching transcript...',
+  analyzing: 'Analyzing content...',
+  ocrExtracting: 'Reading video frames...',
+  ocrProcessing: 'Processing visual content...',
+  complete: 'Your workout is ready!',
   error: 'Something went wrong',
 }
+
+const STAGE_SUBTITLES: Record<ProcessingStage, string> = {
+  validating: 'Making sure everything looks right',
+  downloading: 'Pulling the audio from your video',
+  transcribing: 'Our AI is picking up every detail',
+  extracting: 'Turning words into sets and reps',
+  fetchingTranscript: 'Grabbing the words from the video',
+  analyzing: 'Our AI is breaking down every move',
+  ocrExtracting: 'Scanning the video for on-screen text',
+  ocrProcessing: 'Turning visual cues into exercises',
+  complete: 'Tap to check it out',
+  error: 'Give it another shot',
+}
+
+export const getStageSubtitle = (stage: ProcessingStage): string => STAGE_SUBTITLES[stage]
 
 const INITIAL_STATE: ConversionState = {
   jobState: 'idle',
@@ -38,13 +62,14 @@ const INITIAL_STATE: ConversionState = {
   progress: 0,
   message: '',
   error: null,
+  isCancelling: false,
 }
 
 interface ConversionContextValue {
   state: ConversionState
   startConversion: (url: string) => Promise<void>
   clear: () => void
-  cancelConversion: () => void
+  cancelConversion: () => Promise<boolean>
 }
 
 const ConversionContext = createContext<ConversionContextValue | null>(null)
@@ -63,6 +88,7 @@ export const ConversionProvider = ({ children }: { children: React.ReactNode }) 
   const simulationTimersRef = useRef<ReturnType<typeof setTimeout>[]>([])
   const activeRef = useRef(true)
   const convertMutation = useConvertUrlMutation()
+  const cancelMutation = useCancelJobMutation()
 
   const { workout } = useWorkoutQuery(state.workoutId)
 
@@ -97,10 +123,10 @@ export const ConversionProvider = ({ children }: { children: React.ReactNode }) 
     clearSimulationTimers()
 
     const stages: { delay: number; stage: ProcessingStage; progress: number }[] = [
-      { delay: 0, stage: 'validating', progress: 10 },
-      { delay: 600, stage: 'downloading', progress: 30 },
-      { delay: 1800, stage: 'transcribing', progress: 55 },
-      { delay: 3000, stage: 'extracting', progress: 80 },
+      { delay: 0, stage: 'validating', progress: 5 },
+      { delay: 800, stage: 'downloading', progress: 25 },
+      { delay: 2200, stage: 'transcribing', progress: 50 },
+      { delay: 3800, stage: 'extracting', progress: 75 },
     ]
 
     for (const { delay, stage, progress } of stages) {
@@ -161,6 +187,12 @@ export const ConversionProvider = ({ children }: { children: React.ReactNode }) 
             message: job.error ?? 'Conversion failed',
             error: job.error ?? 'Conversion failed',
           }))
+          return
+        }
+
+        if (job.status === 'cancelled') {
+          stopPolling()
+          setState(INITIAL_STATE)
           return
         }
 
@@ -267,10 +299,33 @@ export const ConversionProvider = ({ children }: { children: React.ReactNode }) 
     setState(INITIAL_STATE)
   }
 
-  const cancelConversion = () => {
+  const cancelConversion = async (): Promise<boolean> => {
+    const jobIdToCancel = state.jobId
+
+    // No real job (simulation or idle) — just reset
+    if (jobIdToCancel === null) {
+      activeRef.current = false
+      stopPolling()
+      clearSimulationTimers()
+      setState(INITIAL_STATE)
+      return true
+    }
+
+    activeRef.current = false
     stopPolling()
-    clearSimulationTimers()
-    setState(INITIAL_STATE)
+    setState((prev) => ({ ...prev, isCancelling: true }))
+
+    try {
+      await cancelMutation.mutateAsync(jobIdToCancel)
+      setState(INITIAL_STATE)
+      return true
+    } catch {
+      // Network/server error → resume polling
+      activeRef.current = true
+      setState((prev) => ({ ...prev, isCancelling: false }))
+      Alert.alert('Could not cancel', 'Check your connection and try again.')
+      return false
+    }
   }
 
   // Cleanup simulation timers on unmount

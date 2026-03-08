@@ -38,7 +38,7 @@ export interface ApiWorkout {
 
 export interface ApiJob {
   id: string
-  status: 'pending' | 'downloading' | 'transcribing' | 'extracting' | 'completed' | 'failed'
+  status: 'pending' | 'downloading' | 'transcribing' | 'extracting' | 'fetching_transcript' | 'analyzing' | 'ocr_extracting' | 'ocr_processing' | 'completed' | 'failed' | 'cancelled'
   progress: number
   workoutId: string | null
   error: string | null
@@ -46,6 +46,10 @@ export interface ApiJob {
 }
 
 export type ConvertResponseStatus = 'existing' | 'cloned' | 'processing'
+
+export interface ApiCancelJobResponse {
+  status: 'cancelled' | 'completed' | 'failed'
+}
 
 export interface ApiConvertResponse {
   jobId?: string
@@ -174,7 +178,7 @@ const mapExercise = (api: ApiExercise): WorkoutExercise => ({
   catalogExerciseId: api.catalogExerciseId ?? null,
 })
 
-const VALID_PLATFORMS = ['tiktok', 'instagram', 'youtube', 'facebook', 'twitter'] as const
+const VALID_PLATFORMS = ['tiktok', 'instagram', 'youtube'] as const
 type Platform = (typeof VALID_PLATFORMS)[number]
 
 const toPlatform = (raw: string | null): Platform | null => {

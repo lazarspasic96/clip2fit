@@ -7,13 +7,16 @@ import type { ConversionJobState } from '@/types/processing'
 
 interface ProcessUrlHeaderProps {
   jobState: ConversionJobState
+  isCancelling: boolean
   onMinimize: () => void
   onClose: () => void
   onCancelWithConfirm: () => void
 }
 
-export const ProcessUrlHeader = ({ jobState, onMinimize, onClose, onCancelWithConfirm }: ProcessUrlHeaderProps) => {
+export const ProcessUrlHeader = ({ jobState, isCancelling, onMinimize, onClose, onCancelWithConfirm }: ProcessUrlHeaderProps) => {
   const handleXPress = () => {
+    if (isCancelling) return
+
     if (jobState === 'processing') {
       Alert.alert('Cancel conversion?', 'Progress will be lost. You can always try again.', [
         { text: 'Keep going', style: 'cancel' },
@@ -21,7 +24,6 @@ export const ProcessUrlHeader = ({ jobState, onMinimize, onClose, onCancelWithCo
           text: 'Yes, cancel',
           style: 'destructive',
           onPress: () => {
-            console.log('[ProcessUrl] User confirmed cancel')
             onCancelWithConfirm()
           },
         },
@@ -43,7 +45,7 @@ export const ProcessUrlHeader = ({ jobState, onMinimize, onClose, onCancelWithCo
       </View>
 
       {/* Right: X button */}
-      <View style={{ width: 32, alignItems: 'flex-end' }}>
+      <View style={{ width: 32, alignItems: 'flex-end', opacity: isCancelling ? 0.4 : 1 }}>
         <DismissButton onPress={handleXPress} />
       </View>
     </View>
