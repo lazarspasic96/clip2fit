@@ -27,6 +27,7 @@ interface ProposalExerciseRowProps {
   dragGesture?: GestureType
   dragState?: DragState
   itemHeight?: number
+  isNewlyAdded?: boolean
 }
 
 export const ProposalExerciseRow = ({
@@ -37,6 +38,7 @@ export const ProposalExerciseRow = ({
   dragGesture,
   dragState,
   itemHeight = 0,
+  isNewlyAdded = false,
 }: ProposalExerciseRowProps) => {
   const slideX = useSharedValue(0)
   const isRevealed = useSharedValue(false)
@@ -127,6 +129,9 @@ export const ProposalExerciseRow = ({
 
         {/* Main card content */}
         <Animated.View style={slideStyle} className="bg-background-secondary rounded-2xl p-4">
+          {isNewlyAdded && (
+            <View className="absolute inset-0 border border-brand-accent rounded-2xl" pointerEvents="none" />
+          )}
           {/* Header: drag handle + order + name + trash */}
           <View className="flex-row items-center mb-2">
             {dragGesture !== undefined && <DragHandle gesture={dragGesture} />}

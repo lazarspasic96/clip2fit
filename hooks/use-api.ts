@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import type {
+  ApiCancelJobResponse,
   ApiConvertResponse,
   ApiJob,
   ApiWorkout,
@@ -183,6 +184,17 @@ export const useDeleteWorkoutMutation = () => {
     },
   })
 }
+
+// --- useCancelJobMutation ---
+
+export const useCancelJobMutation = () =>
+  useMutation({
+    mutationFn: (jobId: string) =>
+      apiPost<ApiCancelJobResponse>(`/api/jobs/${jobId}/cancel`, {}),
+    onError: (error) => {
+      console.error(TAG, 'cancelJob — onError:', error instanceof ApiError ? `ApiError(${error.status}): ${error.message}` : String(error))
+    },
+  })
 
 // --- useCreateWorkoutMutation ---
 

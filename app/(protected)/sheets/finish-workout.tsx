@@ -1,8 +1,8 @@
 import { useRouter } from 'expo-router'
-import { ActivityIndicator, Pressable, Text, View } from 'react-native'
+import { Text, View } from 'react-native'
 
+import { Button } from '@/components/ui/button'
 import { SheetTitle } from '@/components/ui/sheet-title'
-import { Colors } from '@/constants/colors'
 import { useActiveWorkout } from '@/contexts/active-workout-context'
 import { useFinishWorkout } from '@/hooks/use-finish-workout'
 
@@ -62,20 +62,12 @@ const FinishWorkoutScreen = () => {
       {error !== null && <Text className="text-sm font-inter text-red-400 text-center mt-2">{error}</Text>}
 
       <View className="flex-row gap-3 mt-6">
-        <Pressable
-          onPress={() => router.back()}
-          disabled={loading}
-          className="flex-1 rounded-md py-2.5 bg-background-tertiary"
-        >
-          <Text className="text-sm font-inter-semibold text-content-primary text-center">Keep Going</Text>
-        </Pressable>
-        <Pressable onPress={handleConfirm} disabled={loading} className="flex-1 rounded-md py-2.5 bg-brand-accent">
-          {loading ? (
-            <ActivityIndicator size="small" color={Colors.background.primary} />
-          ) : (
-            <Text className="text-sm font-inter-semibold text-background-primary text-center">Finish Workout</Text>
-          )}
-        </Pressable>
+        <Button onPress={() => router.back()} disabled={loading} variant="secondary" size="sm" className="flex-1">
+          Keep Going
+        </Button>
+        <Button onPress={handleConfirm} loading={loading} size="sm" className="flex-1">
+          Finish Workout
+        </Button>
       </View>
     </View>
   )

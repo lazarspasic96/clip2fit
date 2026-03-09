@@ -1,4 +1,6 @@
-import { Pressable, Text, View } from 'react-native'
+import { Text, View } from 'react-native'
+
+import { Button } from '@/components/ui/button'
 
 interface EmptyStatsStateProps {
   onPrimaryAction: () => void
@@ -13,12 +15,7 @@ export const EmptyStatsState = ({ onPrimaryAction }: EmptyStatsStateProps) => {
           Complete your first workout to unlock top exercises, muscle distribution, and PR history.
         </Text>
       </View>
-      <Pressable
-        className="bg-brand-accent rounded-xl py-3 px-4 items-center"
-        onPress={onPrimaryAction}
-      >
-        <Text className="text-sm font-inter-semibold text-background-primary">Start a Workout</Text>
-      </Pressable>
+      <Button onPress={onPrimaryAction} size="sm">Start a Workout</Button>
     </View>
   )
 }

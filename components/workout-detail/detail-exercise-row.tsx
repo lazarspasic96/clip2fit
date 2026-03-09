@@ -1,17 +1,16 @@
 import { Pencil, Trash2 } from 'lucide-react-native'
 import type { GestureType } from 'react-native-gesture-handler'
 import { Pressable, Text, View } from 'react-native'
-import Animated, { useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated'
+import Animated, { useAnimatedStyle, withSpring } from 'react-native-reanimated'
 
 import { DragHandle } from '@/components/ui/drag-handle'
 import { MuscleChip } from '@/components/ui/muscle-chip'
-import { SwipeableRow } from '@/components/ui/swipeable-row'
 import { Colors } from '@/constants/colors'
 import type { DragState } from '@/hooks/use-draggable-list'
 import type { ApiExercise } from '@/types/api'
 
-const DELETE_ACTION_WIDTH = 72
-const SPRING = { damping: 20, stiffness: 250 }
+const SLIDE = { duration: 300, dampingRatio: 1 }
+const LIFT = { duration: 200, dampingRatio: 1 }
 
 interface DetailExerciseRowProps {
   exercise: ApiExercise
@@ -21,17 +20,8 @@ interface DetailExerciseRowProps {
   dragGesture?: GestureType
   dragState?: DragState
   itemHeight?: number
+  isNewlyAdded?: boolean
 }
-
-const DeleteAction = () => (
-  <View
-    className="items-center justify-center h-full bg-destructive rounded-2xl"
-    style={{ width: DELETE_ACTION_WIDTH }}
-  >
-    <Trash2 size={18} color="#fff" pointerEvents="none" />
-    <Text className="text-xs font-inter-semibold text-white mt-0.5">Delete</Text>
-  </View>
-)
 
 export const DetailExerciseRow = ({
   exercise,
@@ -41,6 +31,7 @@ export const DetailExerciseRow = ({
   dragGesture,
   dragState,
   itemHeight = 0,
+  isNewlyAdded = false,
 }: DetailExerciseRowProps) => {
   const dragAnimatedStyle = useAnimatedStyle(() => {
     if (dragState === undefined) {
@@ -54,10 +45,10 @@ export const DetailExerciseRow = ({
       return {
         transform: [
           { translateY: translateY.value },
-          { scale: withTiming(1.03, { duration: 150 }) },
+          { scale: withSpring(1.03, LIFT) },
         ],
         zIndex: 100,
-        shadowOpacity: withTiming(0.2, { duration: 150 }),
+        shadowOpacity: withSpring(0.12, LIFT),
       }
     }
 
@@ -67,8 +58,8 @@ export const DetailExerciseRow = ({
     if (active === -1) {
       return {
         transform: [
-          { translateY: withSpring(0, SPRING) },
-          { scale: withTiming(1, { duration: 150 }) },
+          { translateY: withSpring(0, SLIDE) },
+          { scale: withSpring(1, LIFT) },
         ],
         zIndex: 0,
         shadowOpacity: 0,
@@ -86,8 +77,8 @@ export const DetailExerciseRow = ({
 
     return {
       transform: [
-        { translateY: withSpring(shift, SPRING) },
-        { scale: withTiming(1, { duration: 150 }) },
+        { translateY: withSpring(shift, SLIDE) },
+        { scale: withSpring(1, LIFT) },
       ],
       zIndex: 0,
       shadowOpacity: 0,
@@ -97,19 +88,26 @@ export const DetailExerciseRow = ({
   return (
     <Animated.View
       className="mx-5 mb-3"
-      style={[dragAnimatedStyle, { shadowColor: '#000', shadowRadius: 8, shadowOffset: { width: 0, height: 4 } }]}
+      style={[dragAnimatedStyle, { shadowColor: '#000', shadowRadius: 12, shadowOffset: { width: 0, height: 6 } }]}
     >
-      <SwipeableRow actionWidth={DELETE_ACTION_WIDTH} actionContent={<DeleteAction />} onAction={onDelete}>
-        <View className="bg-background-secondary p-4">
+        <View className="bg-background-secondary p-4 rounded-2xl overflow-hidden" style={{ borderCurve: 'continuous' }}>
+          {isNewlyAdded && (
+            <View className="absolute inset-0 border border-brand-accent rounded-2xl" pointerEvents="none" />
+          )}
           <View className="flex-row items-center mb-1">
             {dragGesture !== undefined && <DragHandle gesture={dragGesture} />}
             <Text className="text-sm font-inter-bold text-content-tertiary w-7">{exercise.order}</Text>
             <Text className="text-base font-inter-semibold text-content-primary flex-1" numberOfLines={1}>
               {exercise.name}
             </Text>
-            <Pressable onPress={onEdit} hitSlop={12}>
-              <Pencil size={14} color={Colors.content.tertiary} pointerEvents="none" />
-            </Pressable>
+            <View className="flex-row items-center gap-3">
+              <Pressable onPress={onDelete} hitSlop={12}>
+                <Trash2 size={14} color={Colors.content.tertiary} pointerEvents="none" />
+              </Pressable>
+              <Pressable onPress={onEdit} hitSlop={12}>
+                <Pencil size={14} color={Colors.content.tertiary} pointerEvents="none" />
+              </Pressable>
+            </View>
           </View>
 
           {exercise.muscleGroups.length > 0 && (
@@ -133,7 +131,6 @@ export const DetailExerciseRow = ({
             <Text className="text-sm font-inter text-content-tertiary ml-7 mt-2">{exercise.notes}</Text>
           )}
         </View>
-      </SwipeableRow>
     </Animated.View>
   )
 }

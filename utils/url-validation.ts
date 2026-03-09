@@ -1,4 +1,4 @@
-export type SupportedPlatform = 'instagram' | 'tiktok' | 'youtube' | 'facebook' | 'twitter' | 'unknown'
+export type SupportedPlatform = 'instagram' | 'tiktok' | 'youtube' | 'unknown'
 
 interface UrlValidationResult {
   isValid: boolean
@@ -10,8 +10,6 @@ const PLATFORM_PATTERNS: { platform: SupportedPlatform; pattern: RegExp }[] = [
   { platform: 'instagram', pattern: /instagram\.com/ },
   { platform: 'tiktok', pattern: /tiktok\.com/ },
   { platform: 'youtube', pattern: /(?:youtube\.com|youtu\.be)/ },
-  { platform: 'facebook', pattern: /(?:facebook\.com|fb\.watch)/ },
-  { platform: 'twitter', pattern: /(?:twitter\.com|x\.com)/ },
 ]
 
 const URL_REGEX = /https?:\/\/[^\s]+/

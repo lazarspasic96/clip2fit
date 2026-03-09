@@ -9,8 +9,6 @@ import {
   TikTokIcon,
   InstagramIcon,
   YouTubeIcon,
-  XIcon,
-  FacebookIcon,
 } from '@/components/ui/platform-icons'
 import { validateWorkoutUrl } from '@/utils/url-validation'
 
@@ -97,8 +95,6 @@ export const UrlInputSection = ({ onSubmit, errorMessage, initialUrl }: UrlInput
         <TikTokIcon size={18} />
         <InstagramIcon size={18} />
         <YouTubeIcon size={18} />
-        <FacebookIcon size={18} />
-        <XIcon size={16} />
       </View>
 
       <Button onPress={handleProcess} disabled={url.length === 0}>

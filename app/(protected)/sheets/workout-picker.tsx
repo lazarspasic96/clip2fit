@@ -1,7 +1,8 @@
 import * as Haptics from 'expo-haptics'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { XCircle } from 'lucide-react-native'
-import { FlatList, Pressable, Text, View } from 'react-native'
+import { Pressable, Text, View } from 'react-native'
+import { FlashList } from '@shopify/flash-list'
 
 import { WorkoutPickerItem } from '@/components/schedule/workout-picker-item'
 import { SheetTitle } from '@/components/ui/sheet-title'
@@ -38,7 +39,7 @@ const WorkoutPickerScreen = () => {
   }
 
   return (
-    <FlatList
+    <FlashList
       data={workouts}
       keyExtractor={(item) => item.id}
       contentContainerStyle={{ paddingBottom: 40 }}

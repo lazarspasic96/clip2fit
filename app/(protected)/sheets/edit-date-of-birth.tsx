@@ -1,9 +1,9 @@
 import { useRouter } from 'expo-router'
 import { useState } from 'react'
-import { Pressable, Text, View } from 'react-native'
+import { Text, View } from 'react-native'
 
+import { Button } from '@/components/ui/button'
 import { DateOfBirthPicker } from '@/components/ui/native-ui/date-of-birth-picker'
-import { cn } from '@/components/ui/cn'
 import { SheetTitle } from '@/components/ui/sheet-title'
 import { useSaveProfileMutation } from '@/hooks/use-api'
 import { useProfileQuery } from '@/hooks/use-profile-query'
@@ -54,15 +54,7 @@ const EditDateOfBirthScreen = () => {
         <Text className="text-sm font-inter text-red-400 mt-3">{validationError ?? apiError}</Text>
       )}
 
-      <Pressable
-        onPress={handleSave}
-        disabled={saving}
-        className={cn('items-center justify-center rounded-md py-3.5 bg-background-button-primary mt-6', saving && 'opacity-50')}
-      >
-        <Text className="text-base font-inter-semibold text-content-button-primary">
-          {saving ? 'Saving...' : 'Save'}
-        </Text>
-      </Pressable>
+      <Button onPress={handleSave} loading={saving} className="mt-6">Save</Button>
     </View>
   )
 }

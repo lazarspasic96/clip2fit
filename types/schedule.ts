@@ -10,6 +10,8 @@ export interface WeekDay {
   date: number
   workoutLabel?: string
   status: DayStatus
+  dotColor?: string
+  workoutAbbrev?: string
 }
 
 // API response (snake_case — matches backend)

@@ -205,3 +205,27 @@ export const MECHANIC_DISPLAY_LABELS: Record<string, string> = {
   compound: 'Compound',
   isolation: 'Isolation',
 }
+
+// --- Catalog design types ---
+
+export interface CatalogDesignProps {
+  items: CatalogExercise[]
+  total: number
+  isLoading: boolean
+  isFetchingNextPage: boolean
+  hasNextPage: boolean
+  fetchNextPage: () => void
+  error: string | null
+  refetch: () => void
+  isRefetching: boolean
+  filters: CatalogFilters
+  setFilters: (filters: CatalogFilters | ((prev: CatalogFilters) => CatalogFilters)) => void
+  onToggle: (exercise: CatalogExercise) => void
+  isSelected: (id: string) => boolean
+  isDisabled?: (id: string) => boolean
+  selectionVersion: number
+  bottomInset?: number
+  filterSheetRoute?: string
+  navigationDisabled?: boolean
+  hideFilterButton?: boolean
+}

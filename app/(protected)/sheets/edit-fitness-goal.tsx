@@ -1,8 +1,8 @@
 import { useRouter } from 'expo-router'
 import { useState } from 'react'
-import { Pressable, Text, View } from 'react-native'
+import { Text, View } from 'react-native'
 
-import { cn } from '@/components/ui/cn'
+import { Button } from '@/components/ui/button'
 import { SheetTitle } from '@/components/ui/sheet-title'
 import { RadioGroup } from '@/components/ui/radio-group'
 import { useSaveProfileMutation } from '@/hooks/use-api'
@@ -37,15 +37,7 @@ const EditFitnessGoalScreen = () => {
 
       {apiError !== null && <Text className="text-sm font-inter text-red-400 mt-3">{apiError}</Text>}
 
-      <Pressable
-        onPress={handleSave}
-        disabled={saving}
-        className={cn('items-center justify-center rounded-md py-3.5 bg-background-button-primary mt-6', saving && 'opacity-50')}
-      >
-        <Text className="text-base font-inter-semibold text-content-button-primary">
-          {saving ? 'Saving...' : 'Save'}
-        </Text>
-      </Pressable>
+      <Button onPress={handleSave} loading={saving} className="mt-6">Save</Button>
     </View>
   )
 }

@@ -17,6 +17,7 @@ export const BaselinePulseDashboard = ({ onBack, onFinish, isEditMode }: Baselin
   const { currentExercise } = useActiveWorkout()
   const { catalogExercise, videoUrl } = useWorkoutExerciseInsights()
 
+  
   if (currentExercise === null) return null
 
   const handleLearningPress = () => {

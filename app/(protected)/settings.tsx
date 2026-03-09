@@ -72,6 +72,14 @@ const SettingsScreen = () => {
             />
           </SettingsSection>
 
+          <SettingsSection title="Account">
+            <SettingsRow
+              label="Delete Account"
+              onPress={() => router.push('/(protected)/sheets/delete-account')}
+              destructive
+            />
+          </SettingsSection>
+
           <View className="items-center pt-8" style={{ paddingBottom: Math.max(insets.bottom, 16) }}>
             <Button variant="secondary" onPress={signOut}>
               Sign Out

@@ -1,8 +1,9 @@
 import { useRouter } from 'expo-router'
 import { Image } from 'expo-image'
 import { Clock, Dumbbell, Flame } from 'lucide-react-native'
-import { Pressable, Text, View } from 'react-native'
+import { Text, View } from 'react-native'
 
+import { Button } from '@/components/ui/button'
 import { Colors } from '@/constants/colors'
 import { useActiveWorkout } from '@/contexts/active-workout-context'
 import type { WorkoutPlan } from '@/types/workout'
@@ -39,27 +40,17 @@ export const TodaysWorkoutCard = ({ workout }: TodaysWorkoutCardProps) => {
 
       <View className="flex-row items-center gap-2 mt-4">
         {isActive ? (
-          <Pressable
-            onPress={() => router.push(`/(protected)/(tabs)/(home)/active-workout?id=${workout.id}`)}
-            className="bg-brand-accent rounded-md px-4 py-2"
-          >
-            <Text className="text-sm font-inter-semibold text-background-primary">Continue</Text>
-          </Pressable>
+          <Button onPress={() => router.push(`/(protected)/(tabs)/(home)/active-workout?id=${workout.id}`)} size="sm">
+            Continue
+          </Button>
         ) : (
           <>
-            <Pressable
-              onPress={() => router.push(`/(protected)/(tabs)/(home)/active-workout?id=${workout.id}`)}
-              className="bg-brand-accent rounded-md px-4 py-2"
-            >
-              <Text className="text-sm font-inter-semibold text-background-primary">Start Workout</Text>
-            </Pressable>
-
-            <Pressable
-              onPress={() => router.push(`/(protected)/workout-detail?id=${workout.id}`)}
-              className="rounded-md px-4 py-2"
-            >
-              <Text className="text-sm font-inter text-content-secondary">View</Text>
-            </Pressable>
+            <Button onPress={() => router.push(`/(protected)/(tabs)/(home)/active-workout?id=${workout.id}`)} size="sm">
+              Start Workout
+            </Button>
+            <Button onPress={() => router.push(`/(protected)/workout-detail?id=${workout.id}`)} variant="ghost" size="sm">
+              View
+            </Button>
           </>
         )}
       </View>

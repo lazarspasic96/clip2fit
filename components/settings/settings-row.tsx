@@ -8,9 +8,10 @@ interface SettingsRowProps {
   value?: string
   onPress: () => void
   showValue?: boolean
+  destructive?: boolean
 }
 
-export const SettingsRow = ({ label, value, onPress, showValue = true }: SettingsRowProps) => {
+export const SettingsRow = ({ label, value, onPress, showValue = true, destructive = false }: SettingsRowProps) => {
   const hasValue = value !== undefined && value.length > 0
 
   return (
@@ -18,9 +19,9 @@ export const SettingsRow = ({ label, value, onPress, showValue = true }: Setting
       onPress={onPress}
       className="flex-row items-center justify-between bg-background-secondary rounded-md px-4 py-3.5"
     >
-      <Text className="text-base font-inter text-content-secondary">{label}</Text>
+      <Text className={`text-base font-inter ${destructive ? 'text-red-400' : 'text-content-secondary'}`}>{label}</Text>
       <View className="flex-row items-center gap-2">
-        {showValue && (
+        {showValue && !destructive && (
           <Text
             className={`text-base font-inter ${hasValue ? 'text-content-primary' : 'text-content-tertiary'}`}
             numberOfLines={1}
@@ -28,7 +29,7 @@ export const SettingsRow = ({ label, value, onPress, showValue = true }: Setting
             {hasValue ? value : 'Not set'}
           </Text>
         )}
-        <ChevronRight size={18} color={Colors.content.tertiary} pointerEvents="none" />
+        <ChevronRight size={18} color={destructive ? '#f87171' : Colors.content.tertiary} pointerEvents="none" />
       </View>
     </Pressable>
   )

@@ -1,7 +1,8 @@
 import { useRouter } from 'expo-router'
 import { CalendarDays } from 'lucide-react-native'
-import { Pressable, Text, View } from 'react-native'
+import { Text, View } from 'react-native'
 
+import { Button } from '@/components/ui/button'
 import { Colors } from '@/constants/colors'
 
 export const EmptyScheduleState = () => {
@@ -16,14 +17,9 @@ export const EmptyScheduleState = () => {
       <Text className="text-sm font-inter text-content-secondary mt-2 text-center">
         Import your first workout to start planning your weekly schedule
       </Text>
-      <Pressable
-        onPress={() => router.push('/(protected)/add-workout')}
-        className="mt-6 px-6 py-3 rounded-lg bg-brand-accent"
-      >
-        <Text className="text-sm font-inter-bold text-background-primary">
-          Import Workout
-        </Text>
-      </Pressable>
+      <Button onPress={() => router.push('/(protected)/add-workout')} size="sm" className="mt-6">
+        Import Workout
+      </Button>
     </View>
   )
 }

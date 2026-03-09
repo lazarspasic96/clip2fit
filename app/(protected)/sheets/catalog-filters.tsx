@@ -4,6 +4,7 @@ import { Pressable, ScrollView, Text, View } from 'react-native'
 
 import { FilterChipGrid } from '@/components/catalog/shared/filter-chip-grid'
 import { FilterSegmentedRow } from '@/components/catalog/shared/filter-segmented-row'
+import { Button } from '@/components/ui/button'
 import { cn } from '@/components/ui/cn'
 import { SheetTitle } from '@/components/ui/sheet-title'
 import { Colors } from '@/constants/colors'
@@ -215,17 +216,8 @@ const CatalogFiltersScreen = () => {
 
       {/* Action buttons */}
       <View className="flex-row gap-3">
-        <Pressable onPress={handleClearAll} className="flex-1 rounded-xl py-3 items-center">
-          <Text className="text-sm font-inter-semibold text-content-secondary">Clear All</Text>
-        </Pressable>
-        <Pressable
-          onPress={handleApply}
-          className="flex-1 rounded-xl py-3 bg-brand-accent items-center"
-        >
-          <Text className="text-sm font-inter-semibold text-background-primary">
-            Show Exercises
-          </Text>
-        </Pressable>
+        <Button onPress={handleClearAll} variant="ghost" className="flex-1">Clear All</Button>
+        <Button onPress={handleApply} className="flex-1">Show Exercises</Button>
       </View>
     </ScrollView>
   )

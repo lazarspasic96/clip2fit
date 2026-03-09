@@ -10,7 +10,7 @@ interface ExerciseTagsProps {
 
 interface TagItem {
   label: string
-  color?: string
+  difficultyColor?: string
 }
 
 const capitalize = (value: string): string =>
@@ -37,7 +37,10 @@ export const ExerciseTags = ({ exercise }: ExerciseTagsProps) => {
   }
 
   if (exercise.difficulty !== null) {
-    tags.push({ label: capitalize(exercise.difficulty), color: Colors.difficulty[exercise.difficulty as keyof typeof Colors.difficulty] })
+    tags.push({
+      label: capitalize(exercise.difficulty),
+      difficultyColor: Colors.difficulty[exercise.difficulty as keyof typeof Colors.difficulty],
+    })
   }
 
   if (tags.length === 0) return null
@@ -45,10 +48,13 @@ export const ExerciseTags = ({ exercise }: ExerciseTagsProps) => {
   return (
     <View className="flex-row flex-wrap gap-2">
       {tags.map((tag) => (
-        <View key={tag.label} className="bg-background-tertiary rounded-full px-3 py-1.5">
+        <View
+          key={tag.label}
+          className="bg-background-tertiary rounded-full px-3.5 py-2 min-w-[48px] items-center"
+        >
           <Text
-            className="text-xs font-inter-medium"
-            style={{ color: tag.color ?? Colors.content.secondary }}
+            className={`text-xs font-inter-medium ${tag.difficultyColor === undefined ? 'text-content-secondary' : ''}`}
+            style={tag.difficultyColor !== undefined ? { color: tag.difficultyColor } : undefined}
           >
             {tag.label}
           </Text>

@@ -1,7 +1,8 @@
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useState } from 'react'
-import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from 'react-native'
+import { ActivityIndicator, ScrollView, Text, TextInput, View } from 'react-native'
 
+import { Button } from '@/components/ui/button'
 import { MuscleChip } from '@/components/ui/muscle-chip'
 import { SheetTitle } from '@/components/ui/sheet-title'
 import { Colors } from '@/constants/colors'
@@ -103,15 +104,7 @@ const EditExerciseScreen = () => {
         placeholderTextColor={Colors.content.tertiary}
       />
 
-      <Pressable
-        onPress={handleDone}
-        disabled={updateMutation.isPending}
-        className="items-center justify-center rounded-md py-3.5 bg-background-button-primary"
-      >
-        <Text className="text-base font-inter-semibold text-content-button-primary">
-          {updateMutation.isPending ? 'Saving...' : 'Done'}
-        </Text>
-      </Pressable>
+      <Button onPress={handleDone} loading={updateMutation.isPending}>Done</Button>
     </ScrollView>
   )
 }

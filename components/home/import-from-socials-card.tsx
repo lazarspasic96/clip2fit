@@ -3,7 +3,7 @@ import { Plus } from 'lucide-react-native'
 import { Pressable, Text, View } from 'react-native'
 
 import { Colors } from '@/constants/colors'
-import { TikTokIcon, InstagramIcon, YouTubeIcon, XIcon } from '@/components/ui/platform-icons'
+import { TikTokIcon, InstagramIcon, YouTubeIcon } from '@/components/ui/platform-icons'
 
 export const ImportFromSocialsCard = () => {
   const router = useRouter()
@@ -25,7 +25,6 @@ export const ImportFromSocialsCard = () => {
             <TikTokIcon />
             <InstagramIcon />
             <YouTubeIcon />
-            <XIcon />
           </View>
         </View>
       </View>

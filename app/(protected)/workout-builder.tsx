@@ -1,8 +1,7 @@
 import { useState, useSyncExternalStore } from 'react'
-import { Alert, Keyboard, Pressable, Text, View } from 'react-native'
+import { Alert, Keyboard, Pressable, ScrollView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 import { Plus } from 'lucide-react-native'
 
 import { BackButton } from '@/components/ui/back-button'
@@ -12,8 +11,11 @@ import { BuilderExerciseRow } from '@/components/catalog/builder-exercise-row'
 import { BuilderActions } from '@/components/catalog/builder-actions'
 import { useWorkoutBuilder } from '@/contexts/workout-builder-context'
 import { useCreateWorkoutMutation } from '@/hooks/use-api'
+import { useDraggableList } from '@/hooks/use-draggable-list'
 import { ApiError } from '@/utils/api'
 import type { CreateWorkoutPayload } from '@/types/catalog'
+
+const ITEM_HEIGHT = 120
 
 const WorkoutBuilderScreen = () => {
   const insets = useSafeAreaInsets()
@@ -28,18 +30,15 @@ const WorkoutBuilderScreen = () => {
 
   const exercises = builder.getOrderedExercises()
 
+  const { createGesture, dragState } = useDraggableList({
+    itemCount: exercises.length,
+    itemHeight: ITEM_HEIGHT,
+    itemGap: 10,
+    onReorder: (from, to) => builder.reorderExercises(from, to),
+  })
+
   const handleDelete = (id: string) => {
     builder.removeExercise(id)
-  }
-
-  const handleMoveUp = (fromIndex: number) => {
-    if (fromIndex <= 0) return
-    builder.reorderExercises(fromIndex, fromIndex - 1)
-  }
-
-  const handleMoveDown = (fromIndex: number) => {
-    if (fromIndex >= exercises.length - 1) return
-    builder.reorderExercises(fromIndex, fromIndex + 1)
   }
 
   const handleCreate = () => {
@@ -93,7 +92,7 @@ const WorkoutBuilderScreen = () => {
       </View>
 
       {/* Scrollable content */}
-      <KeyboardAwareScrollView
+      <ScrollView
         contentContainerStyle={{ paddingBottom: 24 }}
         keyboardShouldPersistTaps="handled"
       >
@@ -124,10 +123,9 @@ const WorkoutBuilderScreen = () => {
                 index={index}
                 onUpdate={(updates) => builder.updateExercise(exercise.catalogExercise.id, updates)}
                 onDelete={() => handleDelete(exercise.catalogExercise.id)}
-                onMoveUp={() => handleMoveUp(index)}
-                onMoveDown={() => handleMoveDown(index)}
-                isFirst={index === 0}
-                isLast={index === exercises.length - 1}
+                dragGesture={createGesture(index)}
+                dragState={dragState}
+                itemHeight={ITEM_HEIGHT}
               />
             ))
           )}
@@ -145,7 +143,7 @@ const WorkoutBuilderScreen = () => {
             </Pressable>
           )}
         </Pressable>
-      </KeyboardAwareScrollView>
+      </ScrollView>
 
       {/* Bottom action bar */}
       <BuilderActions

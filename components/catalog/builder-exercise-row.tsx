@@ -1,22 +1,27 @@
 import { Image } from 'expo-image'
-import { Dumbbell, GripVertical, Trash2 } from 'lucide-react-native'
-import { Pressable, Text, TextInput, View } from 'react-native'
+import { Dumbbell, Trash2 } from 'lucide-react-native'
+import type { GestureType } from 'react-native-gesture-handler'
+import { Text, TextInput, View } from 'react-native'
+import Animated, { useAnimatedStyle, withSpring } from 'react-native-reanimated'
 
-import { cn } from '@/components/ui/cn'
+import { DragHandle } from '@/components/ui/drag-handle'
 import { MuscleChip } from '@/components/ui/muscle-chip'
 import { SwipeableRow } from '@/components/ui/swipeable-row'
 import { Colors } from '@/constants/colors'
+import type { DragState } from '@/hooks/use-draggable-list'
 import type { SelectedExercise } from '@/types/catalog'
+
+const SLIDE = { duration: 300, dampingRatio: 1 }
+const LIFT = { duration: 200, dampingRatio: 1 }
 
 interface BuilderExerciseRowProps {
   exercise: SelectedExercise
   index: number
   onUpdate: (updates: Partial<Pick<SelectedExercise, 'sets' | 'reps'>>) => void
   onDelete: () => void
-  onMoveUp: () => void
-  onMoveDown: () => void
-  isFirst: boolean
-  isLast: boolean
+  dragGesture?: GestureType
+  dragState?: DragState
+  itemHeight?: number
 }
 
 const DELETE_ACTION_WIDTH = 70
@@ -32,10 +37,9 @@ export const BuilderExerciseRow = ({
   index,
   onUpdate,
   onDelete,
-  onMoveUp,
-  onMoveDown,
-  isFirst,
-  isLast,
+  dragGesture,
+  dragState,
+  itemHeight = 0,
 }: BuilderExerciseRowProps) => {
   const handleSetsChange = (text: string) => {
     const parsed = parseInt(text, 10)
@@ -52,20 +56,68 @@ export const BuilderExerciseRow = ({
   const targetMuscle = exercise.catalogExercise.target
   const secondaryMuscles = exercise.catalogExercise.secondaryMuscles.slice(0, 1)
 
+  const dragAnimatedStyle = useAnimatedStyle(() => {
+    if (dragState === undefined) {
+      return { transform: [{ translateY: 0 }, { scale: 1 }], zIndex: 0, shadowOpacity: 0 }
+    }
+
+    const { activeIndex, hoveredIndex, translateY } = dragState
+    const isActive = activeIndex.value === index
+
+    if (isActive) {
+      return {
+        transform: [
+          { translateY: translateY.value },
+          { scale: withSpring(1.03, LIFT) },
+        ],
+        zIndex: 100,
+        shadowOpacity: withSpring(0.12, LIFT),
+      }
+    }
+
+    const active = activeIndex.value
+    const hovered = hoveredIndex.value
+
+    if (active === -1) {
+      return {
+        transform: [
+          { translateY: withSpring(0, SLIDE) },
+          { scale: withSpring(1, LIFT) },
+        ],
+        zIndex: 0,
+        shadowOpacity: 0,
+      }
+    }
+
+    // mb-2.5 = 10px gap between items
+    const step = itemHeight + 10
+    let shift = 0
+    if (active < hovered) {
+      if (index > active && index <= hovered) shift = -step
+    } else if (active > hovered) {
+      if (index >= hovered && index < active) shift = step
+    }
+
+    return {
+      transform: [
+        { translateY: withSpring(shift, SLIDE) },
+        { scale: withSpring(1, LIFT) },
+      ],
+      zIndex: 0,
+      shadowOpacity: 0,
+    }
+  })
+
   return (
-    <View className="mb-2.5">
+    <Animated.View
+      className="mb-2.5"
+      style={[dragAnimatedStyle, { shadowColor: '#000', shadowRadius: 12, shadowOffset: { width: 0, height: 6 } }]}
+    >
       <SwipeableRow actionWidth={DELETE_ACTION_WIDTH} actionContent={deleteActionContent} onAction={onDelete}>
-        <View className="mx-5 bg-background-secondary flex-row overflow-hidden">
-          {/* Reorder grip + index badge */}
+        <View className="mx-5 bg-background-secondary flex-row overflow-hidden rounded-2xl" style={{ borderCurve: 'continuous' }}>
+          {/* Drag handle + index badge */}
           <View className="w-9 items-center justify-center gap-1.5">
-            <Pressable
-              onPress={onMoveUp}
-              disabled={isFirst}
-              hitSlop={6}
-              className={cn(isFirst ? 'opacity-20' : 'opacity-50')}
-            >
-              <GripVertical size={14} color={Colors.content.tertiary} pointerEvents="none" />
-            </Pressable>
+            {dragGesture !== undefined && <DragHandle gesture={dragGesture} />}
             <View className="w-[22px] h-[22px] rounded-full bg-brand-accent items-center justify-center">
               <Text
                 className="text-[11px] font-inter-bold text-background-primary"
@@ -74,14 +126,6 @@ export const BuilderExerciseRow = ({
                 {index + 1}
               </Text>
             </View>
-            <Pressable
-              onPress={onMoveDown}
-              disabled={isLast}
-              hitSlop={6}
-              className={cn(isLast ? 'opacity-20' : 'opacity-50')}
-            >
-              <GripVertical size={14} color={Colors.content.tertiary} pointerEvents="none" />
-            </Pressable>
           </View>
 
           {/* Content: name, muscles, sets/reps */}
@@ -176,6 +220,6 @@ export const BuilderExerciseRow = ({
           </View>
         </View>
       </SwipeableRow>
-    </View>
+    </Animated.View>
   )
 }

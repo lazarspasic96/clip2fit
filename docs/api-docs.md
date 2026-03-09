@@ -58,7 +58,7 @@ Content-Type: application/json
 
 | Field | Type     | Required | Validation                                                                                     |
 | ----- | -------- | -------- | ---------------------------------------------------------------------------------------------- |
-| `url` | `string` | Yes      | Must be a valid URL from a supported platform: TikTok, Instagram, YouTube, Facebook, Twitter/X |
+| `url` | `string` | Yes      | Must be a valid URL from a supported platform: TikTok, Instagram, YouTube |
 
 ```json
 { "url": "https://www.tiktok.com/@creator/video/123456" }
@@ -243,6 +243,7 @@ Step 3 — Return job state
          │
          │  status flow: pending → downloading → transcribing → extracting → completed
          │                                                                 → failed
+         │                                                                 → cancelled
          │
          │  workoutId: null while processing, populated on "completed"
          │  error: null unless "failed"
@@ -259,7 +260,7 @@ Step 3 — Return job state
 ```json
 {
   "id": "uuid",
-  "status": "pending | downloading | transcribing | extracting | completed | failed",
+  "status": "pending | downloading | transcribing | extracting | completed | failed | cancelled",
   "progress": 0,
   "workoutId": "uuid | null",
   "error": "string | null",
@@ -288,6 +289,104 @@ Logs: poll event (jobId, status, progress, workoutId), not-found.
 ### Client Use Case
 
 After `POST /api/convert` returns `status: "processing"`, the mobile app polls this endpoint every 2-3 seconds. When `status === "completed"`, fetch the workout via `/api/workouts/[workoutId]`.
+
+---
+
+## 2b. POST /api/jobs/[id]/cancel
+
+Cancel a running conversion job. Idempotent — safe to call on already-terminal jobs.
+
+### Request
+
+```
+POST /api/jobs/:id/cancel
+Authorization: Bearer <token>
+```
+
+**Path params:**
+
+| Param | Type     | Validation                    |
+| ----- | -------- | ----------------------------- |
+| `id`  | `string` | UUID format (regex validated) |
+
+No request body required (send `{}`).
+
+### How It Works
+
+```
+Client sends: POST /api/jobs/abc-123/cancel
+         │
+         ▼
+Step 1 — Auth + Validate path param
+         │  getAuthUser() → userId
+         │  UUID regex test on :id → 400 if malformed
+         │
+         ▼
+Step 2 — Query
+         │  SELECT * FROM conversion_jobs
+         │  WHERE id = :id AND userId = :userId
+         │
+         │  Not found? → 404 "Job not found"
+         │
+         ▼
+Step 3 — Check terminal status
+         │  If status IN ('completed', 'failed', 'cancelled')
+         │  → 200 { status: job.status } (idempotent no-op)
+         │
+         ▼
+Step 4 — Cancel Trigger.dev run
+         │  If job.triggerRunId is not null:
+         │    runs.cancel(job.triggerRunId) via Trigger.dev SDK
+         │    (if SDK throws: log warning, continue)
+         │
+         ▼
+Step 5 — Update job
+         │  UPDATE conversion_jobs
+         │  SET status = 'cancelled', progress = 0
+         │  WHERE id = :id
+         │
+         ▼
+Step 6 — Return
+         │  200 { status: 'cancelled' }
+```
+
+**Key detail: fire-and-forget from mobile.** The client resets UI immediately and calls this endpoint in the background. If the API call fails, the UI is already reset — the job will eventually time out or can be cleaned up later.
+
+**Key detail: idempotent.** Calling cancel on a completed/failed/cancelled job returns 200 with the current status. No error, no side effects.
+
+### Response
+
+**200 — Job cancelled (or already terminal)**
+
+```json
+{ "status": "cancelled" }
+```
+
+```json
+{ "status": "completed" }
+```
+
+**400 — Invalid ID**
+
+```json
+{ "error": "Invalid job ID" }
+```
+
+**404 — Not found or not owned by user**
+
+```json
+{ "error": "Job not found" }
+```
+
+### Logging
+
+Tag: `[clip2fit:jobs]`
+
+Logs: cancel event (jobId, previous status), Trigger.dev cancel result/error, not-found.
+
+### Client Use Case
+
+User taps cancel during conversion. Mobile app captures the jobId, resets UI to idle, then fires `POST /api/jobs/:id/cancel` in the background. If the job was in a cloned/simulated flow (no real jobId), no API call is made.
 
 ---
 

@@ -1,13 +1,14 @@
-import { BlurView } from 'expo-blur'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useSyncExternalStore } from 'react'
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native'
+import { ActivityIndicator, Pressable, Text, View } from 'react-native'
+import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { ExerciseDetailContent } from '@/components/catalog/exercise-detail-content'
-import { ExerciseImagePager } from '@/components/catalog/exercise-image-pager'
+import { ExerciseAnimatedHeader } from '@/components/catalog/exercise-animated-header'
+import { ExerciseBottomCta } from '@/components/catalog/exercise-bottom-cta'
+import { ExerciseContentSection } from '@/components/catalog/exercise-content-section'
+import { ExerciseHeroImage } from '@/components/catalog/exercise-hero-image'
 import { BackButton } from '@/components/ui/back-button'
-import { Button } from '@/components/ui/button'
 import { Colors } from '@/constants/colors'
 import { useWorkoutBuilder } from '@/contexts/workout-builder-context'
 import { useCatalogDetail } from '@/hooks/use-catalog'
@@ -20,10 +21,16 @@ const ExerciseDetailScreen = () => {
   const { exercise, isLoading, error } = useCatalogDetail(id ?? null)
   const builder = useWorkoutBuilder()
 
-  // Subscribe to builder changes so selected state stays reactive
   useSyncExternalStore(builder.subscribe, builder.getSnapshot)
 
   const selected = exercise !== null ? builder.isSelected(exercise.id) : false
+  const scrollY = useSharedValue(0)
+
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y
+    },
+  })
 
   const handleBack = () => {
     if (router.canGoBack()) {
@@ -59,36 +66,32 @@ const ExerciseDetailScreen = () => {
 
   return (
     <View className="flex-1 bg-background-primary">
-      {/* Back button */}
+      <ExerciseAnimatedHeader title={exercise.name} scrollY={scrollY} />
+
       <BackButton
         onPress={handleBack}
-        className="absolute left-4 z-10"
+        className="absolute left-4 z-20"
         style={{ top: insets.top + 8 }}
       />
 
-      <ScrollView
-        className="flex-1"
-        contentContainerStyle={{ paddingBottom: 80 + Math.max(insets.bottom, 16) }}
+      <Animated.ScrollView
+        onScroll={scrollHandler}
+        scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 80 + Math.max(insets.bottom, 16) }}
       >
-        <ExerciseImagePager gifUrl={exercise.gifUrl} thumbnailUrl={exercise.thumbnailUrl} />
-        <ExerciseDetailContent exercise={exercise} />
-      </ScrollView>
+        <ExerciseHeroImage
+          gifUrl={exercise.gifUrl}
+          thumbnailUrl={exercise.thumbnailUrl}
+          scrollY={scrollY}
+        />
+        <ExerciseContentSection exercise={exercise} />
+      </Animated.ScrollView>
 
-      {/* Sticky bottom CTA */}
-      <BlurView
-        intensity={80}
-        tint="dark"
-        className="absolute bottom-0 left-0 right-0 border-t border-border-primary px-5 py-3"
-        style={{ paddingBottom: Math.max(insets.bottom, 12) }}
-      >
-        <Button
-          onPress={() => builder.toggleExercise(exercise)}
-          variant={selected ? 'secondary' : 'primary'}
-        >
-          {selected ? 'Remove from Workout' : 'Add to Workout'}
-        </Button>
-      </BlurView>
+      <ExerciseBottomCta
+        selected={selected}
+        onToggle={() => builder.toggleExercise(exercise)}
+      />
     </View>
   )
 }

@@ -49,6 +49,7 @@ const ProtectedLayout = () => {
           <Stack.Screen name="workout-builder" options={{ presentation: 'card' }} />
           <Stack.Screen name="workout-detail" options={{ presentation: 'card' }} />
           <Stack.Screen name="workout-proposal" options={{ presentation: 'card', headerShown: false }} />
+          <Stack.Screen name="add-exercises" options={{ presentation: 'card', headerShown: false }} />
           <Stack.Screen name="exercise-history" options={{ presentation: 'card' }} />
           {/* --- formSheet routes --- */}
           <Stack.Screen name="sheets/edit-name" options={{ ...sheetOptions, sheetAllowedDetents: [0.35] }} />
@@ -67,7 +68,7 @@ const ProtectedLayout = () => {
           <Stack.Screen name="sheets/edit-exercise" options={{ ...sheetOptions, sheetAllowedDetents: [0.6] }} />
           <Stack.Screen name="sheets/catalog-filters" options={{ ...sheetOptions, sheetAllowedDetents: [0.7, 0.9] }} />
           <Stack.Screen name="sheets/picker-filters" options={{ ...sheetOptions, sheetAllowedDetents: [0.7, 0.9] }} />
-          <Stack.Screen name="sheets/exercise-picker" options={{ ...sheetOptions, sheetAllowedDetents: [0.92] }} />
+          <Stack.Screen name="sheets/delete-account" options={{ ...sheetOptions, sheetAllowedDetents: [0.45] }} />
         </Stack>
       </ActiveWorkoutProvider>
     </WorkoutBuilderProvider>

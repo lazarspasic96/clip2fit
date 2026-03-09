@@ -3,7 +3,7 @@ import { View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { CatalogFloatingCta } from '@/components/catalog/catalog-floating-cta'
-import { CardCarouselDesign } from '@/components/catalog/designs/card-carousel-design'
+import { DesignMagazine } from '@/components/catalog/designs/design-magazine'
 import { CatalogHeader } from '@/components/catalog/shared/catalog-header'
 import { useWorkoutBuilder } from '@/contexts/workout-builder-context'
 import { useCatalogInfinite } from '@/hooks/use-catalog'
@@ -19,8 +19,6 @@ const ExerciseCatalogScreen = () => {
   const selectionVersion = useSyncExternalStore(builder.subscribe, builder.getSnapshot)
   const selectedCount = builder.getSelectedCount()
 
-  // Subscribe to catalog filter store — getFilters is the snapshot so the
-  // React Compiler treats `filters` as a reactive value (prevents stale memoization).
   const filters = useSyncExternalStore(catalogFilterStore.subscribe, catalogFilterStore.getFilters)
 
   const debouncedSearch = useDebouncedValue(filters.search, 300)
@@ -42,7 +40,7 @@ const ExerciseCatalogScreen = () => {
   return (
     <View className="flex-1 bg-background-primary" style={{ paddingTop: insets.top }}>
       <CatalogHeader />
-      <CardCarouselDesign
+      <DesignMagazine
         items={catalog.items}
         total={catalog.total}
         isLoading={catalog.isLoading}

@@ -1,6 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Clock, Dumbbell, ExternalLink, Flame, Plus } from 'lucide-react-native'
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { useFocusEffect } from '@react-navigation/native'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { ActivityIndicator, Alert, Linking, Pressable, ScrollView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -9,13 +10,13 @@ import { MuscleChip } from '@/components/ui/muscle-chip'
 import { DetailExerciseRow } from '@/components/workout-detail/detail-exercise-row'
 import { DetailHeader } from '@/components/workout-detail/detail-header'
 import { Colors } from '@/constants/colors'
+import { useAddExercisesFlow } from '@/hooks/use-add-exercises-flow'
 import { useUpdateWorkoutMutation, useWorkoutQuery } from '@/hooks/use-api'
 import { useDraggableList } from '@/hooks/use-draggable-list'
-import { exercisePickerStore } from '@/stores/exercise-picker-store'
 import { mapCatalogToApiExercise } from '@/utils/exercise-mapper'
 
 const ITEM_HEIGHT = 100
-const CALLER_ID = 'workout-detail'
+const HIGHLIGHT_DURATION_MS = 2600
 
 export const WorkoutDetailContent = () => {
   const { id } = useLocalSearchParams<{ id: string }>()
@@ -23,8 +24,13 @@ export const WorkoutDetailContent = () => {
   const insets = useSafeAreaInsets()
   const { workout, rawWorkout, isLoading, error } = useWorkoutQuery(id ?? null)
   const updateMutation = useUpdateWorkoutMutation()
+  const addExercisesFlow = useAddExercisesFlow()
 
   const [descriptionExpanded, setDescriptionExpanded] = useState(false)
+  const [highlightCatalogExerciseIds, setHighlightCatalogExerciseIds] = useState<Set<string>>(new Set())
+  const addRequestIdRef = useRef<string | null>(null)
+  const scrollRef = useRef<ScrollView>(null)
+  const highlightTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const reorderRef = useRef<(from: number, to: number) => void>(() => {})
   const { createGesture, dragState } = useDraggableList({
@@ -33,37 +39,74 @@ export const WorkoutDetailContent = () => {
     onReorder: (from, to) => reorderRef.current(from, to),
   })
 
-  // Subscribe to picker store for adding exercises
-  const pickerVersion = useSyncExternalStore(
-    exercisePickerStore.subscribe,
-    exercisePickerStore.getSnapshot,
-  )
-  const lastPickerVersion = useRef(pickerVersion)
-
   useEffect(() => {
-    if (pickerVersion === lastPickerVersion.current) return
-    lastPickerVersion.current = pickerVersion
+    return () => {
+      if (highlightTimeoutRef.current !== null) {
+        clearTimeout(highlightTimeoutRef.current)
+      }
+    }
+  }, [])
 
-    const selected = exercisePickerStore.consumeIfMine(CALLER_ID)
-    if (selected === null || selected.length === 0 || rawWorkout === null || workout === null) return
+  const scrollToExercisesEnd = useCallback(() => {
+    requestAnimationFrame(() => {
+      scrollRef.current?.scrollToEnd({ animated: true })
+    })
+  }, [])
 
-    const startOrder = rawWorkout.exercises.length + 1
-    const mapped = selected.map((c, i) => mapCatalogToApiExercise(c, startOrder + i))
-    const updated = [...rawWorkout.exercises, ...mapped]
+  const markNewlyAdded = useCallback((catalogExerciseIds: string[]) => {
+    if (highlightTimeoutRef.current !== null) {
+      clearTimeout(highlightTimeoutRef.current)
+      highlightTimeoutRef.current = null
+    }
 
-    const workoutId = workout.id
-    updateMutation.mutate(
-      { id: workoutId, payload: { exercises: updated } },
-      {
-        onSuccess: (data: { id: string }) => {
-          if (data.id !== workoutId) {
-            router.replace(`/(protected)/workout-detail?id=${data.id}`)
-          }
+    setHighlightCatalogExerciseIds(new Set(catalogExerciseIds))
+    highlightTimeoutRef.current = setTimeout(() => {
+      setHighlightCatalogExerciseIds(new Set())
+      highlightTimeoutRef.current = null
+    }, HIGHLIGHT_DURATION_MS)
+  }, [])
+
+  useFocusEffect(
+    useCallback(() => {
+      const requestId = addRequestIdRef.current
+      if (requestId === null || workout === null || rawWorkout === null) {
+        return
+      }
+
+      const result = addExercisesFlow.consumeAddExercisesResult(requestId)
+      addRequestIdRef.current = null
+      if (result === null || result.caller !== 'workout-detail') return
+
+      const existingIds = new Set(
+        rawWorkout.exercises
+          .map((exercise) => exercise.catalogExerciseId)
+          .filter((catalogExerciseId): catalogExerciseId is string => catalogExerciseId !== null),
+      )
+
+      const freshSelections = result.selections.filter((selection) => !existingIds.has(selection.id))
+      if (freshSelections.length === 0) return
+
+      const startOrder = rawWorkout.exercises.length + 1
+      const mapped = freshSelections.map((exercise, index) => mapCatalogToApiExercise(exercise, startOrder + index))
+      const updated = [...rawWorkout.exercises, ...mapped]
+      const workoutId = workout.id
+      const addedCatalogIds = freshSelections.map((exercise) => exercise.id)
+
+      updateMutation.mutate(
+        { id: workoutId, payload: { exercises: updated } },
+        {
+          onSuccess: (data: { id: string }) => {
+            markNewlyAdded(addedCatalogIds)
+            scrollToExercisesEnd()
+
+            if (data.id !== workoutId) {
+              router.replace(`/(protected)/workout-detail?id=${data.id}`)
+            }
+          },
         },
-      },
-    )
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- only react to picker version changes
-  }, [pickerVersion])
+      )
+    }, [addExercisesFlow, markNewlyAdded, rawWorkout, router, scrollToExercisesEnd, updateMutation, workout]),
+  )
 
   if (isLoading) {
     return (
@@ -99,13 +142,19 @@ export const WorkoutDetailContent = () => {
   }
 
   const handleAddExercises = () => {
-    const existingIds = new Set(
+    const existingIds = Array.from(new Set(
       exercises
         .map((e) => e.catalogExerciseId)
         .filter((cid): cid is string => cid !== null),
-    )
-    exercisePickerStore.request(CALLER_ID, existingIds)
-    router.push('/(protected)/sheets/exercise-picker' as never)
+    ))
+
+    const requestId = addExercisesFlow.openAddExercises({
+      caller: 'workout-detail',
+      existingCatalogExerciseIds: existingIds,
+    })
+
+    addRequestIdRef.current = requestId
+    router.push(`/(protected)/add-exercises?requestId=${encodeURIComponent(requestId)}` as never)
   }
 
   reorderRef.current = (fromIndex: number, toIndex: number) => {
@@ -162,6 +211,7 @@ export const WorkoutDetailContent = () => {
         onBack={() => (router.canGoBack() ? router.back() : router.replace('/(protected)/(tabs)' as never))}
       />
       <ScrollView
+        ref={scrollRef}
         className="flex-1"
         contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 16) }}
         showsVerticalScrollIndicator={false}
@@ -242,6 +292,7 @@ export const WorkoutDetailContent = () => {
             dragGesture={createGesture(index)}
             dragState={dragState}
             itemHeight={ITEM_HEIGHT}
+            isNewlyAdded={exercise.catalogExerciseId !== null && highlightCatalogExerciseIds.has(exercise.catalogExerciseId)}
           />
         ))}
 

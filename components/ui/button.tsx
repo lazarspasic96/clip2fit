@@ -5,6 +5,7 @@ import { Colors } from '@/constants/colors'
 import { cn } from './cn'
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost'
+type ButtonSize = 'default' | 'sm'
 
 interface ButtonProps {
   onPress: () => void
@@ -12,16 +13,27 @@ interface ButtonProps {
   disabled?: boolean
   children: string
   variant?: ButtonVariant
+  size?: ButtonSize
   className?: string
+  textClassName?: string
 }
 
 const SPINNER_COLORS: Record<ButtonVariant, string> = {
   primary: Colors.content.buttonPrimary,
-  secondary: Colors.content.primary,
+  secondary: Colors.brand.accent,
   ghost: Colors.content.secondary,
 }
 
-export const Button = ({ onPress, loading, disabled, children, variant = 'primary', className }: ButtonProps) => {
+export const Button = ({
+  onPress,
+  loading,
+  disabled,
+  children,
+  variant = 'primary',
+  size = 'default',
+  className,
+  textClassName,
+}: ButtonProps) => {
   const isDisabled = disabled || loading
 
   return (
@@ -29,7 +41,9 @@ export const Button = ({ onPress, loading, disabled, children, variant = 'primar
       onPress={onPress}
       disabled={isDisabled}
       className={cn(
-        'items-center justify-center rounded-md py-3.5',
+        'items-center justify-center rounded-3xl',
+        size === 'default' && 'py-3.5',
+        size === 'sm' && 'py-2 px-4',
         variant === 'primary' && 'bg-background-button-primary',
         variant === 'secondary' && 'bg-background-button-secondary border border-border-primary px-4',
         variant === 'ghost' && 'bg-transparent',
@@ -44,8 +58,9 @@ export const Button = ({ onPress, loading, disabled, children, variant = 'primar
           className={cn(
             'text-base font-inter-semibold',
             variant === 'primary' && 'text-content-button-primary',
-            variant === 'secondary' && 'text-content-primary',
+            variant === 'secondary' && 'text-brand-accent',
             variant === 'ghost' && 'text-content-secondary',
+            textClassName,
           )}
         >
           {children}

@@ -130,8 +130,9 @@ export const FloatingConversionPill = () => {
         ]}
       >
         <MiniProgressRing
-          progress={state.progress}
+          targetProgress={state.progress}
           platform={state.platform}
+          stage={state.stage}
           isCompleted={isCompleted}
           isError={isError}
         />

@@ -1,12 +1,14 @@
 import * as Haptics from 'expo-haptics'
 import { Gesture, type GestureType } from 'react-native-gesture-handler'
-import { runOnJS, type SharedValue, useSharedValue } from 'react-native-reanimated'
+import { runOnJS, type SharedValue, useSharedValue, withSpring } from 'react-native-reanimated'
 
 const DRAG_ACTIVATE_MS = 200
+const DROP_SETTLE = { duration: 180, dampingRatio: 1 }
 
 interface UseDraggableListOptions {
   itemCount: number
   itemHeight: number
+  itemGap?: number
   onReorder: (fromIndex: number, toIndex: number) => void
 }
 
@@ -17,7 +19,7 @@ export interface DragState {
   isDragging: SharedValue<boolean>
 }
 
-export const useDraggableList = ({ itemCount, itemHeight, onReorder }: UseDraggableListOptions) => {
+export const useDraggableList = ({ itemCount, itemHeight, itemGap = 12, onReorder }: UseDraggableListOptions) => {
   const activeIndex = useSharedValue(-1)
   const hoveredIndex = useSharedValue(-1)
   const translateY = useSharedValue(0)
@@ -45,8 +47,9 @@ export const useDraggableList = ({ itemCount, itemHeight, onReorder }: UseDragga
       })
       .onUpdate((e) => {
         translateY.value = e.translationY
+        const step = itemHeight + itemGap
         const newIdx = Math.round(
-          Math.min(Math.max(index + e.translationY / itemHeight, 0), itemCount - 1),
+          Math.min(Math.max(index + e.translationY / step, 0), itemCount - 1),
         )
         if (newIdx !== hoveredIndex.value) {
           hoveredIndex.value = newIdx
@@ -56,7 +59,7 @@ export const useDraggableList = ({ itemCount, itemHeight, onReorder }: UseDragga
       .onEnd(() => {
         const from = activeIndex.value
         const to = hoveredIndex.value
-        translateY.value = 0
+        translateY.value = withSpring(0, DROP_SETTLE)
         activeIndex.value = -1
         hoveredIndex.value = -1
         isDragging.value = false
@@ -64,7 +67,7 @@ export const useDraggableList = ({ itemCount, itemHeight, onReorder }: UseDragga
       })
       .onFinalize(() => {
         if (activeIndex.value !== -1) {
-          translateY.value = 0
+          translateY.value = withSpring(0, DROP_SETTLE)
           activeIndex.value = -1
           hoveredIndex.value = -1
           isDragging.value = false

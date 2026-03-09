@@ -26,4 +26,8 @@ export const queryKeys = {
     exerciseHistory: (catalogExerciseId: string | null, exerciseName: string | null, period: string) =>
       ['stats', 'exercise-history', catalogExerciseId ?? 'none', exerciseName ?? '', period] as const,
   },
+  ui: {
+    addExercisesRequest: (requestId: string) => ['ui', 'add-exercises', 'request', requestId] as const,
+    addExercisesResult: (requestId: string) => ['ui', 'add-exercises', 'result', requestId] as const,
+  },
 } as const

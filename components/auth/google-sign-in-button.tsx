@@ -11,7 +11,7 @@ export const GoogleSignInButton = ({ onPress, loading }: GoogleSignInButtonProps
     <Pressable
       onPress={onPress}
       disabled={loading}
-      className={`flex-row items-center justify-center gap-3 rounded-md py-3.5 border border-border-primary bg-background-secondary ${
+      className={`flex-row items-center justify-center gap-3 rounded-xl py-3.5 border border-border-primary bg-background-secondary ${
         loading ? 'opacity-50' : ''
       }`}
     >

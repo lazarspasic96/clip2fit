@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router'
 import { Plus } from 'lucide-react-native'
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { useFocusEffect } from '@react-navigation/native'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { ActivityIndicator, Alert, Pressable, Text, View } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 
@@ -8,14 +9,14 @@ import { ProposalActions } from '@/components/proposal/proposal-actions'
 import { ProposalExerciseRow } from '@/components/proposal/proposal-exercise-row'
 import { ProposalHeader } from '@/components/proposal/proposal-header'
 import { Colors } from '@/constants/colors'
+import { useAddExercisesFlow } from '@/hooks/use-add-exercises-flow'
 import { useUpdateWorkoutMutation, useWorkoutQuery } from '@/hooks/use-api'
 import { useDraggableList } from '@/hooks/use-draggable-list'
-import { exercisePickerStore } from '@/stores/exercise-picker-store'
 import type { ApiExercise } from '@/types/api'
 import { mapCatalogToApiExercise } from '@/utils/exercise-mapper'
 
 const ITEM_HEIGHT = 140
-const CALLER_ID = 'workout-proposal'
+const HIGHLIGHT_DURATION_MS = 2600
 
 interface WorkoutProposalProps {
   workoutId: string
@@ -28,8 +29,13 @@ export const WorkoutProposal = ({ workoutId, mode = 'proposal', onSaved, onDisca
   const router = useRouter()
   const { workout, rawWorkout, isLoading } = useWorkoutQuery(workoutId)
   const updateMutation = useUpdateWorkoutMutation()
+  const addExercisesFlow = useAddExercisesFlow()
 
   const [editableExercises, setEditableExercises] = useState<ApiExercise[] | null>(null)
+  const [highlightCatalogExerciseIds, setHighlightCatalogExerciseIds] = useState<Set<string>>(new Set())
+  const addRequestIdRef = useRef<string | null>(null)
+  const scrollRef = useRef<any>(null)
+  const highlightTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const handleReorder = (fromIndex: number, toIndex: number) => {
     setEditableExercises((prev) => {
@@ -47,32 +53,66 @@ export const WorkoutProposal = ({ workoutId, mode = 'proposal', onSaved, onDisca
     onReorder: handleReorder,
   })
 
-  // Subscribe to picker store version to detect new selections
-  const pickerVersion = useSyncExternalStore(
-    exercisePickerStore.subscribe,
-    exercisePickerStore.getSnapshot,
-  )
-  const lastPickerVersion = useRef(pickerVersion)
+  useEffect(() => {
+    if (rawWorkout !== null && editableExercises === null) {
+      setEditableExercises(rawWorkout.exercises.map((exercise) => ({ ...exercise })))
+    }
+  }, [editableExercises, rawWorkout])
 
   useEffect(() => {
-    if (pickerVersion === lastPickerVersion.current) return
-    lastPickerVersion.current = pickerVersion
+    return () => {
+      if (highlightTimeoutRef.current !== null) {
+        clearTimeout(highlightTimeoutRef.current)
+      }
+    }
+  }, [])
 
-    const selected = exercisePickerStore.consumeIfMine(CALLER_ID)
-    if (selected === null || selected.length === 0) return
-
-    setEditableExercises((prev) => {
-      const base = prev ?? []
-      const startOrder = base.length + 1
-      const mapped = selected.map((c, i) => mapCatalogToApiExercise(c, startOrder + i))
-      return [...base, ...mapped]
+  const scrollToExercisesEnd = useCallback(() => {
+    requestAnimationFrame(() => {
+      scrollRef.current?.scrollToEnd?.({ animated: true })
     })
-  }, [pickerVersion])
+  }, [])
 
-  // Initialize editable state from raw workout data (once)
-  if (rawWorkout !== null && editableExercises === null) {
-    setEditableExercises(rawWorkout.exercises.map((e) => ({ ...e })))
-  }
+  const markNewlyAdded = useCallback((catalogExerciseIds: string[]) => {
+    if (highlightTimeoutRef.current !== null) {
+      clearTimeout(highlightTimeoutRef.current)
+      highlightTimeoutRef.current = null
+    }
+
+    setHighlightCatalogExerciseIds(new Set(catalogExerciseIds))
+    highlightTimeoutRef.current = setTimeout(() => {
+      setHighlightCatalogExerciseIds(new Set())
+      highlightTimeoutRef.current = null
+    }, HIGHLIGHT_DURATION_MS)
+  }, [])
+
+  useFocusEffect(
+    useCallback(() => {
+      const requestId = addRequestIdRef.current
+      if (requestId === null) return
+
+      const result = addExercisesFlow.consumeAddExercisesResult(requestId)
+      addRequestIdRef.current = null
+      if (result === null || result.caller !== 'workout-proposal') return
+
+      const baseExercises = editableExercises ?? rawWorkout?.exercises ?? []
+      const existingIds = new Set(
+        baseExercises
+          .map((exercise) => exercise.catalogExerciseId)
+          .filter((catalogExerciseId): catalogExerciseId is string => catalogExerciseId !== null),
+      )
+      const freshSelections = result.selections.filter((selection) => !existingIds.has(selection.id))
+      if (freshSelections.length === 0) return
+
+      const startOrder = baseExercises.length + 1
+      const mapped = freshSelections.map((exercise, index) => mapCatalogToApiExercise(exercise, startOrder + index))
+      const nextExercises = [...baseExercises, ...mapped]
+
+      setEditableExercises(nextExercises)
+      markNewlyAdded(freshSelections.map((exercise) => exercise.id))
+      scrollToExercisesEnd()
+    }, [addExercisesFlow, editableExercises, markNewlyAdded, rawWorkout?.exercises, scrollToExercisesEnd]),
+  )
 
   if (isLoading || workout === null || editableExercises === null) {
     return (
@@ -85,13 +125,19 @@ export const WorkoutProposal = ({ workoutId, mode = 'proposal', onSaved, onDisca
   const isDirty = JSON.stringify(editableExercises) !== JSON.stringify(rawWorkout?.exercises)
 
   const handleAddExercises = () => {
-    const existingIds = new Set(
+    const existingIds = Array.from(new Set(
       editableExercises
         .map((e) => e.catalogExerciseId)
         .filter((cid): cid is string => cid !== null),
-    )
-    exercisePickerStore.request(CALLER_ID, existingIds)
-    router.push('/(protected)/sheets/exercise-picker' as never)
+    ))
+
+    const requestId = addExercisesFlow.openAddExercises({
+      caller: 'workout-proposal',
+      existingCatalogExerciseIds: existingIds,
+    })
+
+    addRequestIdRef.current = requestId
+    router.push(`/(protected)/add-exercises?requestId=${encodeURIComponent(requestId)}` as never)
   }
 
   const handleUpdateExercise = (index: number, updated: ApiExercise) => {
@@ -139,6 +185,7 @@ export const WorkoutProposal = ({ workoutId, mode = 'proposal', onSaved, onDisca
   return (
     <View className="flex-1">
       <KeyboardAwareScrollView
+        ref={scrollRef}
         className="flex-1"
         contentContainerStyle={{ paddingTop: 16, paddingBottom: 16, paddingHorizontal: 20 }}
         keyboardShouldPersistTaps="handled"
@@ -158,6 +205,9 @@ export const WorkoutProposal = ({ workoutId, mode = 'proposal', onSaved, onDisca
               dragGesture={createGesture(index)}
               dragState={dragState}
               itemHeight={ITEM_HEIGHT}
+              isNewlyAdded={
+                exercise.catalogExerciseId !== null && highlightCatalogExerciseIds.has(exercise.catalogExerciseId)
+              }
             />
           ))}
         </View>

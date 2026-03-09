@@ -80,6 +80,6 @@ export const apiPut = async <T>(path: string, body: unknown): Promise<T> => {
   return request<T>('PUT', path, body)
 }
 
-export const apiDelete = async (path: string): Promise<void> => {
-  return request<void>('DELETE', path)
+export const apiDelete = async (path: string, body?: unknown): Promise<void> => {
+  return request<void>('DELETE', path, body)
 }

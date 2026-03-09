@@ -5,6 +5,8 @@ import type {
   WeekDay,
   WeeklySchedule,
 } from '@/types/schedule'
+import { getMuscleColor } from '@/utils/muscle-color'
+import { getWorkoutAbbrev } from '@/utils/workout-abbrev'
 
 export const DAY_LABELS: Record<DayOfWeek, string> = {
   0: 'Monday',
@@ -76,11 +78,17 @@ export const buildWeekDaysFromSchedule = (
       status = 'future'
     }
 
+    const primaryMuscle = entry.workout?.targetMuscles?.[0]
+    const dotColor = primaryMuscle !== undefined ? getMuscleColor(primaryMuscle) : undefined
+    const workoutAbbrev = getWorkoutAbbrev(entry.workout?.title, primaryMuscle)
+
     return {
       label: DAY_SHORT_LABELS[dayOfWeek],
       date: dayDate.getDate(),
       workoutLabel: entry.workout?.title,
       status,
+      dotColor,
+      workoutAbbrev,
     }
   })
 }

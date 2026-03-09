@@ -1,6 +1,7 @@
 import { Text, View } from 'react-native'
 
 import { MuscleChip } from '@/components/ui/muscle-chip'
+import { getMuscleLabel } from '@/utils/muscle-color'
 
 interface ExerciseMuscleGroupsProps {
   target: string
@@ -9,6 +10,12 @@ interface ExerciseMuscleGroupsProps {
 }
 
 export const ExerciseMuscleGroups = ({ target, secondaryMuscles, bodyPart }: ExerciseMuscleGroupsProps) => {
+  const targetLabel = getMuscleLabel(target).toLowerCase()
+  const showBodyPart =
+    bodyPart !== undefined &&
+    bodyPart.length > 0 &&
+    bodyPart.toLowerCase() !== targetLabel
+
   return (
     <View className="gap-4">
       {/* Target muscle */}
@@ -18,9 +25,9 @@ export const ExerciseMuscleGroups = ({ target, secondaryMuscles, bodyPart }: Exe
         </Text>
         <View className="flex-row flex-wrap gap-2">
           <MuscleChip muscle={target} size="sm" tone="soft" />
-          {bodyPart !== undefined && bodyPart.length > 0 && (
-            <View className="bg-background-tertiary rounded-full px-3 py-1">
-              <Text className="text-xs font-inter-medium text-content-tertiary capitalize">
+          {showBodyPart && (
+            <View className="bg-background-tertiary rounded-full px-3 py-1 items-center justify-center">
+              <Text className="text-sm font-inter-medium text-content-tertiary capitalize">
                 {bodyPart}
               </Text>
             </View>

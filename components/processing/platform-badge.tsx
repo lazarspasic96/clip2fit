@@ -2,10 +2,8 @@ import { View } from 'react-native'
 
 import type { SupportedPlatform } from '@/utils/url-validation'
 import {
-  FacebookIcon,
   InstagramIcon,
   TikTokIcon,
-  XIcon,
   YouTubeIcon,
 } from '@/components/ui/platform-icons'
 
@@ -27,10 +25,6 @@ export const PlatformBadge = ({ platform, size = 28 }: PlatformBadgeProps) => {
         return <TikTokIcon size={iconSize} />
       case 'youtube':
         return <YouTubeIcon size={iconSize} />
-      case 'facebook':
-        return <FacebookIcon size={iconSize} />
-      case 'twitter':
-        return <XIcon size={iconSize} />
       default:
         return null
     }

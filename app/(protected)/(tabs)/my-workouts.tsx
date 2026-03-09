@@ -1,7 +1,8 @@
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Trash2 } from 'lucide-react-native'
 import { useEffect, useRef } from 'react'
-import { ActivityIndicator, Alert, FlatList, Pressable, RefreshControl, Text, View } from 'react-native'
+import { ActivityIndicator, Alert, Pressable, RefreshControl, Text, View } from 'react-native'
+import { FlashList } from '@shopify/flash-list'
 import Animated, {
   FadeInUp,
   LinearTransition,
@@ -112,7 +113,7 @@ const MyWorkoutsScreen = () => {
       {workouts.length === 0 ? (
         <EmptyState />
       ) : (
-        <FlatList
+        <FlashList
           data={workouts}
           keyExtractor={(item) => item.id}
           renderItem={({ item, index }) => {
