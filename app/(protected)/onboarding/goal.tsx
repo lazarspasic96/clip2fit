@@ -1,71 +1,59 @@
-import { BackButton } from '@/components/ui/back-button'
-import { Button } from '@/components/ui/button'
-import { RadioGroup } from '@/components/ui/radio-group'
-import { useAuth } from '@/contexts/auth-context'
+import { OnboardingScreen } from '@/components/onboarding/onboarding-screen'
+import { SelectionCard } from '@/components/onboarding/selection-card'
 import { useProfileForm } from '@/contexts/profile-form-context'
 import type { FitnessGoal } from '@/types/profile'
-import { FITNESS_GOALS } from '@/types/profile'
 import { useRouter } from 'expo-router'
+import {
+  Activity,
+  Dumbbell,
+  Heart,
+  Sparkles,
+  Target,
+  TrendingUp,
+} from 'lucide-react-native'
 import { useState } from 'react'
-import { Alert, ScrollView, Text, View } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { View } from 'react-native'
+
+const GOAL_OPTIONS: { icon: typeof Target; title: string; value: FitnessGoal }[] = [
+  { icon: Target, title: 'Lose Weight', value: 'lose_weight' },
+  { icon: Dumbbell, title: 'Build Muscle', value: 'build_muscle' },
+  { icon: TrendingUp, title: 'Get Stronger', value: 'get_stronger' },
+  { icon: Heart, title: 'Improve Endurance', value: 'improve_endurance' },
+  { icon: Activity, title: 'General Fitness', value: 'general_fitness' },
+  { icon: Sparkles, title: 'Flexibility & Mobility', value: 'flexibility_mobility' },
+]
 
 const GoalScreen = () => {
   const router = useRouter()
-  const { saveProfile, completeOnboarding, loading } = useAuth()
-  const { updateField, getData, resetData } = useProfileForm()
-  const insets = useSafeAreaInsets()
+  const { updateField } = useProfileForm()
   const [goal, setGoal] = useState<FitnessGoal | undefined>()
 
-  const saveAndNavigate = async () => {
-    if (goal) updateField('fitnessGoal', goal)
-    const profileData = getData()
-    saveProfile(profileData)
-    const result = await completeOnboarding()
-    if (result.success) {
-      resetData()
-      router.replace('/(protected)/(tabs)' as never)
-    } else {
-      Alert.alert('Error', result.error ?? 'Failed to complete onboarding')
-    }
-  }
-
-  const onSkip = async () => {
-    const profileData = getData()
-    if (Object.keys(profileData).length > 0) {
-      saveProfile(profileData)
-    }
-    const result = await completeOnboarding()
-    if (result.success) {
-      resetData()
-      router.replace('/(protected)/(tabs)' as never)
-    } else {
-      Alert.alert('Error', result.error ?? 'Failed to complete onboarding')
-    }
+  const handleNext = () => {
+    if (goal === undefined) return
+    updateField('fitnessGoal', goal)
+    router.push('/(protected)/onboarding/experience')
   }
 
   return (
-    <View className="flex-1 bg-background-primary">
-      <ScrollView className="flex-1" contentContainerStyle={{ padding: 24 }} keyboardShouldPersistTaps="handled">
-        <BackButton onPress={() => router.back()} className="self-start mb-4" />
-
-        <Text className="text-2xl font-inter-bold text-content-primary mb-2">What&apos;s your goal?</Text>
-        <Text className="text-base font-inter text-content-secondary mb-8">
-          Choose what best describes your fitness goal.
-        </Text>
-
-        <RadioGroup options={FITNESS_GOALS} value={goal} onChange={setGoal} />
-      </ScrollView>
-
-      <View className="px-6 mb-6 gap-3" style={{ paddingBottom: Math.max(insets.bottom, 32) }}>
-        <Button onPress={saveAndNavigate} loading={loading}>
-          Complete
-        </Button>
-        <Button variant="ghost" onPress={onSkip} loading={loading}>
-          Skip
-        </Button>
+    <OnboardingScreen
+      title="What are you working toward?"
+      subtitle="Choose what best describes your fitness goal."
+      onNext={handleNext}
+      nextDisabled={goal === undefined}
+    >
+      <View className="gap-3">
+        {GOAL_OPTIONS.map((option, index) => (
+          <SelectionCard
+            key={option.value}
+            icon={option.icon}
+            title={option.title}
+            selected={goal === option.value}
+            onPress={() => setGoal(option.value)}
+            index={index}
+          />
+        ))}
       </View>
-    </View>
+    </OnboardingScreen>
   )
 }
 

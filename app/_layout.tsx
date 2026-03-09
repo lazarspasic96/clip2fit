@@ -73,7 +73,7 @@ const RootNavigator = () => {
     }
 
     if (session && !onboardingComplete && !inOnboarding) {
-      router.replace('/(protected)/onboarding/demographics')
+      router.replace('/(protected)/onboarding/goal')
       return
     }
 
