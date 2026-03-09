@@ -10,7 +10,21 @@ import { DismissButton } from '@/components/ui/dismiss-button'
 import { Colors } from '@/constants/colors'
 import { useAuth } from '@/contexts/auth-context'
 import { useProfileQuery } from '@/hooks/use-profile-query'
-import { displayGender, displayGoal, formatDateOfBirth, formatHeight, formatWeight } from '@/utils/format-profile'
+import {
+  displayActivityLevel,
+  displayEquipment,
+  displayExperience,
+  displayFocusAreas,
+  displayGender,
+  displayGoal,
+  displayInjuries,
+  displayLocation,
+  displaySchedule,
+  displayTrainingStyles,
+  formatDateOfBirth,
+  formatHeight,
+  formatWeight,
+} from '@/utils/format-profile'
 
 const SettingsScreen = () => {
   const { user, signOut } = useAuth()
@@ -30,7 +44,7 @@ const SettingsScreen = () => {
           <ActivityIndicator color={Colors.brand.accent} size="large" />
         </View>
       ) : (
-        <ScrollView className="flex-1" contentContainerClassName=" pt-2 pb-8">
+        <ScrollView className="flex-1" contentContainerClassName=" pt-2 pb-8" showsVerticalScrollIndicator={false}>
           <ProfileHeader fullName={profile?.fullName} email={user?.email} />
 
           <SettingsSection title="Personal Info">
@@ -64,11 +78,54 @@ const SettingsScreen = () => {
             />
           </SettingsSection>
 
-          <SettingsSection title="Fitness Goal">
+          <SettingsSection title="Training Profile">
             <SettingsRow
-              label="Goal"
+              label="Fitness Goal"
               value={displayGoal(profile?.fitnessGoal)}
               onPress={() => router.push('/(protected)/sheets/edit-fitness-goal')}
+            />
+            <SettingsRow
+              label="Experience Level"
+              value={displayExperience(profile?.experienceLevel)}
+              onPress={() => router.push('/(protected)/sheets/edit-experience')}
+            />
+            <SettingsRow
+              label="Activity Level"
+              value={displayActivityLevel(profile?.activityLevel)}
+              onPress={() => router.push('/(protected)/sheets/edit-activity-level')}
+            />
+          </SettingsSection>
+
+          <SettingsSection title="Workout Setup">
+            <SettingsRow
+              label="Location"
+              value={displayLocation(profile?.workoutLocation)}
+              onPress={() => router.push('/(protected)/sheets/edit-workout-location')}
+            />
+            <SettingsRow
+              label="Equipment"
+              value={displayEquipment(profile?.equipment)}
+              onPress={() => router.push('/(protected)/sheets/edit-equipment')}
+            />
+            <SettingsRow
+              label="Schedule"
+              value={displaySchedule(profile?.trainingFrequency, profile?.sessionDuration)}
+              onPress={() => router.push('/(protected)/sheets/edit-schedule')}
+            />
+            <SettingsRow
+              label="Training Styles"
+              value={displayTrainingStyles(profile?.trainingStyles)}
+              onPress={() => router.push('/(protected)/sheets/edit-training-style')}
+            />
+            <SettingsRow
+              label="Focus Areas"
+              value={displayFocusAreas(profile?.focusAreas)}
+              onPress={() => router.push('/(protected)/sheets/edit-focus-areas')}
+            />
+            <SettingsRow
+              label="Injuries"
+              value={displayInjuries(profile?.injuries)}
+              onPress={() => router.push('/(protected)/sheets/edit-injuries')}
             />
           </SettingsSection>
 
@@ -81,7 +138,7 @@ const SettingsScreen = () => {
           </SettingsSection>
 
           <View className="items-center pt-8" style={{ paddingBottom: Math.max(insets.bottom, 16) }}>
-            <Button variant="secondary" onPress={signOut}>
+            <Button variant="secondary" onPress={signOut} className="rounded-xl">
               Sign Out
             </Button>
           </View>

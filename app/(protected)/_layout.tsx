@@ -68,6 +68,14 @@ const ProtectedLayout = () => {
           <Stack.Screen name="sheets/edit-exercise" options={{ ...sheetOptions, sheetAllowedDetents: [0.6] }} />
           <Stack.Screen name="sheets/catalog-filters" options={{ ...sheetOptions, sheetAllowedDetents: [0.7, 0.9] }} />
           <Stack.Screen name="sheets/picker-filters" options={{ ...sheetOptions, sheetAllowedDetents: [0.7, 0.9] }} />
+          <Stack.Screen name="sheets/edit-experience" options={{ ...sheetOptions, sheetAllowedDetents: 'fitToContents' }} />
+          <Stack.Screen name="sheets/edit-activity-level" options={{ ...sheetOptions, sheetAllowedDetents: 'fitToContents' }} />
+          <Stack.Screen name="sheets/edit-workout-location" options={{ ...sheetOptions, sheetAllowedDetents: 'fitToContents' }} />
+          <Stack.Screen name="sheets/edit-equipment" options={{ ...sheetOptions, sheetAllowedDetents: [0.6, 0.85] }} />
+          <Stack.Screen name="sheets/edit-schedule" options={{ ...sheetOptions, sheetAllowedDetents: [0.7, 1] }} />
+          <Stack.Screen name="sheets/edit-training-style" options={{ ...sheetOptions, sheetAllowedDetents: [0.55, 0.8] }} />
+          <Stack.Screen name="sheets/edit-focus-areas" options={{ ...sheetOptions, sheetAllowedDetents: 'fitToContents' }} />
+          <Stack.Screen name="sheets/edit-injuries" options={{ ...sheetOptions, sheetAllowedDetents: [0.6, 0.85] }} />
           <Stack.Screen name="sheets/delete-account" options={{ ...sheetOptions, sheetAllowedDetents: [0.45] }} />
         </Stack>
       </ActiveWorkoutProvider>
