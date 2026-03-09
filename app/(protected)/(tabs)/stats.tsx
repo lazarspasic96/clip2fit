@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Pressable, RefreshControl, ScrollView, Text, View } from 'react-native'
 import { useQueryClient } from '@tanstack/react-query'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -34,11 +34,11 @@ const StatsScreen = () => {
     })
   }, [summary, queryClient])
 
-  const subtitle = useMemo(() => {
+  const subtitle = (() => {
     if (summary === null) return 'Track top exercises, muscle focus, and progression trends.'
     if (totalSessions <= 0) return 'Complete workouts to unlock your training analytics.'
     return `${totalSessions} sessions analyzed for this period.`
-  }, [summary, totalSessions])
+  })()
 
   const handlePressExercise = (exercise: StatsTopExercise) => {
     const params = new URLSearchParams()

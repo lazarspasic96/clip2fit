@@ -1,5 +1,5 @@
 import type { UserProfile } from '@/types/profile'
-import { createContext, useCallback, useContext, useRef } from 'react'
+import { createContext, useContext, useRef } from 'react'
 
 interface ProfileFormContextType {
   updateField: <K extends keyof UserProfile>(key: K, value: UserProfile[K]) => void
@@ -12,17 +12,17 @@ const ProfileFormContext = createContext<ProfileFormContextType | undefined>(und
 export const ProfileFormProvider = ({ children }: { children: React.ReactNode }) => {
   const dataRef = useRef<Partial<UserProfile>>({})
 
-  const updateField = useCallback(<K extends keyof UserProfile>(key: K, value: UserProfile[K]) => {
+  const updateField = <K extends keyof UserProfile>(key: K, value: UserProfile[K]) => {
     dataRef.current = { ...dataRef.current, [key]: value }
-  }, [])
+  }
 
-  const getData = useCallback(() => {
+  const getData = () => {
     return { ...dataRef.current }
-  }, [])
+  }
 
-  const resetData = useCallback(() => {
+  const resetData = () => {
     dataRef.current = {}
-  }, [])
+  }
 
   return (
     <ProfileFormContext.Provider value={{ updateField, getData, resetData }}>

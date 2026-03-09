@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -8,7 +8,8 @@ import { PeriodSelector } from '@/components/stats/shared/period-selector'
 import { formatCompactNumber, formatInstantDate } from '@/components/stats/shared/stats-formatters'
 import { BackButton } from '@/components/ui/back-button'
 import { useExerciseHistory } from '@/hooks/use-stats'
-import { parseUtcInstantMs, type StatsPRTimelinePoint, type StatsPeriod } from '@/types/stats'
+import type { StatsPRTimelinePoint, StatsPeriod } from '@/types/stats'
+import { parseUtcInstantMs } from '@/utils/stats-mappers'
 
 const parseSingleParam = (value: string | string[] | undefined) => {
   if (value === undefined) return null
@@ -49,17 +50,17 @@ const ExerciseHistoryScreen = () => {
 
   const { history, isLoading, error, refetch } = useExerciseHistory(catalogExerciseId, exerciseName, period)
 
-  const filteredTimeline = useMemo(() => {
+  const filteredTimeline = (() => {
     if (history === null) return []
     const sortedTimeline = sortTimelineByInstant(history.prTimeline)
     return filterTimelineByPeriod(sortedTimeline, period)
-  }, [history, period])
+  })()
 
   const latestPoint = filteredTimeline[filteredTimeline.length - 1] ?? null
-  const selectedPoint = useMemo(() => {
+  const selectedPoint = (() => {
     if (selectedSessionId === null) return latestPoint
     return filteredTimeline.find((point) => point.sessionId === selectedSessionId) ?? latestPoint
-  }, [filteredTimeline, latestPoint, selectedSessionId])
+  })()
 
   useEffect(() => {
     if (filteredTimeline.length === 0) {

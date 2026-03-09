@@ -12,7 +12,8 @@ export const ProgressBar = ({ step, total }: ProgressBarProps) => {
 
   useEffect(() => {
     progress.value = withTiming(step / total, { duration: 300 })
-  }, [step, total, progress])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- shared value (ref-like), not a reactive dep
+  }, [step, total])
 
   const animatedStyle = useAnimatedStyle(() => ({
     width: `${progress.value * 100}%`,

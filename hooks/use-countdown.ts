@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface UseCountdownOptions {
   initialSeconds: number
@@ -17,24 +17,24 @@ export const useCountdown = ({ initialSeconds, autoStart = false }: UseCountdown
   const [isActive, setIsActive] = useState(autoStart)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  const cleanup = useCallback(() => {
-    if (intervalRef.current) {
+  const cleanup = () => {
+    if (intervalRef.current !== null) {
       clearInterval(intervalRef.current)
       intervalRef.current = null
     }
-  }, [])
+  }
 
-  const start = useCallback(() => {
+  const start = () => {
     cleanup()
     setSecondsLeft(initialSeconds)
     setIsActive(true)
-  }, [initialSeconds, cleanup])
+  }
 
-  const reset = useCallback(() => {
+  const reset = () => {
     cleanup()
     setSecondsLeft(0)
     setIsActive(false)
-  }, [cleanup])
+  }
 
   useEffect(() => {
     if (!isActive || secondsLeft <= 0) {
@@ -56,9 +56,9 @@ export const useCountdown = ({ initialSeconds, autoStart = false }: UseCountdown
     }, 1000)
 
     return cleanup
-  }, [isActive, secondsLeft, cleanup])
+  }, [isActive, secondsLeft])
 
-  useEffect(() => cleanup, [cleanup])
+  useEffect(() => cleanup, [])
 
   return { secondsLeft, isActive, start, reset }
 }

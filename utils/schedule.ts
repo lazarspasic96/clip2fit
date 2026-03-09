@@ -2,7 +2,6 @@ import type {
   DayOfWeek,
   DayStatus,
   ScheduleEntry,
-  UpsertSchedulePayload,
   WeekDay,
   WeeklySchedule,
 } from '@/types/schedule'
@@ -42,14 +41,6 @@ const buildEmptyEntry = (dayOfWeek: DayOfWeek): ScheduleEntry => ({
 
 export const buildEmptySchedule = (): WeeklySchedule => ({
   entries: Array.from({ length: 7 }, (_, i) => buildEmptyEntry(i as DayOfWeek)),
-})
-
-export const scheduleToPayload = (schedule: WeeklySchedule): UpsertSchedulePayload => ({
-  entries: schedule.entries.map((e) => ({
-    day_of_week: e.dayOfWeek,
-    workout_id: e.workoutId,
-    is_rest_day: e.isRestDay,
-  })),
 })
 
 export const buildWeekDaysFromSchedule = (
@@ -94,22 +85,3 @@ export const buildWeekDaysFromSchedule = (
   })
 }
 
-export const getScheduleStats = (
-  schedule: WeeklySchedule,
-): { trainingDays: number; restDays: number; muscles: string[] } => {
-  let trainingDays = 0
-  const muscleSet = new Set<string>()
-
-  for (const entry of schedule.entries) {
-    if (entry.workoutId !== null) {
-      trainingDays++
-      if (entry.workout?.targetMuscles !== undefined) {
-        for (const m of entry.workout.targetMuscles) {
-          muscleSet.add(m)
-        }
-      }
-    }
-  }
-
-  return { trainingDays, restDays: 7 - trainingDays, muscles: [...muscleSet] }
-}

@@ -3,7 +3,7 @@ import { fillMaxWidth, padding, paddingAll } from '@expo/ui/jetpack-compose/modi
 import { formatISO } from 'date-fns'
 import * as Haptics from 'expo-haptics'
 import { Calendar } from 'lucide-react-native'
-import { useCallback, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { Keyboard, Modal, Pressable, Text, View } from 'react-native'
 
 import { Colors } from '@/constants/colors'
@@ -52,20 +52,20 @@ export const DateOfBirthPicker = ({
   const valueTextClass = value === undefined ? 'text-content-tertiary' : 'text-content-primary'
   const formattedValue = formatDobDisplay(value)
 
-  const clampDate = useCallback((candidate: Date): Date => {
+  const clampDate = (candidate: Date): Date => {
     return clampDobDate(candidate)
-  }, [])
+  }
 
-  const closeDialog = useCallback(() => {
+  const closeDialog = () => {
     if (dialogStateRef.current === 'idle' || dialogStateRef.current === 'closing') return
     dialogStateRef.current = 'closing'
     setIsDialogVisible(false)
     requestAnimationFrame(() => {
       dialogStateRef.current = 'idle'
     })
-  }, [])
+  }
 
-  const handleOpenPicker = useCallback(() => {
+  const handleOpenPicker = () => {
     if (dialogStateRef.current !== 'idle') return
 
     Keyboard.dismiss()
@@ -82,20 +82,20 @@ export const DateOfBirthPicker = ({
         dialogStateRef.current = 'open'
       }
     })
-  }, [clampDate, value])
+  }
 
-  const handleDismissRequest = useCallback(() => {
+  const handleDismissRequest = () => {
     if (dialogStateRef.current === 'opening' && Date.now() - openedAtMsRef.current < OPENING_DISMISS_GUARD_MS) {
       return
     }
     closeDialog()
-  }, [closeDialog])
+  }
 
-  const handleCancel = useCallback(() => {
+  const handleCancel = () => {
     closeDialog()
-  }, [closeDialog])
+  }
 
-  const handleDone = useCallback(() => {
+  const handleDone = () => {
     const clamped = clampDate(draftDate)
     const nextValue = formatDobIso(clamped)
     if (value === undefined || nextValue !== value) {
@@ -103,14 +103,11 @@ export const DateOfBirthPicker = ({
       onChange(nextValue)
     }
     closeDialog()
-  }, [clampDate, closeDialog, draftDate, onChange, value])
+  }
 
-  const handleDateSelected = useCallback(
-    (selectedDate: Date) => {
-      setDraftDate(clampDate(selectedDate))
-    },
-    [clampDate],
-  )
+  const handleDateSelected = (selectedDate: Date) => {
+    setDraftDate(clampDate(selectedDate))
+  }
 
   return (
     <View className="gap-1.5">

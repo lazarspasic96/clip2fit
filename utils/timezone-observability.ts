@@ -1,6 +1,5 @@
 import Constants from 'expo-constants'
 
-const TAG = '[timezone-observability]'
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? ''
 
 export const API_CONTRACT_VERSION = 'v2-timezone'
@@ -23,10 +22,10 @@ const TELEMETRY_BASE = {
 }
 
 export const emitTimezoneTelemetryEvent = (
-  eventName: 'timezone_resolution_observed' | 'timezone_sync_attempt' | 'timezone_sync_failed',
-  payload: UnknownRecord,
+  _eventName: 'timezone_resolution_observed' | 'timezone_sync_attempt' | 'timezone_sync_failed',
+  _payload: UnknownRecord,
 ): void => {
-  console.log(TAG, eventName, JSON.stringify({ ...TELEMETRY_BASE, ...payload }))
+  // Telemetry events — no-op until a proper analytics sink is wired up
 }
 
 export const getTimezoneDebugOverride = (): string | null => {

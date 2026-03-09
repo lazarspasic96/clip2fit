@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { ScrollView, Text, View } from 'react-native'
 
 import { formatCompactNumber } from '@/components/stats/shared/stats-formatters'
@@ -8,7 +7,7 @@ import { formatMuscleLabel } from '@/types/stats'
 import { getMuscleColor } from '@/utils/muscle-color'
 
 export const PerformanceLabOverview = ({ summary, onPressExercise }: StatsOverviewProps) => {
-  const muscleRows = useMemo(() => {
+  const muscleRows = (() => {
     const sorted = summary.muscleGroupDistribution
       .slice()
       .sort((a, b) => b.percentage - a.percentage)
@@ -24,7 +23,7 @@ export const PerformanceLabOverview = ({ summary, onPressExercise }: StatsOvervi
         relativePercent,
       }
     })
-  }, [summary.muscleGroupDistribution])
+  })()
 
   const topMuscle = muscleRows[0]?.muscle ?? null
 

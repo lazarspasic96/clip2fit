@@ -20,10 +20,7 @@ export const ProcessUrlHeader = ({ jobState, onMinimize, onClose, onCancelWithCo
         {
           text: 'Yes, cancel',
           style: 'destructive',
-          onPress: () => {
-            console.log('[ProcessUrl] User confirmed cancel')
-            onCancelWithConfirm()
-          },
+          onPress: onCancelWithConfirm,
         },
       ])
       return
