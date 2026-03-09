@@ -1,4 +1,15 @@
-import type { FitnessGoal, Gender, UserProfile } from '@/types/profile'
+import type {
+  ActivityLevel,
+  Equipment,
+  ExperienceLevel,
+  FitnessGoal,
+  FocusArea,
+  Gender,
+  InjuryTag,
+  TrainingStyle,
+  UserProfile,
+  WorkoutLocation,
+} from '@/types/profile'
 import type { WorkoutExercise, WorkoutPlan, WorkoutSet } from '@/types/workout'
 import { normalizeMuscleGroup } from '@/utils/muscle-color'
 
@@ -68,6 +79,16 @@ export interface ApiProfilePayload {
   weightUnit?: 'kg' | 'lb'
   fitnessGoal?: string
   timezone?: string
+  experienceLevel?: string
+  activityLevel?: string
+  workoutLocation?: string
+  equipment?: string[]
+  trainingFrequency?: number
+  sessionDuration?: number
+  trainingStyles?: string[]
+  focusAreas?: string[]
+  injuries?: string[]
+  injuryNotes?: string
 }
 
 export interface ApiProfileResponse {
@@ -82,6 +103,16 @@ export interface ApiProfileResponse {
   weightUnit: 'kg' | 'lb' | null
   fitnessGoal: string | null
   timezone: string | null
+  experienceLevel: string | null
+  activityLevel: string | null
+  workoutLocation: string | null
+  equipment: string[] | null
+  trainingFrequency: number | null
+  sessionDuration: number | null
+  trainingStyles: string[] | null
+  focusAreas: string[] | null
+  injuries: string[] | null
+  injuryNotes: string | null
   createdAt: string
   updatedAt: string
 }
@@ -224,6 +255,16 @@ export const mapProfileToApi = (profile: Partial<UserProfile>): ApiProfilePayloa
   if (profile.weight !== undefined) payload.weight = profile.weight
   if (profile.fitnessGoal !== undefined) payload.fitnessGoal = profile.fitnessGoal
   if (profile.timezone !== undefined) payload.timezone = profile.timezone
+  if (profile.experienceLevel !== undefined) payload.experienceLevel = profile.experienceLevel
+  if (profile.activityLevel !== undefined) payload.activityLevel = profile.activityLevel
+  if (profile.workoutLocation !== undefined) payload.workoutLocation = profile.workoutLocation
+  if (profile.equipment !== undefined) payload.equipment = profile.equipment
+  if (profile.trainingFrequency !== undefined) payload.trainingFrequency = profile.trainingFrequency
+  if (profile.sessionDuration !== undefined) payload.sessionDuration = profile.sessionDuration
+  if (profile.trainingStyles !== undefined) payload.trainingStyles = profile.trainingStyles
+  if (profile.focusAreas !== undefined) payload.focusAreas = profile.focusAreas
+  if (profile.injuries !== undefined) payload.injuries = profile.injuries
+  if (profile.injuryNotes !== undefined) payload.injuryNotes = profile.injuryNotes
 
   // Map mobile unit names to API unit names
   if (profile.heightUnit !== undefined) {
@@ -247,6 +288,16 @@ export const mapApiProfileToMobile = (api: ApiProfileResponse): UserProfile => {
   if (api.weight !== null) profile.weight = api.weight
   if (api.fitnessGoal !== null) profile.fitnessGoal = api.fitnessGoal as FitnessGoal
   if (api.timezone !== null) profile.timezone = api.timezone
+  if (api.experienceLevel !== null) profile.experienceLevel = api.experienceLevel as ExperienceLevel
+  if (api.activityLevel !== null) profile.activityLevel = api.activityLevel as ActivityLevel
+  if (api.workoutLocation !== null) profile.workoutLocation = api.workoutLocation as WorkoutLocation
+  if (api.equipment !== null) profile.equipment = api.equipment as Equipment[]
+  if (api.trainingFrequency !== null) profile.trainingFrequency = api.trainingFrequency
+  if (api.sessionDuration !== null) profile.sessionDuration = api.sessionDuration
+  if (api.trainingStyles !== null) profile.trainingStyles = api.trainingStyles as TrainingStyle[]
+  if (api.focusAreas !== null) profile.focusAreas = api.focusAreas as FocusArea[]
+  if (api.injuries !== null) profile.injuries = api.injuries as InjuryTag[]
+  if (api.injuryNotes !== null) profile.injuryNotes = api.injuryNotes
 
   if (api.heightUnit !== null) {
     profile.heightUnit = api.heightUnit === 'in' ? 'ft' : 'cm'

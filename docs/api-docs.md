@@ -481,17 +481,27 @@ Content-Type: application/json
 
 **Body (all fields optional, at least one required):**
 
-| Field         | Type     | Validation                                                   |
-| ------------- | -------- | ------------------------------------------------------------ |
-| `fullName`    | `string` | 1-100 chars                                                  |
-| `timezone`    | `string` | Valid IANA timezone (e.g., `Europe/Belgrade`)                |
-| `gender`      | `string` | `"male"` \| `"female"` \| `"other"` \| `"prefer_not_to_say"` |
-| `age`         | `number` | Integer, 13-120                                              |
-| `height`      | `number` | Positive, max 300                                            |
-| `heightUnit`  | `string` | `"cm"` \| `"in"`                                             |
-| `weight`      | `number` | Positive, max 700                                            |
-| `weightUnit`  | `string` | `"kg"` \| `"lb"`                                             |
-| `fitnessGoal` | `string` | Max 200 chars                                                |
+| Field | Type | Validation |
+|-------|------|------------|
+| `fullName` | `string` | 1-100 chars |
+| `timezone` | `string` | Valid IANA timezone (e.g., `Europe/Belgrade`) |
+| `gender` | `string` | `"male"` \| `"female"` \| `"other"` \| `"prefer_not_to_say"` |
+| `dateOfBirth` | `string` | `YYYY-MM-DD` format, user must be 13-120 years old |
+| `height` | `number` | Positive, max 300 |
+| `heightUnit` | `string` | `"cm"` \| `"in"` |
+| `weight` | `number` | Positive, max 700 |
+| `weightUnit` | `string` | `"kg"` \| `"lb"` |
+| `fitnessGoal` | `string` | `"lose_weight"` \| `"build_muscle"` \| `"get_stronger"` \| `"improve_endurance"` \| `"general_fitness"` \| `"flexibility_mobility"` \| `"athletic_performance"` |
+| `experienceLevel` | `string` | `"beginner"` \| `"intermediate"` \| `"advanced"` |
+| `activityLevel` | `string` | `"sedentary"` \| `"lightly_active"` \| `"moderately_active"` \| `"very_active"` |
+| `workoutLocation` | `string` | `"gym"` \| `"home"` \| `"both"` \| `"outdoor"` |
+| `equipment` | `string[]` | Min 1 item. Values: `"bodyweight"` \| `"dumbbells"` \| `"barbell_rack"` \| `"resistance_bands"` \| `"kettlebells"` \| `"pullup_bar"` \| `"bench"` \| `"cable_machine"` \| `"full_gym"` |
+| `trainingFrequency` | `number` | Integer, 1-7 |
+| `sessionDuration` | `number` | `15` \| `20` \| `30` \| `45` \| `60` \| `90` |
+| `trainingStyles` | `string[]` | `"strength"` \| `"hypertrophy"` \| `"bodybuilding"` \| `"hiit"` \| `"circuit"` \| `"calisthenics"` \| `"powerlifting"` \| `"olympic_weightlifting"` \| `"crossfit"` \| `"functional"` \| `"endurance"` \| `"yoga_pilates"` |
+| `focusAreas` | `string[]` | `"full_body"` \| `"chest"` \| `"back"` \| `"shoulders"` \| `"arms"` \| `"core"` \| `"glutes"` \| `"legs"` |
+| `injuries` | `string[]` | `"lower_back"` \| `"knees"` \| `"shoulders"` \| `"wrists"` \| `"neck"` \| `"hips"` \| `"ankles"` |
+| `injuryNotes` | `string` | Max 200 chars |
 
 ```json
 {
