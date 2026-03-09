@@ -1,4 +1,4 @@
-import { subMonths, startOfMonth, startOfWeek, format, isAfter, isBefore } from 'date-fns'
+import { subMonths, startOfMonth, startOfWeek, format, isAfter, isBefore, differenceInDays, addDays } from 'date-fns'
 
 import type { HeatmapDay, WorkoutCategory } from '@/types/heatmap'
 import { CATEGORY_COLORS } from '@/types/heatmap'
@@ -18,42 +18,46 @@ export interface WeekColumn {
  * Build a grid covering exactly 12 months (1st of month 11 months ago → today).
  * Columns = weeks (Sun–Sat). First/last columns may be partial.
  */
-export const buildHeatmapGrid = (days: HeatmapDay[]): WeekColumn[] => {
-  const dayMap = new Map<string, HeatmapDay>()
+const buildDayLookup = (days: HeatmapDay[]): Map<string, HeatmapDay> => {
+  const map = new Map<string, HeatmapDay>()
   for (const day of days) {
-    dayMap.set(day.date, day)
+    map.set(day.date, day)
   }
+  return map
+}
 
+const buildDateRange = (): { rangeStart: Date; today: Date } => {
   const today = new Date()
-  // 11 months back from today's month → gives us 12 months inclusive
   const rangeStart = startOfMonth(subMonths(today, 11))
-  // Align to the Sunday on or before rangeStart
+  return { rangeStart, today }
+}
+
+const toGridCell = (dateStr: string, dayMap: Map<string, HeatmapDay>): GridCell => {
+  const existing = dayMap.get(dateStr)
+  return {
+    date: dateStr,
+    count: existing?.count ?? 0,
+    categories: existing?.categories ?? [],
+  }
+}
+
+export const buildHeatmapGrid = (days: HeatmapDay[]): WeekColumn[] => {
+  const dayMap = buildDayLookup(days)
+  const { rangeStart, today } = buildDateRange()
   const gridStart = startOfWeek(rangeStart, { weekStartsOn: 0 })
+  const totalWeeks = Math.ceil((differenceInDays(today, gridStart) + 1) / 7)
 
   const weeks: WeekColumn[] = []
-  const cursor = new Date(gridStart)
 
-  while (!isAfter(cursor, today)) {
+  for (let w = 0; w < totalWeeks; w++) {
     const cells: GridCell[] = []
 
-    for (let dow = 0; dow < 7; dow++) {
-      // Skip days before range start (partial first week)
-      if (isBefore(cursor, rangeStart)) {
-        cursor.setDate(cursor.getDate() + 1)
-        continue
-      }
-      if (isAfter(cursor, today)) break
+    for (let d = 0; d < 7; d++) {
+      const date = addDays(gridStart, w * 7 + d)
+      if (isBefore(date, rangeStart)) continue
+      if (isAfter(date, today)) break
 
-      const dateStr = format(cursor, 'yyyy-MM-dd')
-      const existing = dayMap.get(dateStr)
-
-      cells.push({
-        date: dateStr,
-        count: existing?.count ?? 0,
-        categories: existing?.categories ?? [],
-      })
-
-      cursor.setDate(cursor.getDate() + 1)
+      cells.push(toGridCell(format(date, 'yyyy-MM-dd'), dayMap))
     }
 
     if (cells.length > 0) {

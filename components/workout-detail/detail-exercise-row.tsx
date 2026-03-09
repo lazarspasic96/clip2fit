@@ -5,12 +5,20 @@ import Animated, { useAnimatedStyle, withSpring } from 'react-native-reanimated'
 
 import { DragHandle } from '@/components/ui/drag-handle'
 import { MuscleChip } from '@/components/ui/muscle-chip'
+import { SwipeableRow } from '@/components/ui/swipeable-row'
 import { Colors } from '@/constants/colors'
 import type { DragState } from '@/hooks/use-draggable-list'
 import type { ApiExercise } from '@/types/api'
 
 const SLIDE = { duration: 300, dampingRatio: 1 }
 const LIFT = { duration: 200, dampingRatio: 1 }
+const DELETE_ACTION_WIDTH = 70
+
+const deleteActionContent = (
+  <View className="bg-red-500/20 rounded-xl items-center justify-center w-[70px] h-full">
+    <Trash2 size={20} color="#f87171" pointerEvents="none" />
+  </View>
+)
 
 interface DetailExerciseRowProps {
   exercise: ApiExercise
@@ -90,6 +98,7 @@ export const DetailExerciseRow = ({
       className="mx-5 mb-3"
       style={[dragAnimatedStyle, { shadowColor: '#000', shadowRadius: 12, shadowOffset: { width: 0, height: 6 } }]}
     >
+      <SwipeableRow actionWidth={DELETE_ACTION_WIDTH} actionContent={deleteActionContent} onAction={onDelete}>
         <View className="bg-background-secondary p-4 rounded-2xl overflow-hidden" style={{ borderCurve: 'continuous' }}>
           {isNewlyAdded && (
             <View className="absolute inset-0 border border-brand-accent rounded-2xl" pointerEvents="none" />
@@ -100,14 +109,9 @@ export const DetailExerciseRow = ({
             <Text className="text-base font-inter-semibold text-content-primary flex-1" numberOfLines={1}>
               {exercise.name}
             </Text>
-            <View className="flex-row items-center gap-3">
-              <Pressable onPress={onDelete} hitSlop={12}>
-                <Trash2 size={14} color={Colors.content.tertiary} pointerEvents="none" />
-              </Pressable>
-              <Pressable onPress={onEdit} hitSlop={12}>
-                <Pencil size={14} color={Colors.content.tertiary} pointerEvents="none" />
-              </Pressable>
-            </View>
+            <Pressable onPress={onEdit} hitSlop={12}>
+              <Pencil size={14} color={Colors.content.tertiary} pointerEvents="none" />
+            </Pressable>
           </View>
 
           {exercise.muscleGroups.length > 0 && (
@@ -131,6 +135,7 @@ export const DetailExerciseRow = ({
             <Text className="text-sm font-inter text-content-tertiary ml-7 mt-2">{exercise.notes}</Text>
           )}
         </View>
+      </SwipeableRow>
     </Animated.View>
   )
 }
