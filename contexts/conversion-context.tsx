@@ -10,7 +10,6 @@ import { useCancelJobMutation, useConvertUrlMutation, useWorkoutQuery } from '@/
 import { validateWorkoutUrl } from '@/utils/url-validation'
 import { apiGet } from '@/utils/api'
 
-const TAG = '[ConversionCtx]'
 const JOB_POLL_INTERVAL = 2000
 
 const STATUS_TO_STAGE: Record<string, ProcessingStage> = {
@@ -164,8 +163,6 @@ export const ConversionProvider = ({ children }: { children: React.ReactNode }) 
       try {
         const job = await apiGet<ApiJob>(`/api/jobs/${jobId}`)
         if (!activeRef.current) return
-
-        console.log(TAG, `poll — status=${job.status} progress=${job.progress}`)
 
         if (job.status === 'completed' && job.workoutId !== null) {
           stopPolling()

@@ -1,4 +1,4 @@
-import { parseUtcInstantMs } from '@/types/stats'
+import { parseUtcInstantMs } from '@/utils/stats-mappers'
 
 export const formatCompactNumber = (value: number) =>
   Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 1 }).format(value)

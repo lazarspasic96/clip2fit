@@ -23,9 +23,7 @@ export const ProcessUrlHeader = ({ jobState, isCancelling, onMinimize, onClose, 
         {
           text: 'Yes, cancel',
           style: 'destructive',
-          onPress: () => {
-            onCancelWithConfirm()
-          },
+          onPress: onCancelWithConfirm,
         },
       ])
       return

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { Text, View } from 'react-native'
 import { LineChart, type lineDataItem } from 'react-native-gifted-charts'
 
@@ -33,21 +33,21 @@ export const HistoryChart = ({ points, selectedSessionId, onSelectSessionId }: H
   const chartWidth = Math.max(0, chartHostWidth - 24)
   const edgeInset = 16
 
-  const pointSpacing = useMemo(() => {
+  const pointSpacing = (() => {
     if (points.length <= 1) return 0
     const usableWidth = Math.max(0, chartWidth - edgeInset * 2)
     return usableWidth / (points.length - 1)
-  }, [chartWidth, edgeInset, points.length])
+  })()
 
-  const paddedMaxValue = useMemo(() => {
+  const paddedMaxValue = (() => {
     if (points.length === 0) return 0
     const weights = points.map((point) => point.weight)
     const maxWeight = Math.max(...weights)
     const minWeight = Math.min(...weights)
     return maxWeight + Math.max(2, (maxWeight - minWeight) * 0.1)
-  }, [points])
+  })()
 
-  const chartData = useMemo<HistoryLineDataItem[]>(() => {
+  const chartData: HistoryLineDataItem[] = (() => {
     const selectedIndex = points.findIndex((point) => point.sessionId === selectedSessionId)
     const lastIndex = points.length - 1
     const dotStep = getDotStep(points.length)
@@ -70,10 +70,9 @@ export const HistoryChart = ({ points, selectedSessionId, onSelectSessionId }: H
       reps: point.reps,
       previousWeight: point.previousWeight,
     }))
-  }, [points, selectedSessionId])
+  })()
 
-  const pointerConfig = useMemo(
-    () => ({
+  const pointerConfig = {
       pointerColor: Colors.brand.logo,
       radius: 5.5,
       showPointerStrip: true,
@@ -113,9 +112,7 @@ export const HistoryChart = ({ points, selectedSessionId, onSelectSessionId }: H
           </View>
         )
       },
-    }),
-    [],
-  )
+  }
 
   if (points.length === 0) {
     return (

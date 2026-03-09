@@ -6,7 +6,6 @@ import {
   MUSCLE_CATEGORY_LABELS,
   MUSCLE_GROUP_COLORS,
   type MuscleGroupKey,
-  MUSCLE_GROUP_TO_CATEGORY,
 } from '@/constants/muscle-colors'
 
 type MuscleChipTone = 'soft' | 'solid' | 'ghost'
@@ -126,12 +125,6 @@ export const normalizeMuscleCategory = (raw: string | null | undefined): MuscleC
   const normalized = toSlug(raw)
   if (normalized.length === 0) return null
   return CATEGORY_ALIASES[normalized] ?? null
-}
-
-export const getMuscleCategory = (raw: string | null | undefined): MuscleCategory | null => {
-  const group = normalizeMuscleGroup(raw)
-  if (group !== null) return MUSCLE_GROUP_TO_CATEGORY[group]
-  return normalizeMuscleCategory(raw)
 }
 
 export const getMuscleColor = (raw: string | null | undefined): string => {

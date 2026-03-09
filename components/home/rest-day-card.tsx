@@ -1,6 +1,5 @@
-import { Image } from 'expo-image'
 import { useRouter } from 'expo-router'
-import { Info } from 'lucide-react-native'
+import { Coffee, Info } from 'lucide-react-native'
 import { Pressable, Text, View } from 'react-native'
 
 import { Colors } from '@/constants/colors'
@@ -23,12 +22,18 @@ export const RestDayCard = () => {
           </Pressable>
         </View>
 
-        {/* TODO: Replace with local asset */}
-        <Image
-          source={{ uri: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=200&h=200&fit=crop' }}
-          style={{ width: 100, height: 100, borderRadius: 12 }}
-          contentFit="cover"
-        />
+        <View
+          style={{
+            width: 100,
+            height: 100,
+            borderRadius: 12,
+            backgroundColor: Colors.background.primary,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Coffee size={40} color={Colors.brand.accent} pointerEvents="none" />
+        </View>
       </View>
 
       <View className="flex-row items-start gap-2 mt-4 pt-3 border-t border-border-primary">

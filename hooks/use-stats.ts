@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 
 import { queryKeys } from '@/constants/query-keys'
@@ -11,7 +10,7 @@ import {
   mapPRHistoryResponse,
   mapPRsResponse,
   mapSummaryResponse,
-} from '@/types/stats'
+} from '@/utils/stats-mappers'
 import { ApiError, apiGet } from '@/utils/api'
 import {
   appendTimezoneDebugOverride,
@@ -149,10 +148,7 @@ export const useExerciseHistory = (catalogExerciseId: string | null, exerciseNam
       (exerciseName !== null && exerciseName.length > 0),
   })
 
-  const history = useMemo(() => {
-    if (query.data === undefined) return null
-    return query.data.exercises[0] ?? null
-  }, [query.data])
+  const history = query.data !== undefined ? (query.data.exercises[0] ?? null) : null
 
   return {
     history,

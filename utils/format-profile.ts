@@ -1,6 +1,6 @@
 import type { FitnessGoal, Gender, HeightUnit, WeightUnit } from '@/types/profile'
 import { FITNESS_GOALS, GENDERS } from '@/types/profile'
-import { dobAge, formatDobDisplay, formatDobIso } from '@/utils/dob-date'
+import { formatDobDisplay, formatDobIso } from '@/utils/dob-date'
 
 export const displayGender = (gender?: Gender): string | undefined => {
   if (gender === undefined) return undefined
@@ -33,16 +33,9 @@ export const formatWeight = (weight?: number, unit?: WeightUnit): string | undef
   return `${weight} ${unit}`
 }
 
-export const formatDateToISO = (date: Date): string => {
-  return formatDobIso(date)
-}
-
 export const formatDateOfBirth = (dob?: string | Date): string | undefined => {
   if (dob === undefined) return undefined
   if (dob instanceof Date) return formatDobDisplay(formatDobIso(dob))
   return formatDobDisplay(dob)
 }
 
-export const dobToAge = (dob: string): number => {
-  return dobAge(dob)
-}
