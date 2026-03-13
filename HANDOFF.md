@@ -1,135 +1,154 @@
-# Handoff: Form Coach — Pose Detection Camera
+# Handoff: Form Coach — Full Implementation
 
 ## Goal
 
-Add a real-time exercise form feedback screen. User taps "Form Coach" on home screen → exercise selection bottom sheet → camera opens full-screen → skeleton overlay (dots + connecting lines) drawn on top of live camera via Skia, driven by Reanimated SharedValue updated on the UI thread via `runOnUI`. Foundation for later LLM-powered form coaching.
+Real-time exercise form coaching in-app. User selects exercise → camera opens → AI pose detection draws skeleton → form feedback (traffic lights, voice coaching, rep counting, barbell path tracking) → workout summary.
 
-Full spec: `plans/plan-form-coach-pose-camera.md`
+Full spec: `plans/plan-form-coach-full.md`
 
 ## Current Progress
 
-### Phase 0: Dependencies & Smoke Tests — DONE
+### Phase 1: Camera + Skeleton — DONE (prior conversation)
 
-- Installed `@shopify/react-native-skia`, `expo-camera`, `expo-screen-orientation`
-- Camera permissions added to `app.json` (iOS `NSCameraUsageDescription` + Android `CAMERA`)
-- Skia + Reanimated v4 smoke test passed (SharedValues read by Skia Canvas on UI thread at 60 FPS, zero React re-renders)
+- Custom Expo native module (`modules/expo-pose-camera/`) — iOS Vision + Android ML Kit
+- Skeleton overlay via Skia + Reanimated SharedValues at ~20 FPS
+- Entry point from home screen, exercise picker sheet, permission handling
+- iOS build verified. Android code written.
 
-### Phase 1: Entry Point & Navigation — DONE
+### Phase 2: Screen States + Setup + Camera Flip — DONE
 
-- "Form Coach" 3rd tile added to `components/home/bottom-action-buttons.tsx` (ScanLine icon, lime #84cc16)
-- `form-coach` screen registered in `app/(protected)/_layout.tsx` as `fullScreenModal`, `slide_from_bottom`, `gestureEnabled: false`
-- Placeholder `app/(protected)/form-coach.tsx` created with close button, exercise label
+- **State machine** (`hooks/use-form-coach-state.ts`): setup → active → rest → summary
+- **Body detection** (`hooks/use-body-detection.ts`): 1s debounce before "lost" warning
+- **Rest detection** (`hooks/use-rest-detection.ts`): 5s no-movement → rest state
+- **Setup overlay** (`components/form-coach/setup-overlay.tsx`): Joint checklist (✓/✗ per joint), 2s hold countdown with progress bar, auto-transitions to active
+- **Camera flip** (`components/form-coach/camera-flip-button.tsx`): Front/back toggle with native X mirroring in both iOS (`ExpoPoseCameraView.swift` line ~185) and Android (`ExpoPoseCameraView.kt` line ~157)
+- **Body-not-detected overlay**: Dark overlay + icon, shows in active/rest when landmarks empty
+- **Orientation unlocked**: Supports landscape for bench/floor exercises
 
-### Phase 2: Exercise Selection Sheet — DONE
+### Phase 3: Joint Angles + Squat Feedback + TTS — DONE
 
-- `components/form-coach/exercise-sheet.tsx` — BottomSheetModal with deduplicated exercise names from user workouts. Supports two modes: navigation (from home) and in-place selection (from camera via `onSelect` prop)
-- Wired into home screen via ref, skips sheet if no workouts
-- Exercise label at bottom of camera screen is tappable → reopens sheet
+- **Angle calculation** (`utils/pose-angles.ts`): `calculateAngle()`, `calculateTrunkLean()`, `calculateKneeTracking()`
+- **Camera angle detection** (`utils/camera-angle-detector.ts`): Side/front/45° based on shoulder width ratio
+- **Squat rules** (`constants/form-rules/squat.ts`): Knee depth, hip angle, knee valgus (front-only)
+- **Form rules registry** (`constants/form-rules/index.ts`): `hasFormRules(name)`, `getFormRules(name)` with alias support
+- **Form evaluator** (`utils/form-evaluator.ts`): Runs angle rules + custom checks, sorts by severity
+- **Feedback overlay** (`components/form-coach/form-feedback-overlay.tsx`): Green/yellow/red pills (primary + secondary)
+- **TTS** (`hooks/use-tts-feedback.ts`): expo-speech on error severity, 3s throttle, MMKV-persisted mute (`form-coach` MMKV store)
+- **Unreliable check note**: Shows when checks are skipped due to camera angle
+- **Debug overlay**: `__DEV__` only — live angle numbers per rule
 
-### Phase 3: Local Expo Module Scaffold — DONE
+### Phase 4: Rep Counting + Set Summary + More Exercises — DONE
 
-- `modules/expo-pose-camera/` created manually (not via `create-expo-module` — interactive prompt doesn't work in CI)
-- TypeScript types: `PoseLandmark`, `PoseDetectedEvent`, `ExposePoseCameraViewProps`
-- `requireNativeView('ExposePoseCamera')` wrapper
-- `expo-module.config.json` with iOS + Android module definitions
-- `package.json` added (required for proper module resolution)
-- `expo-pose-camera.podspec` with `source_files = 'ios/*.{h,m,mm,swift}', 'ios/**/*.{h,m,mm,swift}'`
+- **Rep counter** (`utils/rep-counter.ts`): State machine (resting→descending→bottom→ascending), 15-frame debounce
+- **Session store** (`stores/form-session-store.ts`): Observer pattern (subscribe/getSnapshot), tracks sets/reps/per-rep quality
+- **Rep counter display**: Circular badge top-center, pulse animation on increment
+- **Set summary card**: Slides up on rest with set #, rep count, colored quality dots
+- **Orchestrator hook** (`hooks/use-form-coach-orchestrator.ts`): Extracted all eval/rep/session logic to keep `form-coach.tsx` under 350 lines
+- **New exercise rules**: Deadlift, bench press, overhead press, lunge — all in `constants/form-rules/`
 
-### Phase 4: iOS Native (Swift) — DONE
+### Phase 5: Advanced Detection + Barbell Path — DONE
 
-- `ios/ExposePoseCameraModule.swift` — Module definition with View, Events("onPoseDetected"), Prop("isActive")
-- `ios/PoseCameraView.swift` — ExpoView subclass:
-  - AVCaptureSession + AVCaptureVideoPreviewLayer (back camera, portrait)
-  - AVCaptureVideoDataOutputSampleBufferDelegate on dedicated serial queue
-  - VNDetectHumanBodyPoseRequest per frame
-  - Multi-person: picks highest confidence sum
-  - Normalizes coordinates (flips Y for Vision's bottom-left origin)
-  - Filters confidence ≤ 0.3, throttles to ~20 FPS
-  - Fires `onPoseDetected` event with landmarks array
-  - `isActive` prop controls session start/stop
+- **Back rounding detector** (`utils/back-rounding-detector.ts`): 10-frame rolling window, >15° increase in 5 frames = rounding
+- **Symmetry checker** (`utils/symmetry-checker.ts`): L/R angle delta >10° = warning (front/45° only)
+- **Common checks** (`constants/form-rules/common-checks.ts`): `backRoundingCheck` + `symmetryCheck` added to squat + deadlift rules
+- **Barbell tracker** (`utils/barbell-tracker.ts`): Wrist midpoint, 60-frame ring buffer, drift >0.05 = warning
+- **Barbell path overlay** (`components/form-coach/barbell-path-overlay.tsx`): Cyan Skia gradient trail, red on drift
+- **Body highlight overlay** (`components/form-coach/body-highlight-overlay.tsx`): Red translucent glow circles on issue joints
 
-### Phase 5: Skeleton Overlay — DONE
+### Phase 6: LLM Coaching + Summary + Entry Points — DONE
 
-- `constants/pose-skeleton.ts` — 19 joint names, 15 bone connections, drawing constants
-- `components/form-coach/skeleton-overlay.tsx` — Skia Canvas reading `SharedValue<PoseLandmark[]>` on UI thread via `useDerivedValue`. Extracted `Bone` and `JointDot` sub-components to avoid hooks-in-loops lint errors. Draws lime lines (strokeWidth 3) and circles (radius 6)
+- **Workout summary** (`components/form-coach/workout-summary-screen.tsx`): Full stats — sets/reps/form score%, most common issue, per-set colored dot breakdown
+- **LLM coaching (mock)** (`utils/form-coaching-mock.ts`): Canned messages per issue type, 3s interval
+- **Coaching hook** (`hooks/use-form-coaching.ts`): Aggregates 60-frame buffer → generates coaching message
+- **Coaching bubble** (`components/form-coach/coaching-bubble.tsx`): Dark card with lime border, slide-in animation, also spoken via TTS
+- **Entry point — exercise detail**: ScanLine icon in header (`app/(protected)/exercise-detail.tsx`) for exercises with form rules
+- **Entry point — active workout**: "Form Check" link in exercise accordion (`components/workout/command-center/exercise-accordion.tsx`)
 
-### Phase 6: Form Coach Screen Polish — DONE
+### Build Status
 
-- `components/form-coach/permission-denied-view.tsx` — Camera denied fallback with "Open Settings" button
-- `app/(protected)/form-coach.tsx` — Full screen with:
-  - `useCameraPermissions()` from expo-camera for permission gate
-  - `ExposePoseCameraView` (absoluteFill) with `isActive={isFocused}`
-  - `SkeletonOverlay` (absoluteFill, pointerEvents=none)
-  - `runOnUI` event bridge from `onPoseDetected` → SharedValue
-  - Close button (top-right), exercise label (bottom-center)
-  - Portrait lock via `expo-screen-orientation`
-
-### Phase 7: Android Native (Kotlin) — DONE (code written, not tested)
-
-- `android/build.gradle` — CameraX 1.4.1 + ML Kit pose-detection-accurate 18.0.0-beta5
-- `android/src/main/java/expo/modules/posecamera/ExposePoseCameraModule.kt`
-- `android/src/main/java/expo/modules/posecamera/PoseCameraView.kt` — CameraX + ML Kit, same event format as iOS
-
-### Build Status — iOS BUILD SUCCEEDS, NEEDS RUNTIME VERIFICATION
-
-- `npx expo run:ios` completed successfully (0 errors, 1165 warnings — mostly Skia linker warnings)
-- Swift files confirmed compiled (`.swiftdeps` present in DerivedData)
-- App installed on iPhone 17 Pro Max simulator
-
-### Runtime Blocker Found and Fixed (Native View Registration)
-
-- Symptom at runtime:
-  - `Unimplemented component: <ViewManagerAdapter_ExposePoseCamera>`
-- Root cause:
-  - Local module autolinking metadata for Apple platform was incomplete, so `ExpoModulesProvider.swift` did not register `ExposePoseCameraModule`.
-- Fix:
-  - Updated `modules/expo-pose-camera/expo-module.config.json` to:
-    - use `platforms: ["apple", "android"]`
-    - define `apple.modules`
-    - define `apple.podspecPath`
-    - define `apple.swiftModuleName`
-  - Re-ran `pod install` so `expo-pose-camera` is included in generated module provider and package list.
+- `npx tsc --noEmit` — PASSES (0 errors)
+- `npx expo lint` — PASSES (0 errors, 0 warnings)
+- Not yet runtime-tested after Phases 2-6
 
 ## What Worked
 
-- **Custom Expo Module over VisionCamera** — Avoids worklets-core conflict with Reanimated v4
-- **`runOnUI` event bridge** — Public API only, no Reanimated internal C++ headers
-- **Skia reads SharedValues directly** — Proven in smoke test, circle animated at 60 FPS
-- **Sub-components for Skia elements** — Extracted `Bone` and `JointDot` to fix hooks-in-loops ESLint errors
-- **`useCameraPermissions()` from expo-camera** — Cleaner than manual permission checking
+- **Custom Expo Module** — Avoids worklets-core conflict with Reanimated v4
+- **`runOnUI` event bridge** — Native → SharedValue → Skia, zero JS bridge per frame
+- **Orchestrator pattern** — Extracting all eval logic into `use-form-coach-orchestrator.ts` kept the screen file clean (273 lines)
+- **Observer store pattern** — `formSessionStore` follows existing `catalogFilterStore` pattern (subscribe/getSnapshot with `useSyncExternalStore`)
+- **`createMMKV({ id: 'form-coach' })`** — This project uses `createMMKV` not `new MMKV()` (the import is `createMMKV` from `react-native-mmkv`)
+- **Form rules registry with aliases** — Fuzzy matching via canonical name + common variations (e.g., "back squat", "barbell squat" all map to squat rules)
+- **Mock-first LLM coaching** — Full UX works without backend, easy to swap `form-coaching-mock.ts` for real API later
 
 ## What Didn't Work / Watch Out For
 
-- **`npx create-expo-module --local` interactive prompt** — Fails in non-TTY environments. Had to scaffold manually
-- **Missing podspec** — Local Expo modules MUST have a `.podspec` file for CocoaPods to compile Swift files. Without it, autolinking detects the module but CocoaPods only compiles the dummy .m stub
-- **Podspec `source_files` glob** — `'ios/**/*.{h,m,mm,swift}'` alone did NOT match files in `ios/` directory on this CocoaPods version. Fixed by using BOTH patterns: `'ios/*.{h,m,mm,swift}', 'ios/**/*.{h,m,mm,swift}'`
-- **`videoRotationAngle`** — iOS 17+ only. Project targets iOS 15.1. Fixed with `if #available(iOS 17.0, *)` fallback to `videoOrientation = .portrait`
-- **`prebuild` ≠ `run:ios`** — `prebuild` only generates native project files. `run:ios` actually compiles Swift and installs the binary. User must run `npx expo run:ios` after any native code change
-- **Missing `package.json` in module** — Added for proper module resolution
+- **`new MMKV()`** — Does not exist in this project's version. Use `createMMKV({ id: '...' })` instead.
+- **Missing podspec** — Local Expo modules MUST have a `.podspec` for CocoaPods. Without it, autolinking detects module but Swift files don't compile.
+- **`videoRotationAngle`** — iOS 17+ only. Project targets iOS 15.1. Uses `#available` fallback.
+- **Shared back rounding detector state** — `common-checks.ts` uses module-level `createBackRoundingDetector()`. Must call `resetCommonChecks()` when switching exercises (not yet wired — minor TODO).
+- **Form coach screen line limit** — Was approaching 350 lines after Phase 3. Extracted orchestrator hook to solve this.
 
-## Key Files Reference
+## Key Files
 
-| File | Purpose |
-|------|---------|
-| `plans/plan-form-coach-pose-camera.md` | Full implementation spec |
-| `app/(protected)/form-coach.tsx` | Main camera screen |
-| `components/form-coach/exercise-sheet.tsx` | Exercise selection bottom sheet |
-| `components/form-coach/skeleton-overlay.tsx` | Skia canvas skeleton (Bone/JointDot sub-components) |
-| `components/form-coach/permission-denied-view.tsx` | Camera denied fallback |
-| `components/home/bottom-action-buttons.tsx` | Home screen tiles (3rd = Form Coach) |
-| `constants/pose-skeleton.ts` | Joint names, connections, drawing constants |
-| `modules/expo-pose-camera/` | Local Expo module (entire directory) |
-| `modules/expo-pose-camera/ios/PoseCameraView.swift` | iOS camera + Vision pose detection |
-| `modules/expo-pose-camera/ios/ExposePoseCameraModule.swift` | iOS module definition |
-| `modules/expo-pose-camera/android/.../PoseCameraView.kt` | Android CameraX + ML Kit |
-| `modules/expo-pose-camera/android/.../ExposePoseCameraModule.kt` | Android module definition |
-| `modules/expo-pose-camera/expo-pose-camera.podspec` | CocoaPods spec (critical for iOS) |
+| Category | File | Purpose |
+|----------|------|---------|
+| **Screen** | `app/(protected)/form-coach.tsx` | Main camera screen (273 lines) |
+| **Orchestrator** | `hooks/use-form-coach-orchestrator.ts` | All eval/rep/barbell/coaching logic |
+| **State machine** | `hooks/use-form-coach-state.ts` | setup → active → rest → summary |
+| **Detection** | `hooks/use-body-detection.ts` | Body presence debounce |
+| **Detection** | `hooks/use-rest-detection.ts` | Movement-based rest detection |
+| **TTS** | `hooks/use-tts-feedback.ts` | expo-speech + MMKV mute |
+| **Coaching** | `hooks/use-form-coaching.ts` | Mock LLM coaching (3s interval) |
+| **Types** | `types/form-rules.ts` | All form coach types |
+| **Types** | `types/form-coaching.ts` | LLM coaching request/response types |
+| **Rules** | `constants/form-rules/index.ts` | Registry + `hasFormRules`/`getFormRules` |
+| **Rules** | `constants/form-rules/squat.ts` | Squat angle rules + custom checks |
+| **Rules** | `constants/form-rules/deadlift.ts` | Deadlift rules + back rounding |
+| **Rules** | `constants/form-rules/bench-press.ts` | Bench press (upper body only) |
+| **Rules** | `constants/form-rules/overhead-press.ts` | OHP lockout + back arch |
+| **Rules** | `constants/form-rules/lunge.ts` | Lunge knee/torso rules |
+| **Rules** | `constants/form-rules/common-checks.ts` | Shared back rounding + symmetry |
+| **Rules** | `constants/form-rules/barbell-path.ts` | Per-exercise ideal path config |
+| **Utils** | `utils/pose-angles.ts` | Pure math: angle, trunk lean, knee tracking |
+| **Utils** | `utils/camera-angle-detector.ts` | Side/front/45° detection |
+| **Utils** | `utils/form-evaluator.ts` | Runs rules → FormIssue[] |
+| **Utils** | `utils/rep-counter.ts` | Angle peak state machine |
+| **Utils** | `utils/back-rounding-detector.ts` | Rolling window spine angle |
+| **Utils** | `utils/symmetry-checker.ts` | L/R comparison |
+| **Utils** | `utils/barbell-tracker.ts` | Wrist midpoint + drift |
+| **Utils** | `utils/form-data-aggregator.ts` | 60-frame buffer for coaching |
+| **Utils** | `utils/form-coaching-mock.ts` | Canned coaching messages |
+| **Store** | `stores/form-session-store.ts` | Sets/reps/quality tracking |
+| **Components** | `components/form-coach/skeleton-overlay.tsx` | Skia skeleton (dimmed + red joints) |
+| **Components** | `components/form-coach/setup-overlay.tsx` | Joint checklist + countdown |
+| **Components** | `components/form-coach/form-feedback-overlay.tsx` | Green/yellow/red pills |
+| **Components** | `components/form-coach/rep-counter-display.tsx` | Circular badge + pulse |
+| **Components** | `components/form-coach/set-summary-card.tsx` | Slide-up card on rest |
+| **Components** | `components/form-coach/barbell-path-overlay.tsx` | Cyan/red Skia trail |
+| **Components** | `components/form-coach/body-highlight-overlay.tsx` | Red glow on issue joints |
+| **Components** | `components/form-coach/coaching-bubble.tsx` | LLM message card |
+| **Components** | `components/form-coach/workout-summary-screen.tsx` | Full session stats |
+| **Native** | `modules/expo-pose-camera/ios/ExpoPoseCameraView.swift` | iOS Vision + front camera mirroring |
+| **Native** | `modules/expo-pose-camera/android/.../ExpoPoseCameraView.kt` | Android ML Kit + front camera mirroring |
 
 ## Next Steps
 
-1. **Runtime verification on iOS** — Open app on simulator/device, tap Form Coach → select exercise → verify camera opens and skeleton draws on a person. The build succeeds but runtime behavior hasn't been verified yet.
-2. **Test on physical iOS device** — Simulator has no real camera. Need a device build via `npx expo run:ios --device` to verify actual pose detection with Apple Vision.
-3. **Android testing** — Run `npx expo run:android`, verify CameraX + ML Kit pose detection works. The Kotlin code is written but completely untested.
-4. **Verify skeleton tracking quality** — Check that skeleton tracks at ≥15 FPS, joints/bones appear at correct positions, multi-person picks correct body, empty frame clears skeleton instantly.
-5. **Edge cases** — Test: deny camera permission → PermissionDeniedView with "Open Settings"; exercise label tap → sheet reopens over live camera; close button → returns to home; camera stops when screen unfocused.
-6. **Performance profiling** — Verify via React DevTools Profiler that FormCoachScreen has zero re-renders during skeleton drawing (only SharedValue mutations on UI thread).
+### Immediate: Runtime Testing
+1. `npx expo run:ios` — test all phases on iOS simulator (face detection / body pose)
+2. Test on physical device (simulator has no real camera for Vision body pose)
+3. `npx expo run:android` — verify CameraX + ML Kit
+4. Tune angle thresholds with real users (current values are theoretical estimates)
+
+### Minor TODOs
+5. Wire `resetCommonChecks()` on exercise switch (back rounding detector state persists between exercises)
+6. Test landscape orientation for bench press exercises
+7. Verify front camera mirroring on both platforms
+
+### Future: Real LLM Coaching (Phase 6C Step 2)
+8. Build `POST /api/form-feedback` endpoint in `clip2fit-api` repo — accepts aggregated angles/issues, returns streaming Claude Haiku response
+9. Swap `form-coaching-mock.ts` for real API call in `hooks/use-form-coaching.ts`
+10. Add auth (Supabase JWT) and rate limiting (20/min) to the endpoint
+
+### Future: Unit Tests
+11. Pure logic is easily testable without React: `pose-angles.ts`, `rep-counter.ts`, `form-evaluator.ts`, `barbell-tracker.ts`, `back-rounding-detector.ts`, `symmetry-checker.ts`
+12. No test infrastructure exists — would need to add Jest or Vitest
