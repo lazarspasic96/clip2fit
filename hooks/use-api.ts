@@ -192,7 +192,7 @@ export const useCancelJobMutation = () =>
     mutationFn: (jobId: string) =>
       apiPost<ApiCancelJobResponse>(`/api/jobs/${jobId}/cancel`, {}),
     onError: (error) => {
-      console.error(TAG, 'cancelJob — onError:', error instanceof ApiError ? `ApiError(${error.status}): ${error.message}` : String(error))
+      console.error('[use-api] cancelJob — onError:', error instanceof ApiError ? `ApiError(${error.status}): ${error.message}` : String(error))
     },
   })
 

@@ -17,9 +17,10 @@
       },
       "entitlements": {
         "com.apple.security.application-groups": [
-          "group.com.lazarspasic96.clip2fit"
+          "group.com.lazarspasic96.clip2fit.shared"
         ]
-      }
+      },
+      "appleTeamId": "WQFA6H56XL"
     },
     "android": {
       "softwareKeyboardLayoutMode": "pan",
@@ -64,7 +65,7 @@
           "ios": {
             "enabled": true,
             "extensionBundleIdentifier": "com.lazarspasic96.clip2fit.share-extension",
-            "appGroupId": "group.com.lazarspasic96.clip2fit",
+            "appGroupId": "group.com.lazarspasic96.clip2fit.shared",
             "activationRule": {
               "supportsText": true,
               "supportsWebUrlWithMaxCount": 1,
@@ -90,23 +91,7 @@
       "router": {},
       "eas": {
         "projectId": "8b552f56-5b90-4f13-a447-47838703d467",
-        "build": {
-          "experimental": {
-            "ios": {
-              "appExtensions": [
-                {
-                  "targetName": "expo-sharing-extension",
-                  "bundleIdentifier": "com.lazarspasic96.clip2fit.share-extension",
-                  "entitlements": {
-                    "com.apple.security.application-groups": [
-                      "group.com.lazarspasic96.clip2fit"
-                    ]
-                  }
-                }
-              ]
-            }
-          }
-        }
+        "build": {}
       }
     },
     "owner": "clip2fit"

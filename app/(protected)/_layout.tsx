@@ -44,6 +44,14 @@ const ProtectedLayout = () => {
               animation: 'slide_from_bottom',
             }}
           />
+          <Stack.Screen
+            name="form-coach"
+            options={{
+              presentation: 'fullScreenModal',
+              animation: 'slide_from_bottom',
+              gestureEnabled: false,
+            }}
+          />
           <Stack.Screen name="exercise-catalog" options={{ presentation: 'card' }} />
           <Stack.Screen name="exercise-detail" options={{ presentation: 'card' }} />
           <Stack.Screen name="workout-builder" options={{ presentation: 'card' }} />
@@ -77,6 +85,7 @@ const ProtectedLayout = () => {
           <Stack.Screen name="sheets/edit-focus-areas" options={{ ...sheetOptions, sheetAllowedDetents: 'fitToContents' }} />
           <Stack.Screen name="sheets/edit-injuries" options={{ ...sheetOptions, sheetAllowedDetents: [0.6, 0.85] }} />
           <Stack.Screen name="sheets/delete-account" options={{ ...sheetOptions, sheetAllowedDetents: [0.45] }} />
+          <Stack.Screen name="sheets/form-coach-exercise" options={{ ...sheetOptions, sheetAllowedDetents: [0.6, 0.85] }} />
         </Stack>
       </ActiveWorkoutProvider>
     </WorkoutBuilderProvider>

@@ -1,4 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router'
+import { ScanLine } from 'lucide-react-native'
 import { useSyncExternalStore } from 'react'
 import { ActivityIndicator, Pressable, Text, View } from 'react-native'
 import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated'
@@ -10,6 +11,7 @@ import { ExerciseContentSection } from '@/components/catalog/exercise-content-se
 import { ExerciseHeroImage } from '@/components/catalog/exercise-hero-image'
 import { BackButton } from '@/components/ui/back-button'
 import { Colors } from '@/constants/colors'
+import { hasFormRules } from '@/constants/form-rules'
 import { useWorkoutBuilder } from '@/contexts/workout-builder-context'
 import { useCatalogDetail } from '@/hooks/use-catalog'
 
@@ -73,6 +75,16 @@ const ExerciseDetailScreen = () => {
         className="absolute left-4 z-20"
         style={{ top: insets.top + 8 }}
       />
+
+      {hasFormRules(exercise.name) && (
+        <Pressable
+          onPress={() => router.push(`/(protected)/form-coach?exercise=${encodeURIComponent(exercise.name)}`)}
+          className="absolute right-4 z-20 w-10 h-10 rounded-full bg-black/50 items-center justify-center"
+          style={{ top: insets.top + 8 }}
+        >
+          <ScanLine size={20} color="#84cc16" pointerEvents="none" />
+        </Pressable>
+      )}
 
       <Animated.ScrollView
         onScroll={scrollHandler}
