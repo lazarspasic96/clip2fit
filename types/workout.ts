@@ -44,11 +44,19 @@ export interface WorkoutPlan {
   templateId: string | null
 }
 
+export interface PauseEntry {
+  pausedAt: number
+  resumedAt: number
+}
+
 export interface WorkoutSession {
   id: string
   plan: WorkoutPlan
-  status: 'in_progress' | 'completed'
+  status: 'in_progress' | 'paused' | 'completed'
   startedAt: number
   completedAt?: number
   activeExerciseIndex: number
+  pausedAt?: number
+  totalPausedMs: number
+  pauseHistory: PauseEntry[]
 }

@@ -146,6 +146,7 @@ export interface ApiSessionPayload {
   status: 'completed' | 'partial'
   started_at: string
   completed_at: string
+  paused_duration_seconds: number
   exercises: ApiSessionExercise[]
 }
 

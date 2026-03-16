@@ -7,7 +7,6 @@ import { PulseRing } from '@/components/workout/designs/design-b-pulse/pulse-rin
 import { PulseSetCard } from '@/components/workout/designs/design-b-pulse/pulse-set-card'
 import { SegmentedProgressBar } from '@/components/workout/segmented-progress-bar'
 import { useActiveSet } from '@/components/workout/shared/use-active-set'
-import { useElapsedTimer } from '@/components/workout/shared/use-elapsed-timer'
 import { Colors } from '@/constants/colors'
 import { useActiveWorkout } from '@/contexts/active-workout-context'
 
@@ -16,12 +15,14 @@ interface DashboardProps {
   onFinish: () => void
   isEditMode?: boolean
   learningPill?: React.ReactNode
+  headerSlot?: React.ReactNode
+  ringSlot?: React.ReactNode
+  bottomOverlay?: React.ReactNode
 }
 
-export const PulseDashboard = ({ onBack, onFinish, isEditMode, learningPill }: DashboardProps) => {
+export const PulseDashboard = ({ onBack, onFinish, isEditMode, learningPill, headerSlot, ringSlot, bottomOverlay }: DashboardProps) => {
   const { session, currentExercise, navigateExercise } = useActiveWorkout()
   const { activeSetIndex, totalCount } = useActiveSet()
-  useElapsedTimer()
 
   if (session === null || currentExercise === null) return null
 
@@ -38,22 +39,24 @@ export const PulseDashboard = ({ onBack, onFinish, isEditMode, learningPill }: D
   return (
     <View className="flex-1">
       {/* Header */}
-      <View className="flex-row items-center justify-between px-4 py-3">
-        <BackButton onPress={onBack} />
-        <Text className="text-base font-inter-bold text-content-primary flex-1 text-center" numberOfLines={1}>
-          {session.plan.title}
-        </Text>
-        <Pressable onPress={onFinish} hitSlop={8}>
-          <Text className="text-sm font-inter-semibold text-brand-accent">
-            {isEditMode === true ? 'Save' : 'Finish'}
+      {headerSlot ?? (
+        <View className="flex-row items-center justify-between px-4 py-3">
+          <BackButton onPress={onBack} />
+          <Text className="text-base font-inter-bold text-content-primary flex-1 text-center" numberOfLines={1}>
+            {session.plan.title}
           </Text>
-        </Pressable>
-      </View>
+          <Pressable onPress={onFinish} hitSlop={8}>
+            <Text className="text-sm font-inter-semibold text-brand-accent">
+              {isEditMode === true ? 'Save' : 'Finish'}
+            </Text>
+          </Pressable>
+        </View>
+      )}
 
       <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 24 }} keyboardShouldPersistTaps="handled">
         {/* Pulse ring */}
         <View className="items-center mt-8">
-          <PulseRing progress={progressPct} pct={pct} setLabel={setLabel} />
+          {ringSlot ?? <PulseRing progress={progressPct} pct={pct} setLabel={setLabel} />}
         </View>
 
         {/* Exercise name with nav arrows */}
@@ -100,6 +103,8 @@ export const PulseDashboard = ({ onBack, onFinish, isEditMode, learningPill }: D
           <PulseSetCard />
         </Animated.View>
       </ScrollView>
+
+      {bottomOverlay}
     </View>
   )
 }

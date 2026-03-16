@@ -2,15 +2,25 @@ import { useRouter } from 'expo-router'
 import { useEffect, useState } from 'react'
 import { View } from 'react-native'
 
-import { BaselinePulseDashboard } from '@/components/workout/designs/design-a-baseline/baseline-pulse-dashboard'
+import { DevTimerDesignSwitcher } from '@/components/workout/dev-timer-design-switcher'
 import { PrCelebration } from '@/components/workout/pr-celebration'
+import { FloatPillDashboard } from '@/components/workout/timer-designs/float-pill/float-pill-dashboard'
+import { OrbitDashboard } from '@/components/workout/timer-designs/orbit/orbit-dashboard'
+import { PulseTickerDashboard } from '@/components/workout/timer-designs/pulse-ticker/pulse-ticker-dashboard'
 import { useActiveWorkout } from '@/contexts/active-workout-context'
 import { useFinishWorkout } from '@/hooks/use-finish-workout'
+import { useTimerDesign } from '@/stores/timer-design-store'
 import type { ApiPR } from '@/types/api'
 
 interface ActiveWorkoutShellProps {
   onBack: () => void
 }
+
+const DASHBOARDS = {
+  'pulse-ticker': PulseTickerDashboard,
+  'orbit': OrbitDashboard,
+  'float-pill': FloatPillDashboard,
+} as const
 
 export const ActiveWorkoutShell = ({ onBack }: ActiveWorkoutShellProps) => {
   const router = useRouter()
@@ -18,6 +28,7 @@ export const ActiveWorkoutShell = ({ onBack }: ActiveWorkoutShellProps) => {
   const [prs, setPrs] = useState<ApiPR[]>([])
   const [showPrCelebration, setShowPrCelebration] = useState(false)
   const finishMutation = useFinishWorkout()
+  const { design } = useTimerDesign()
 
   const isEditMode = session?.status === 'completed'
 
@@ -61,9 +72,12 @@ export const ActiveWorkoutShell = ({ onBack }: ActiveWorkoutShellProps) => {
 
   if (session === null) return null
 
+  const Dashboard = DASHBOARDS[design]
+
   return (
     <View className="flex-1">
-      <BaselinePulseDashboard
+      <DevTimerDesignSwitcher />
+      <Dashboard
         onBack={onBack}
         onFinish={isEditMode ? handleSave : handleFinish}
         isEditMode={isEditMode}

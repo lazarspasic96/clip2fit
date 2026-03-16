@@ -47,6 +47,7 @@ export const buildSessionPayload = (session: WorkoutSession): ApiSessionPayload 
     status: allFinished ? 'completed' : 'partial',
     started_at: new Date(session.startedAt).toISOString(),
     completed_at: new Date().toISOString(),
+    paused_duration_seconds: Math.round(session.totalPausedMs / 1000),
     exercises,
   }
 }

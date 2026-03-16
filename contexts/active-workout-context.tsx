@@ -46,7 +46,29 @@ const buildInitialSession = (plan: WorkoutPlan): WorkoutSession => ({
   status: 'in_progress',
   startedAt: Date.now(),
   activeExerciseIndex: 0,
+  totalPausedMs: 0,
+  pauseHistory: [],
 })
+
+const applyPauseWorkout = (state: WorkoutSession): WorkoutSession => ({
+  ...state,
+  status: 'paused',
+  pausedAt: Date.now(),
+})
+
+const applyResumeWorkout = (state: WorkoutSession): WorkoutSession => {
+  const now = Date.now()
+  const pausedAt = state.pausedAt ?? now
+  const pauseDuration = now - pausedAt
+
+  return {
+    ...state,
+    status: 'in_progress',
+    pausedAt: undefined,
+    totalPausedMs: state.totalPausedMs + pauseDuration,
+    pauseHistory: [...state.pauseHistory, { pausedAt, resumedAt: now }],
+  }
+}
 
 const applyCompleteSet = (
   state: WorkoutSession,
@@ -124,11 +146,14 @@ interface WorkoutContextValue {
   completedSession: WorkoutSession | null
   currentExercise: WorkoutExercise | null
   progress: { completed: number; total: number }
+  isPaused: boolean
   startWorkout: (plan: WorkoutPlan) => void
   completeSet: (exerciseId: string, setId: string, actualReps: number | null, actualWeight: number | null) => void
   editSet: (exerciseId: string, setId: string, actualReps: number | null, actualWeight: number | null) => void
   skipExercise: (exerciseId: string) => void
   navigateExercise: (index: number) => void
+  pauseWorkout: () => void
+  resumeWorkout: () => void
   finishSession: () => void
   clearSession: () => void
   finishResult: ApiSessionResponse | null
@@ -174,10 +199,20 @@ export const ActiveWorkoutProvider = ({ children }: { children: React.ReactNode 
     updateAndPersist((prev) => applyNavigateExercise(prev, index))
   }
 
+  const pauseWorkout = () => {
+    updateAndPersist((prev) => applyPauseWorkout(prev))
+  }
+
+  const resumeWorkout = () => {
+    updateAndPersist((prev) => applyResumeWorkout(prev))
+  }
+
   const finishSession = () => {
     setSession((prev) => {
       if (prev === null) return prev
-      const next: WorkoutSession = { ...prev, status: 'completed', completedAt: Date.now() }
+      // Auto-resume if paused to capture final pause segment
+      const resumed = prev.status === 'paused' ? applyResumeWorkout(prev) : prev
+      const next: WorkoutSession = { ...resumed, status: 'completed', completedAt: Date.now() }
       saveSession(next)
       return next
     })
@@ -188,7 +223,9 @@ export const ActiveWorkoutProvider = ({ children }: { children: React.ReactNode 
     setSession(null)
   }
 
-  const activeWorkoutId = session?.status === 'in_progress' ? session.plan.id : null
+  const isActive = session?.status === 'in_progress' || session?.status === 'paused'
+  const activeWorkoutId = isActive ? session.plan.id : null
+  const isPaused = session?.status === 'paused'
 
   const completedSession = session?.status === 'completed' ? session : null
 
@@ -216,11 +253,14 @@ export const ActiveWorkoutProvider = ({ children }: { children: React.ReactNode 
     completedSession,
     currentExercise,
     progress,
+    isPaused,
     startWorkout,
     completeSet,
     editSet,
     skipExercise,
     navigateExercise,
+    pauseWorkout,
+    resumeWorkout,
     finishSession,
     clearSession,
     finishResult: finishResultRef.current,

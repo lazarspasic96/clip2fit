@@ -6,6 +6,11 @@ import { SheetTitle } from '@/components/ui/sheet-title'
 import { useActiveWorkout } from '@/contexts/active-workout-context'
 import { useFinishWorkout } from '@/hooks/use-finish-workout'
 
+const formatDurationLabel = (seconds: number): string => {
+  if (seconds < 60) return `${seconds}s`
+  return `${Math.round(seconds / 60)} min`
+}
+
 const FinishWorkoutScreen = () => {
   const router = useRouter()
   const { session, setFinishResult } = useActiveWorkout()
@@ -17,6 +22,14 @@ const FinishWorkoutScreen = () => {
   const completed = exercises.filter((e) => e.status === 'completed').length
   const skipped = exercises.filter((e) => e.status === 'skipped').length
   const pending = exercises.filter((e) => e.status === 'pending' || e.status === 'active').length
+
+  const now = Date.now()
+  const pausedMs = session.status === 'paused' && session.pausedAt !== undefined
+    ? session.totalPausedMs + (now - session.pausedAt)
+    : session.totalPausedMs
+  const wallClockSeconds = Math.floor((now - session.startedAt) / 1000)
+  const activeSeconds = Math.max(0, wallClockSeconds - Math.floor(pausedMs / 1000))
+  const hasPauses = pausedMs > 0
 
   const loading = finishMutation.isPending
   const error = finishMutation.error instanceof Error ? finishMutation.error.message : null
@@ -51,6 +64,13 @@ const FinishWorkoutScreen = () => {
             <Text className="text-sm font-inter-semibold text-yellow-400">{pending}</Text>
           </View>
         )}
+        <View className="flex-row justify-between mt-1 pt-2 border-t border-border-primary">
+          <Text className="text-sm font-inter text-content-secondary">Duration</Text>
+          <Text className="text-sm font-inter-semibold text-content-primary">
+            {formatDurationLabel(activeSeconds)}{hasPauses ? ' active' : ''}
+            {hasPauses ? ` (${formatDurationLabel(wallClockSeconds)} total)` : ''}
+          </Text>
+        </View>
       </View>
 
       {pending > 0 && (
