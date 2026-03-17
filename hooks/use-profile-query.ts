@@ -9,7 +9,9 @@ import { queryKeys } from '@/constants/query-keys'
 interface ProfileQueryResult {
   profile: UserProfile | null
   isLoading: boolean
+  isRefetching: boolean
   error: string | null
+  refetch: () => Promise<unknown>
 }
 
 export const useProfileQuery = (): ProfileQueryResult => {
@@ -27,6 +29,7 @@ export const useProfileQuery = (): ProfileQueryResult => {
   return {
     profile: query.data !== undefined ? mapApiProfileToMobile(query.data) : null,
     isLoading: query.isLoading,
+    isRefetching: query.isRefetching,
     error: is404
       ? null
       : query.error instanceof ApiError
@@ -34,5 +37,6 @@ export const useProfileQuery = (): ProfileQueryResult => {
         : query.error !== null
           ? 'Failed to load profile'
           : null,
+    refetch: query.refetch,
   }
 }

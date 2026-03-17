@@ -1,8 +1,8 @@
-import { Tabs } from 'expo-router'
 import { BlurView } from 'expo-blur'
+import { Tabs } from 'expo-router'
 import { NativeTabs } from 'expo-router/unstable-native-tabs'
-import { CalendarDays, ChartColumn, Dumbbell, House } from 'lucide-react-native'
-import { StyleSheet, View } from 'react-native'
+import { CalendarDays, Dumbbell, House, UserRound } from 'lucide-react-native'
+import { Platform, StyleSheet, View } from 'react-native'
 
 import { Colors } from '@/constants/colors'
 import { useTabBarPolicy } from '@/hooks/use-tab-bar-policy'
@@ -34,6 +34,7 @@ const styles = StyleSheet.create({
 
 const TabLayout = () => {
   const tabBarPolicy = useTabBarPolicy()
+  const isAndroid = Platform.OS === 'android'
 
   if (tabBarPolicy.useExpoBlurTabsFallback) {
     return (
@@ -42,18 +43,27 @@ const TabLayout = () => {
           headerShown: false,
           tabBarActiveTintColor: Colors.brand.accent,
           tabBarInactiveTintColor: Colors.content.secondary,
-          tabBarStyle: styles.tabBar,
-          tabBarBackground: () => (
-            <View style={styles.blurBackground}>
-              <BlurView
-                tint="systemChromeMaterialDark"
-                intensity={95}
-                blurMethod="dimezisBlurView"
-                style={StyleSheet.absoluteFill}
-              />
-              <View style={styles.blurOverlay} />
-            </View>
-          ),
+          tabBarStyle: [
+            styles.tabBar,
+            isAndroid
+              ? {
+                  backgroundColor: tabBarPolicy.backgroundColor,
+                }
+              : null,
+          ],
+          tabBarBackground: isAndroid
+            ? undefined
+            : () => (
+                <View style={styles.blurBackground}>
+                  <BlurView
+                    tint="systemChromeMaterialDark"
+                    intensity={95}
+                    blurMethod="dimezisBlurView"
+                    style={StyleSheet.absoluteFill}
+                  />
+                  <View style={styles.blurOverlay} />
+                </View>
+              ),
         }}
       >
         <Tabs.Screen
@@ -84,11 +94,11 @@ const TabLayout = () => {
           }}
         />
         <Tabs.Screen
-          name="stats"
+          name="profile"
           options={{
-            title: 'Stats',
+            title: 'Profile',
             tabBarIcon: ({ color, focused }) => (
-              <ChartColumn color={color} size={focused ? 24 : 22} strokeWidth={focused ? 2.4 : 2} />
+              <UserRound color={color} size={focused ? 24 : 22} strokeWidth={focused ? 2.4 : 2} />
             ),
           }}
         />
@@ -119,9 +129,9 @@ const TabLayout = () => {
         <NativeTabs.Trigger.Icon sf={{ default: 'dumbbell', selected: 'dumbbell.fill' }} />
       </NativeTabs.Trigger>
 
-      <NativeTabs.Trigger name="stats">
-        <NativeTabs.Trigger.Label>Stats</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf={{ default: 'chart.bar', selected: 'chart.bar.fill' }} />
+      <NativeTabs.Trigger name="profile">
+        <NativeTabs.Trigger.Label>Profile</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf={{ default: 'person.crop.circle', selected: 'person.crop.circle.fill' }} />
       </NativeTabs.Trigger>
     </NativeTabs>
   )

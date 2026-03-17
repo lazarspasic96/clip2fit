@@ -55,3 +55,7 @@ client_*.json
 # generated native folders
 /ios
 /android
+
+# Sensitive credentials
+credentials.json
+logs-llm.md

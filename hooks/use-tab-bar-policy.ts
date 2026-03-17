@@ -51,8 +51,8 @@ export const useTabBarPolicy = (): TabBarPolicy => {
   const useExpoBlurTabsFallback = IS_ANDROID || (IS_IOS && !LIQUID_AVAILABLE && !reduceTransparency)
   const backgroundColor = (() => {
     if (IS_ANDROID) {
-      // Transparent so expo-blur BlurView is visible behind tab bar.
-      return 'transparent'
+      // Android tabs use an opaque fallback until we build a target-based blur path.
+      return Colors.background.secondary
     }
 
     if (IS_IOS && shouldUseBlurFallback) {

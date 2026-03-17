@@ -8,9 +8,8 @@ import { PerformanceLabOverview } from '@/components/stats/design-c-performance-
 import { EmptyStatsState } from '@/components/stats/empty-stats-state'
 import { StatsLoadingSkeletons } from '@/components/stats/shared/loading-skeletons'
 import { PeriodSelector } from '@/components/stats/shared/period-selector'
-import { StatsHeader } from '@/components/stats/shared/stats-header'
+import { BackButton } from '@/components/ui/back-button'
 import { Colors } from '@/constants/colors'
-import { TAB_CONTENT_BOTTOM_CLEARANCE } from '@/constants/tab-bar'
 
 import { exerciseHistoryOptions, useStatsSummary } from '@/hooks/use-stats'
 import type { StatsPeriod, StatsTopExercise } from '@/types/stats'
@@ -56,7 +55,17 @@ const StatsScreen = () => {
           paddingBottom: 12,
         }}
       >
-        <StatsHeader subtitle={subtitle} />
+        <View className="px-5 gap-3">
+          <BackButton
+            onPress={() =>
+              router.canGoBack() ? router.back() : router.replace('/(protected)/(tabs)/profile' as never)
+            }
+          />
+          <View className="gap-1">
+            <Text className="text-2xl font-inter-bold text-content-primary">Stats</Text>
+            <Text className="text-sm font-inter text-content-secondary">{subtitle}</Text>
+          </View>
+        </View>
         <View className="px-5">
           <PeriodSelector period={period} onChange={setPeriod} />
         </View>
@@ -65,7 +74,7 @@ const StatsScreen = () => {
       <ScrollView
         contentInsetAdjustmentBehavior="never"
         contentContainerStyle={{
-          paddingBottom: insets.bottom + TAB_CONTENT_BOTTOM_CLEARANCE,
+          paddingBottom: insets.bottom + 24,
           gap: 16,
         }}
         showsVerticalScrollIndicator={false}
