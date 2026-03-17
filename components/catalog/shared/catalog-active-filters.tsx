@@ -5,6 +5,7 @@ import Animated, { FadeIn, FadeOut, LinearTransition } from 'react-native-reanim
 import { Colors } from '@/constants/colors'
 import type { CatalogFilters } from '@/types/catalog'
 import {
+  BODY_REGION_LABELS,
   CATEGORY_LABELS,
   DIFFICULTY_DISPLAY_LABELS,
   EQUIPMENT_LABELS,
@@ -13,10 +14,11 @@ import {
   MUSCLE_GROUP_LABELS,
 } from '@/types/catalog'
 
-type FilterKey = 'muscle' | 'equipment' | 'difficulty' | 'category' | 'force' | 'mechanic'
+type FilterKey = 'muscle' | 'bodyPart' | 'equipment' | 'difficulty' | 'category' | 'force' | 'mechanic'
 
 const LABEL_MAPS: Record<FilterKey, Record<string, string>> = {
   muscle: MUSCLE_GROUP_LABELS,
+  bodyPart: BODY_REGION_LABELS,
   equipment: EQUIPMENT_LABELS,
   difficulty: DIFFICULTY_DISPLAY_LABELS,
   category: CATEGORY_LABELS,
@@ -24,7 +26,7 @@ const LABEL_MAPS: Record<FilterKey, Record<string, string>> = {
   mechanic: MECHANIC_DISPLAY_LABELS,
 }
 
-const PILL_KEYS: FilterKey[] = ['equipment', 'difficulty', 'category', 'force', 'mechanic']
+const PILL_KEYS: FilterKey[] = ['bodyPart', 'equipment', 'difficulty', 'category', 'force', 'mechanic']
 
 interface CatalogActiveFiltersProps {
   filters: CatalogFilters

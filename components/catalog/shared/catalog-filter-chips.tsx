@@ -2,26 +2,22 @@ import * as Haptics from 'expo-haptics'
 import { Pressable, ScrollView, Text, View } from 'react-native'
 
 import { Colors } from '@/constants/colors'
-import {
-  MUSCLE_GROUPS_ORDERED,
-  MUSCLE_GROUP_LABELS,
-  REGION_BREAK_INDICES,
-} from '@/types/catalog'
+import { BODY_REGIONS } from '@/types/catalog'
 import { getMuscleChipColors } from '@/utils/muscle-color'
 
 interface CatalogFilterChipsProps {
-  selectedMuscle: string | null
-  onSelectMuscle: (muscle: string | null) => void
+  selectedBodyPart: string | null
+  onSelectBodyPart: (bodyPart: string | null) => void
 }
 
 const FilterChip = ({
   label,
-  muscle,
+  regionKey,
   isActive,
   onPress,
 }: {
   label: string
-  muscle: string | null
+  regionKey: string | null
   isActive: boolean
   onPress: () => void
 }) => {
@@ -29,7 +25,7 @@ const FilterChip = ({
     Haptics.selectionAsync()
     onPress()
   }
-  const selectedMuscleColors = muscle !== null ? getMuscleChipColors(muscle, 'solid') : null
+  const selectedColors = regionKey !== null ? getMuscleChipColors(regionKey, 'solid') : null
 
   return (
     <Pressable
@@ -38,21 +34,21 @@ const FilterChip = ({
       style={{
         backgroundColor:
           isActive
-            ? (selectedMuscleColors?.backgroundColor ?? Colors.brand.accent)
+            ? (selectedColors?.backgroundColor ?? Colors.brand.accent)
             : Colors.background.tertiary,
         borderColor:
           isActive
-            ? (selectedMuscleColors?.borderColor ?? Colors.brand.accent)
+            ? (selectedColors?.borderColor ?? Colors.brand.accent)
             : Colors.border.secondary,
       }}
     >
       <Text
-        className={isActive ? 'text-sm font-inter-semibold' : 'text-sm font-inter-medium text-content-primary'}
-        style={
-          isActive
-            ? { color: selectedMuscleColors?.textColor ?? Colors.background.primary }
-            : { color: Colors.content.primary }
-        }
+        className={isActive ? 'text-sm font-inter-semibold' : 'text-sm font-inter-medium'}
+        style={{
+          color: isActive
+            ? (selectedColors?.textColor ?? Colors.background.primary)
+            : Colors.content.secondary,
+        }}
       >
         {label}
       </Text>
@@ -61,39 +57,34 @@ const FilterChip = ({
 }
 
 export const CatalogFilterChips = ({
-  selectedMuscle,
-  onSelectMuscle,
+  selectedBodyPart,
+  onSelectBodyPart,
 }: CatalogFilterChipsProps) => {
   return (
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
-      contentContainerStyle={{ paddingHorizontal: 20 }}
+      contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }}
     >
-      {/* "All" chip */}
       <FilterChip
         label="All"
-        muscle={null}
-        isActive={selectedMuscle === null}
-        onPress={() => onSelectMuscle(null)}
+        regionKey={null}
+        isActive={selectedBodyPart === null}
+        onPress={() => onSelectBodyPart(null)}
       />
 
-      {/* Muscle group chips with region gaps */}
-      {MUSCLE_GROUPS_ORDERED.map((muscle, index) => {
-        const isActive = selectedMuscle === muscle
-        const prevIndex = index - 1
-        const gapAfterPrev = prevIndex >= 0 && REGION_BREAK_INDICES.has(prevIndex)
-        const marginLeft = gapAfterPrev ? 12 : 8
+      {BODY_REGIONS.map((region) => {
+        const bodyPartValue = region.bodyParts.join(',')
+        const isActive = selectedBodyPart === bodyPartValue
 
         return (
-          <View key={muscle} style={{ marginLeft }}>
-            <FilterChip
-              label={MUSCLE_GROUP_LABELS[muscle] ?? muscle}
-              muscle={muscle}
-              isActive={isActive}
-              onPress={() => onSelectMuscle(isActive ? null : muscle)}
-            />
-          </View>
+          <FilterChip
+            key={region.key}
+            label={region.label}
+            regionKey={region.key}
+            isActive={isActive}
+            onPress={() => onSelectBodyPart(isActive ? null : bodyPartValue)}
+          />
         )
       })}
     </ScrollView>

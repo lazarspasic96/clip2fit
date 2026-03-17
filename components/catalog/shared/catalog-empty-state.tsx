@@ -4,6 +4,7 @@ import { Pressable, Text, View } from 'react-native'
 import { Colors } from '@/constants/colors'
 import type { CatalogFilters } from '@/types/catalog'
 import {
+  BODY_REGION_LABELS,
   CATEGORY_LABELS,
   DIFFICULTY_DISPLAY_LABELS,
   EQUIPMENT_LABELS,
@@ -12,10 +13,11 @@ import {
   MUSCLE_GROUP_LABELS,
 } from '@/types/catalog'
 
-type FilterKey = 'muscle' | 'equipment' | 'difficulty' | 'category' | 'force' | 'mechanic'
+type FilterKey = 'muscle' | 'bodyPart' | 'equipment' | 'difficulty' | 'category' | 'force' | 'mechanic'
 
 const LABEL_MAPS: Record<FilterKey, Record<string, string>> = {
   muscle: MUSCLE_GROUP_LABELS,
+  bodyPart: BODY_REGION_LABELS,
   equipment: EQUIPMENT_LABELS,
   difficulty: DIFFICULTY_DISPLAY_LABELS,
   category: CATEGORY_LABELS,
@@ -23,7 +25,7 @@ const LABEL_MAPS: Record<FilterKey, Record<string, string>> = {
   mechanic: MECHANIC_DISPLAY_LABELS,
 }
 
-const FILTER_KEYS: FilterKey[] = ['muscle', 'equipment', 'difficulty', 'category', 'force', 'mechanic']
+const FILTER_KEYS: FilterKey[] = ['muscle', 'bodyPart', 'equipment', 'difficulty', 'category', 'force', 'mechanic']
 
 const getActiveFilterLabels = (filters: CatalogFilters): { key: FilterKey; label: string }[] => {
   return FILTER_KEYS.filter((key) => filters[key] !== null).map((key) => {

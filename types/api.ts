@@ -49,7 +49,7 @@ export interface ApiWorkout {
 
 export interface ApiJob {
   id: string
-  status: 'pending' | 'downloading' | 'transcribing' | 'extracting' | 'fetching_transcript' | 'analyzing' | 'ocr_extracting' | 'ocr_processing' | 'completed' | 'failed' | 'cancelled'
+  status: 'pending' | 'downloading' | 'transcribing' | 'extracting' | 'fetching_transcript' | 'analyzing' | 'ocr_extracting' | 'ocr_processing' | 'retrying' | 'completed' | 'failed' | 'cancelled'
   progress: number
   workoutId: string | null
   error: string | null
@@ -143,6 +143,7 @@ export interface ApiSessionExercise {
 
 export interface ApiSessionPayload {
   workout_id: string
+  client_session_id: string
   status: 'completed' | 'partial'
   started_at: string
   completed_at: string

@@ -55,6 +55,7 @@ export interface WorkoutSession {
   status: 'in_progress' | 'paused' | 'completed'
   startedAt: number
   completedAt?: number
+  submittedAt?: number
   activeExerciseIndex: number
   pausedAt?: number
   totalPausedMs: number

@@ -1,7 +1,7 @@
-import { useEffect } from 'react'
 import * as Haptics from 'expo-haptics'
 import { useRouter, useSegments } from 'expo-router'
 import { Maximize2 } from 'lucide-react-native'
+import { useEffect } from 'react'
 import { Pressable, Text, View } from 'react-native'
 import Animated, {
   Easing,
@@ -13,10 +13,10 @@ import Animated, {
 } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
+import { MiniProgressRing } from '@/components/processing/mini-progress-ring'
 import { Colors } from '@/constants/colors'
 import { TAB_BAR_FLOATING_OFFSET, TAB_BAR_HEIGHT } from '@/constants/tab-bar'
 import { useConversion } from '@/contexts/conversion-context'
-import { MiniProgressRing } from '@/components/processing/mini-progress-ring'
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
 
@@ -31,7 +31,9 @@ export const FloatingConversionPill = () => {
 
   const isOnProcessUrl = segments.includes('process-url' as never)
   const isOnProposal = segments.includes('workout-proposal' as never)
-  const isVisible = !isOnProcessUrl && !isOnProposal && state.jobState !== 'idle' && state.jobState !== 'existing'
+  const isOnAddExercises = segments.includes('add-exercises' as never)
+  const isVisible =
+    !isOnProcessUrl && !isOnProposal && !isOnAddExercises && state.jobState !== 'idle' && state.jobState !== 'existing'
   const isCompleted = state.jobState === 'completed'
   const isError = state.jobState === 'error'
 
@@ -49,7 +51,7 @@ export const FloatingConversionPill = () => {
     if (isCompleted && !isOnProcessUrl) {
       celebrationScale.value = withSequence(
         withTiming(1.02, { duration: 150, easing: Easing.out(Easing.cubic) }),
-        withTiming(1.0, { duration: 200, easing: Easing.out(Easing.cubic) })
+        withTiming(1.0, { duration: 200, easing: Easing.out(Easing.cubic) }),
       )
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
     }
@@ -83,15 +85,9 @@ export const FloatingConversionPill = () => {
 
   const accentColor = isError ? '#f87171' : Colors.brand.accent
 
-  const stageText = isCompleted
-    ? 'Workout ready! Tap to view'
-    : isError
-      ? 'Failed — tap to retry'
-      : state.message
+  const stageText = isCompleted ? 'Workout ready! Tap to view' : isError ? 'Failed — tap to retry' : state.message
 
-  const truncatedUrl = state.sourceUrl.length > 30
-    ? `${state.sourceUrl.slice(0, 30)}...`
-    : state.sourceUrl
+  const truncatedUrl = state.sourceUrl.length > 30 ? `${state.sourceUrl.slice(0, 30)}...` : state.sourceUrl
 
   return (
     <Animated.View
@@ -145,10 +141,7 @@ export const FloatingConversionPill = () => {
           >
             {stageText}
           </Text>
-          <Text
-            numberOfLines={1}
-            className="text-xs font-inter text-content-tertiary"
-          >
+          <Text numberOfLines={1} className="text-xs font-inter text-content-tertiary">
             {truncatedUrl}
           </Text>
         </View>

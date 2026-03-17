@@ -23,6 +23,7 @@ const CATEGORY_ABBREV: Record<MuscleCategory, string> = {
   arms: 'A',
   legs: 'L',
   core: 'Co',
+  cardio: 'Ca',
   full_body: 'FB',
 }
 

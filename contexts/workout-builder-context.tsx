@@ -1,4 +1,4 @@
-import { createContext, useContext, useRef } from 'react'
+import { createContext, useContext, useRef, useSyncExternalStore } from 'react'
 import type { ReactNode } from 'react'
 
 import type { CatalogExercise, SelectedExercise } from '@/types/catalog'
@@ -120,4 +120,27 @@ export const useWorkoutBuilder = (): WorkoutBuilderContextValue => {
     throw new Error('useWorkoutBuilder must be used within WorkoutBuilderProvider')
   }
   return context
+}
+
+// --- Reactive hooks (safe with React Compiler) ---
+
+/** Subscribe to builder changes. Returns version for use as FlashList extraData, etc. */
+export const useBuilderVersion = (): number => {
+  const { subscribe, getSnapshot } = useWorkoutBuilder()
+  return useSyncExternalStore(subscribe, getSnapshot)
+}
+
+/** Reactive boolean — is this exercise currently selected? */
+export const useBuilderSelection = (exerciseId: string | null): boolean => {
+  const { subscribe, isSelected } = useWorkoutBuilder()
+  return useSyncExternalStore(
+    subscribe,
+    () => exerciseId !== null && isSelected(exerciseId),
+  )
+}
+
+/** Reactive selected-exercise count. */
+export const useBuilderCount = (): number => {
+  const { subscribe, getSelectedCount } = useWorkoutBuilder()
+  return useSyncExternalStore(subscribe, getSelectedCount)
 }

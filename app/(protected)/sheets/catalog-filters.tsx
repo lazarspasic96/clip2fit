@@ -42,7 +42,7 @@ const MECHANIC_OPTIONS: CatalogMechanic[] = ['compound', 'isolation']
 
 const presetMatchesState = (
   preset: FilterPresetDef,
-  state: Pick<CatalogFilters, 'muscle' | 'equipment' | 'difficulty' | 'force' | 'mechanic' | 'category'>,
+  state: Pick<CatalogFilters, 'muscle' | 'bodyPart' | 'equipment' | 'difficulty' | 'force' | 'mechanic' | 'category'>,
 ): boolean => {
   const entries = Object.entries(preset.filters) as [string, string][]
   return entries.every(([key, val]) => state[key as keyof typeof state] === val)
@@ -59,6 +59,7 @@ const CatalogFiltersScreen = () => {
   const initial = catalogFilterStore.getFilters()
 
   const [muscle, setMuscle] = useState<string | null>(initial.muscle)
+  const [bodyPart, setBodyPart] = useState<string | null>(initial.bodyPart)
   const [equipment, setEquipment] = useState<string | null>(initial.equipment)
   const [difficulty, setDifficulty] = useState<CatalogDifficulty | null>(initial.difficulty)
   const [force, setForce] = useState<CatalogForce | null>(initial.force)
@@ -66,15 +67,19 @@ const CatalogFiltersScreen = () => {
   const [category, setCategory] = useState<string | null>(initial.category)
   const [regionTab, setRegionTab] = useState<RegionTab>('all')
 
-  const currentState = { muscle, equipment, difficulty, force, mechanic, category }
+  const currentState = { muscle, bodyPart, equipment, difficulty, force, mechanic, category }
 
   const handleApply = () => {
-    catalogFilterStore.setFilters({ ...catalogFilterStore.getFilters(), muscle, equipment, difficulty, force, mechanic, category })
+    const applied = { ...catalogFilterStore.getFilters(), muscle, bodyPart, equipment, difficulty, force, mechanic, category }
+    // Mutual exclusion: specific muscle wins over broad body region
+    if (muscle !== null) applied.bodyPart = null
+    catalogFilterStore.setFilters(applied)
     router.back()
   }
 
   const handleClearAll = () => {
     setMuscle(null)
+    setBodyPart(null)
     setEquipment(null)
     setDifficulty(null)
     setForce(null)
@@ -85,6 +90,7 @@ const CatalogFiltersScreen = () => {
   const handlePreset = (preset: FilterPresetDef) => {
     handleClearAll()
     if (preset.filters.muscle !== undefined) setMuscle(preset.filters.muscle)
+    if (preset.filters.bodyPart !== undefined) setBodyPart(preset.filters.bodyPart)
     if (preset.filters.equipment !== undefined) setEquipment(preset.filters.equipment)
     if (preset.filters.force !== undefined) setForce(preset.filters.force as CatalogForce)
     if (preset.filters.category !== undefined) setCategory(preset.filters.category)

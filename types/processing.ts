@@ -1,7 +1,7 @@
 import type { SupportedPlatform } from '@/utils/url-validation'
 import type { WorkoutPlan } from '@/types/workout'
 
-export type ProcessingStage = 'validating' | 'downloading' | 'transcribing' | 'extracting' | 'fetchingTranscript' | 'analyzing' | 'ocrExtracting' | 'ocrProcessing' | 'complete' | 'error'
+export type ProcessingStage = 'validating' | 'downloading' | 'transcribing' | 'extracting' | 'fetchingTranscript' | 'analyzing' | 'ocrExtracting' | 'ocrProcessing' | 'retrying' | 'complete' | 'error'
 
 export interface ProcessingState {
   stage: ProcessingStage

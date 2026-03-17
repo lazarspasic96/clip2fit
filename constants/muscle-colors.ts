@@ -17,7 +17,7 @@ export type MuscleGroupKey =
   | 'traps'
   | 'triceps'
 
-export type MuscleCategory = 'chest' | 'back' | 'shoulders' | 'arms' | 'legs' | 'core' | 'full_body'
+export type MuscleCategory = 'chest' | 'back' | 'shoulders' | 'arms' | 'legs' | 'core' | 'cardio' | 'full_body'
 
 export const MUSCLE_GROUP_COLORS: Record<MuscleGroupKey, string> = {
   abdominals: '#eab308',
@@ -68,6 +68,7 @@ export const CATEGORY_COLORS: Record<MuscleCategory, string> = {
   arms: MUSCLE_GROUP_COLORS.triceps,
   legs: MUSCLE_GROUP_COLORS.quadriceps,
   core: MUSCLE_GROUP_COLORS.abdominals,
+  cardio: '#10b981',
   full_body: FULL_BODY_COLOR,
 }
 
@@ -78,5 +79,6 @@ export const MUSCLE_CATEGORY_LABELS: Record<MuscleCategory, string> = {
   arms: 'Arms',
   legs: 'Legs',
   core: 'Core',
+  cardio: 'Cardio',
   full_body: 'Full Body',
 }

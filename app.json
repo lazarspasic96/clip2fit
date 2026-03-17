@@ -17,17 +17,17 @@
       },
       "entitlements": {
         "com.apple.security.application-groups": [
-          "group.com.lazarspasic96.clip2fit"
+          "group.com.lazarspasic96.clip2fit.shared"
         ]
-      }
+      },
+      "appleTeamId": "WQFA6H56XL"
     },
     "android": {
       "softwareKeyboardLayoutMode": "pan",
+      "_TODO": "Generate proper adaptive icon layers (foreground/background/monochrome) using app-icon skill",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "backgroundColor": "#09090b",
+        "foregroundImage": "./assets/images/icon.png"
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.lazarspasic96.clip2fit",
@@ -64,7 +64,7 @@
           "ios": {
             "enabled": true,
             "extensionBundleIdentifier": "com.lazarspasic96.clip2fit.share-extension",
-            "appGroupId": "group.com.lazarspasic96.clip2fit",
+            "appGroupId": "group.com.lazarspasic96.clip2fit.shared",
             "activationRule": {
               "supportsText": true,
               "supportsWebUrlWithMaxCount": 1,
@@ -99,7 +99,7 @@
                   "bundleIdentifier": "com.lazarspasic96.clip2fit.share-extension",
                   "entitlements": {
                     "com.apple.security.application-groups": [
-                      "group.com.lazarspasic96.clip2fit"
+                      "group.com.lazarspasic96.clip2fit.shared"
                     ]
                   }
                 }

@@ -1,14 +1,11 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { Alert } from 'react-native'
 
-import type { ApiJob } from '@/types/api'
-import type {
-  ConversionState,
-  ProcessingStage,
-} from '@/types/processing'
 import { useCancelJobMutation, useConvertUrlMutation, useWorkoutQuery } from '@/hooks/use-api'
-import { validateWorkoutUrl } from '@/utils/url-validation'
+import type { ApiJob } from '@/types/api'
+import type { ConversionState, ProcessingStage } from '@/types/processing'
 import { apiGet } from '@/utils/api'
+import { validateWorkoutUrl } from '@/utils/url-validation'
 
 const JOB_POLL_INTERVAL = 2000
 
@@ -21,6 +18,7 @@ const STATUS_TO_STAGE: Record<string, ProcessingStage> = {
   analyzing: 'analyzing',
   ocr_extracting: 'ocrExtracting',
   ocr_processing: 'ocrProcessing',
+  retrying: 'retrying',
 }
 
 const STAGE_MESSAGES: Record<ProcessingStage, string> = {
@@ -32,6 +30,7 @@ const STAGE_MESSAGES: Record<ProcessingStage, string> = {
   analyzing: 'Analyzing content...',
   ocrExtracting: 'Reading video frames...',
   ocrProcessing: 'Processing visual content...',
+  retrying: 'Still processing...',
   complete: 'Your workout is ready!',
   error: 'Something went wrong',
 }
@@ -45,6 +44,7 @@ const STAGE_SUBTITLES: Record<ProcessingStage, string> = {
   analyzing: 'Our AI is breaking down every move',
   ocrExtracting: 'Scanning the video for on-screen text',
   ocrProcessing: 'Turning visual cues into exercises',
+  retrying: "Hang tight \u2014 we're giving it another shot",
   complete: 'Tap to check it out',
   error: 'Give it another shot',
 }

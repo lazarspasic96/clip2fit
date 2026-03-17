@@ -1,5 +1,4 @@
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { useSyncExternalStore } from 'react'
 import { ActivityIndicator, Pressable, Text, View } from 'react-native'
 import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -10,7 +9,7 @@ import { ExerciseContentSection } from '@/components/catalog/exercise-content-se
 import { ExerciseHeroImage } from '@/components/catalog/exercise-hero-image'
 import { BackButton } from '@/components/ui/back-button'
 import { Colors } from '@/constants/colors'
-import { useWorkoutBuilder } from '@/contexts/workout-builder-context'
+import { useBuilderSelection, useWorkoutBuilder } from '@/contexts/workout-builder-context'
 import { useCatalogDetail } from '@/hooks/use-catalog'
 
 const ExerciseDetailScreen = () => {
@@ -20,12 +19,9 @@ const ExerciseDetailScreen = () => {
 
   const { exercise, isLoading, error } = useCatalogDetail(id ?? null)
   const builder = useWorkoutBuilder()
+  const selected = useBuilderSelection(exercise?.id ?? null)
 
-  useSyncExternalStore(builder.subscribe, builder.getSnapshot)
-
-  const selected = exercise !== null ? builder.isSelected(exercise.id) : false
   const scrollY = useSharedValue(0)
-
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
       scrollY.value = event.contentOffset.y

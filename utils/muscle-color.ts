@@ -71,6 +71,7 @@ const CATEGORY_ALIASES: Record<string, MuscleCategory> = {
   arm: 'arms',
   arms: 'arms',
   back: 'back',
+  cardio: 'cardio',
   chest: 'chest',
   core: 'core',
   full_body: 'full_body',

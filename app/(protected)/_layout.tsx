@@ -29,7 +29,7 @@ const ProtectedLayout = () => {
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="onboarding" />
-          <Stack.Screen name="settings" options={{}} />
+
           <Stack.Screen
             name="process-url"
             options={{
@@ -44,6 +44,7 @@ const ProtectedLayout = () => {
               animation: 'slide_from_bottom',
             }}
           />
+          <Stack.Screen name="pr-celebration" options={{ presentation: 'card', gestureEnabled: false }} />
           <Stack.Screen name="exercise-catalog" options={{ presentation: 'card' }} />
           <Stack.Screen name="exercise-detail" options={{ presentation: 'card' }} />
           <Stack.Screen name="workout-builder" options={{ presentation: 'card' }} />
@@ -51,6 +52,7 @@ const ProtectedLayout = () => {
           <Stack.Screen name="workout-proposal" options={{ presentation: 'card', headerShown: false }} />
           <Stack.Screen name="add-exercises" options={{ presentation: 'card', headerShown: false }} />
           <Stack.Screen name="exercise-history" options={{ presentation: 'card' }} />
+          <Stack.Screen name="stats" options={{ presentation: 'card' }} />
           {/* --- formSheet routes --- */}
           <Stack.Screen name="sheets/edit-name" options={{ ...sheetOptions, sheetAllowedDetents: [0.35] }} />
           <Stack.Screen name="sheets/edit-gender" options={{ ...sheetOptions, sheetAllowedDetents: 'fitToContents' }} />
@@ -64,6 +66,7 @@ const ProtectedLayout = () => {
           <Stack.Screen name="sheets/day-options" options={{ ...sheetOptions, sheetAllowedDetents: 'fitToContents' }} />
           <Stack.Screen name="sheets/workout-picker" options={{ ...sheetOptions, sheetAllowedDetents: [0.7, 0.9] }} />
           <Stack.Screen name="sheets/finish-workout" options={{ ...sheetOptions, sheetAllowedDetents: [0.34, 0.8] }} />
+          <Stack.Screen name="sheets/save-workout" options={{ ...sheetOptions, sheetAllowedDetents: [0.34, 0.8] }} />
           <Stack.Screen name="sheets/exercise-learning" options={{ ...sheetOptions, sheetAllowedDetents: [0.8, 1] }} />
           <Stack.Screen name="sheets/edit-exercise" options={{ ...sheetOptions, sheetAllowedDetents: [0.6] }} />
           <Stack.Screen name="sheets/catalog-filters" options={{ ...sheetOptions, sheetAllowedDetents: [0.7, 0.9] }} />

@@ -1,23 +1,31 @@
 import { Trash2 } from 'lucide-react-native'
 import type { GestureType } from 'react-native-gesture-handler'
-import { Pressable, Text, TextInput, View } from 'react-native'
+import { Text, TextInput, View } from 'react-native'
 import Animated, {
   FadeInDown,
   Layout,
   useAnimatedStyle,
-  useSharedValue,
   withSpring,
   withTiming,
 } from 'react-native-reanimated'
 
 import { DragHandle } from '@/components/ui/drag-handle'
 import { MuscleChip } from '@/components/ui/muscle-chip'
+import { SwipeableRow } from '@/components/ui/swipeable-row'
 import { Colors } from '@/constants/colors'
 import type { DragState } from '@/hooks/use-draggable-list'
 import type { ApiExercise } from '@/types/api'
 
-const SPRING = { damping: 20, stiffness: 250 }
-const SLIDE_WIDTH = 70
+const SLIDE = { duration: 300, dampingRatio: 1 }
+const LIFT = { duration: 200, dampingRatio: 1 }
+const DELETE_ACTION_WIDTH = 80
+
+const deleteActionContent = (
+  <View className="bg-red-600 rounded-2xl items-center justify-center w-[80px] h-full">
+    <Trash2 size={20} color="#fff" pointerEvents="none" />
+    <Text className="text-xs font-inter-semibold text-white mt-1">Delete</Text>
+  </View>
+)
 
 interface ProposalExerciseRowProps {
   exercise: ApiExercise
@@ -40,27 +48,6 @@ export const ProposalExerciseRow = ({
   itemHeight = 0,
   isNewlyAdded = false,
 }: ProposalExerciseRowProps) => {
-  const slideX = useSharedValue(0)
-  const isRevealed = useSharedValue(false)
-
-  const handleTrashPress = () => {
-    if (isRevealed.value) {
-      slideX.value = withTiming(0)
-      isRevealed.value = false
-    } else {
-      slideX.value = withTiming(-SLIDE_WIDTH)
-      isRevealed.value = true
-    }
-  }
-
-  const handleConfirmDelete = () => {
-    onDelete()
-  }
-
-  const slideStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: slideX.value }],
-  }))
-
   const dragAnimatedStyle = useAnimatedStyle(() => {
     if (dragState === undefined) {
       return { transform: [{ translateY: 0 }, { scale: 1 }], zIndex: 0, shadowOpacity: 0 }
@@ -86,7 +73,7 @@ export const ProposalExerciseRow = ({
     if (active === -1) {
       return {
         transform: [
-          { translateY: withSpring(0, SPRING) },
+          { translateY: withSpring(0, SLIDE) },
           { scale: withTiming(1, { duration: 150 }) },
         ],
         zIndex: 0,
@@ -105,7 +92,7 @@ export const ProposalExerciseRow = ({
 
     return {
       transform: [
-        { translateY: withSpring(shift, SPRING) },
+        { translateY: withSpring(shift, SLIDE) },
         { scale: withTiming(1, { duration: 150 }) },
       ],
       zIndex: 0,
@@ -119,29 +106,18 @@ export const ProposalExerciseRow = ({
       layout={Layout.springify()}
       style={[dragAnimatedStyle, { shadowColor: '#000', shadowRadius: 8, shadowOffset: { width: 0, height: 4 } }]}
     >
-      <View className="overflow-hidden rounded-2xl">
-        {/* Delete button revealed behind */}
-        <View className="absolute right-0 top-0 bottom-0 justify-center" style={{ width: SLIDE_WIDTH }}>
-          <Pressable onPress={handleConfirmDelete} className="flex-1 bg-red-600 items-center justify-center">
-            <Text className="text-sm font-inter-semibold text-white">Delete</Text>
-          </Pressable>
-        </View>
-
-        {/* Main card content */}
-        <Animated.View style={slideStyle} className="bg-background-secondary rounded-2xl p-4">
+      <SwipeableRow actionWidth={DELETE_ACTION_WIDTH} actionContent={deleteActionContent} onAction={onDelete}>
+        <View className="bg-background-secondary rounded-2xl p-4 overflow-hidden" style={{ borderCurve: 'continuous' }}>
           {isNewlyAdded && (
             <View className="absolute inset-0 border border-brand-accent rounded-2xl" pointerEvents="none" />
           )}
-          {/* Header: drag handle + order + name + trash */}
+          {/* Header: drag handle + order + name */}
           <View className="flex-row items-center mb-2">
             {dragGesture !== undefined && <DragHandle gesture={dragGesture} />}
             <Text className="text-sm font-inter-bold text-content-tertiary w-7">{index + 1}</Text>
             <Text className="text-base font-inter-semibold text-content-primary flex-1" numberOfLines={1}>
               {exercise.name}
             </Text>
-            <Pressable onPress={handleTrashPress} hitSlop={8}>
-              <Trash2 size={18} color={Colors.content.tertiary} pointerEvents="none" />
-            </Pressable>
           </View>
 
           {/* Muscle group pills */}
@@ -202,8 +178,8 @@ export const ProposalExerciseRow = ({
               placeholder="Add notes..."
             />
           )}
-        </Animated.View>
-      </View>
+        </View>
+      </SwipeableRow>
     </Animated.View>
   )
 }

@@ -44,6 +44,7 @@ export const buildSessionPayload = (session: WorkoutSession): ApiSessionPayload 
 
   return {
     workout_id: session.plan.id,
+    client_session_id: session.id,
     status: allFinished ? 'completed' : 'partial',
     started_at: new Date(session.startedAt).toISOString(),
     completed_at: new Date().toISOString(),
@@ -60,6 +61,7 @@ export const useFinishWorkout = () => {
       apiPost<ApiSessionResponse>('/api/sessions', buildSessionPayload(session)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.schedule.current })
+      queryClient.invalidateQueries({ queryKey: ['heatmap'] })
     },
   })
 }

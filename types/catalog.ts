@@ -173,6 +173,34 @@ export const CATEGORY_LABELS: Record<string, string> = {
   'olympic weightlifting': 'Olympic',
 }
 
+// --- Body region definitions (for horizontal chip track) ---
+
+export type BodyRegionKey = 'chest' | 'back' | 'legs' | 'arms' | 'shoulders' | 'core' | 'cardio'
+
+export interface BodyRegionDef {
+  key: BodyRegionKey
+  label: string
+  bodyParts: string[]
+}
+
+export const BODY_REGIONS: BodyRegionDef[] = [
+  { key: 'chest', label: 'Chest', bodyParts: ['chest'] },
+  { key: 'back', label: 'Back', bodyParts: ['back'] },
+  { key: 'legs', label: 'Legs', bodyParts: ['upper legs', 'lower legs'] },
+  { key: 'arms', label: 'Arms', bodyParts: ['upper arms', 'lower arms'] },
+  { key: 'shoulders', label: 'Shoulders', bodyParts: ['shoulders'] },
+  { key: 'core', label: 'Core', bodyParts: ['waist', 'neck'] },
+  { key: 'cardio', label: 'Cardio', bodyParts: ['cardio'] },
+]
+
+export const BODY_REGION_TO_BODY_PART: Record<BodyRegionKey, string> = Object.fromEntries(
+  BODY_REGIONS.map((r) => [r.key, r.bodyParts.join(',')]),
+) as Record<BodyRegionKey, string>
+
+export const BODY_REGION_LABELS: Record<string, string> = Object.fromEntries(
+  BODY_REGIONS.map((r) => [r.bodyParts.join(','), r.label]),
+)
+
 // --- Filter presets (for future gym-split quick-apply) ---
 
 export interface FilterPresetDef {
@@ -183,7 +211,7 @@ export interface FilterPresetDef {
 export const FILTER_PRESETS: FilterPresetDef[] = [
   { label: 'Push Day', filters: { force: 'push', category: 'strength' } },
   { label: 'Pull Day', filters: { force: 'pull', category: 'strength' } },
-  { label: 'Leg Day', filters: { muscle: 'quads', category: 'strength' } },
+  { label: 'Leg Day', filters: { bodyPart: 'upper legs,lower legs', category: 'strength' } },
   { label: 'Bodyweight Only', filters: { equipment: 'body weight' } },
 ]
 

@@ -83,7 +83,7 @@ const ExerciseHistoryScreen = () => {
       >
         <View className="flex-row items-center justify-between">
           <BackButton
-            onPress={() => (router.canGoBack() ? router.back() : router.replace('/(protected)/(tabs)/stats' as never))}
+            onPress={() => (router.canGoBack() ? router.back() : router.replace('/(protected)/(tabs)/profile' as never))}
           />
         </View>
 

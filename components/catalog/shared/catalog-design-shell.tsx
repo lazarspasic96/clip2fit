@@ -9,9 +9,9 @@ import { CatalogFilterChips } from '@/components/catalog/shared/catalog-filter-c
 import { CatalogSearchBar } from '@/components/catalog/shared/catalog-search-bar'
 import { Colors } from '@/constants/colors'
 import type { CatalogDesignProps } from '@/types/catalog'
-import { EQUIPMENT_LABELS, MUSCLE_GROUP_LABELS } from '@/types/catalog'
+import { BODY_REGION_LABELS, EQUIPMENT_LABELS, MUSCLE_GROUP_LABELS } from '@/types/catalog'
 
-type FilterKey = 'muscle' | 'equipment' | 'difficulty' | 'category' | 'force' | 'mechanic'
+type FilterKey = 'muscle' | 'bodyPart' | 'equipment' | 'difficulty' | 'category' | 'force' | 'mechanic'
 
 const SHEET_FILTER_KEYS: FilterKey[] = ['equipment', 'difficulty', 'category', 'force', 'mechanic']
 
@@ -21,9 +21,18 @@ interface CatalogDesignShellProps extends CatalogDesignProps {
 
 const getResultLabel = (total: number, filters: CatalogDesignProps['filters']): string => {
   const sheetCount = SHEET_FILTER_KEYS.filter((k) => filters[k] !== null).length
-  const activeCount = (filters.muscle !== null ? 1 : 0) + sheetCount + (filters.search.length > 0 ? 1 : 0)
+  const activeCount =
+    (filters.bodyPart !== null ? 1 : 0)
+    + (filters.muscle !== null ? 1 : 0)
+    + sheetCount
+    + (filters.search.length > 0 ? 1 : 0)
 
   if (activeCount === 0) return `${total} exercises`
+
+  if (activeCount === 1 && filters.bodyPart !== null) {
+    const label = BODY_REGION_LABELS[filters.bodyPart]?.toLowerCase() ?? filters.bodyPart
+    return `${total} ${label} exercises`
+  }
 
   if (activeCount === 1 && filters.muscle !== null) {
     const label = MUSCLE_GROUP_LABELS[filters.muscle]?.toLowerCase() ?? filters.muscle
@@ -52,14 +61,14 @@ export const CatalogDesignShell = ({
 }: CatalogDesignShellProps) => {
   const router = useRouter()
   const sheetFilterCount = SHEET_FILTER_KEYS.filter((k) => filters[k] !== null).length
-  const hasAnyFilter = filters.search.length > 0 || filters.muscle !== null || sheetFilterCount > 0
+  const hasAnyFilter = filters.search.length > 0 || filters.bodyPart !== null || filters.muscle !== null || sheetFilterCount > 0
 
   const handleSearchChange = (text: string) => {
     setFilters((prev) => ({ ...prev, search: text }))
   }
 
-  const handleMuscleSelect = (muscle: string | null) => {
-    setFilters((prev) => ({ ...prev, muscle }))
+  const handleBodyPartSelect = (bodyPart: string | null) => {
+    setFilters((prev) => ({ ...prev, bodyPart, muscle: null }))
   }
 
   const handleRemoveFilter = (key: FilterKey) => {
@@ -116,7 +125,7 @@ export const CatalogDesignShell = ({
       </View>
 
       <View className="mt-2.5">
-        <CatalogFilterChips selectedMuscle={filters.muscle} onSelectMuscle={handleMuscleSelect} />
+        <CatalogFilterChips selectedBodyPart={filters.bodyPart} onSelectBodyPart={handleBodyPartSelect} />
       </View>
 
       {!hideFilterButton && sheetFilterCount > 0 && (

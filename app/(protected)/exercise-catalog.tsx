@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { CatalogFloatingCta } from '@/components/catalog/catalog-floating-cta'
 import { DesignMagazine } from '@/components/catalog/designs/design-magazine'
 import { CatalogHeader } from '@/components/catalog/shared/catalog-header'
-import { useWorkoutBuilder } from '@/contexts/workout-builder-context'
+import { useBuilderCount, useBuilderVersion, useWorkoutBuilder } from '@/contexts/workout-builder-context'
 import { useCatalogInfinite } from '@/hooks/use-catalog'
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
 import { catalogFilterStore } from '@/stores/catalog-filter-store'
@@ -16,8 +16,8 @@ const CTA_HEIGHT = 96
 const ExerciseCatalogScreen = () => {
   const insets = useSafeAreaInsets()
   const builder = useWorkoutBuilder()
-  const selectionVersion = useSyncExternalStore(builder.subscribe, builder.getSnapshot)
-  const selectedCount = builder.getSelectedCount()
+  const selectionVersion = useBuilderVersion()
+  const selectedCount = useBuilderCount()
 
   const filters = useSyncExternalStore(catalogFilterStore.subscribe, catalogFilterStore.getFilters)
 

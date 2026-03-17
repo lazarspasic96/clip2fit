@@ -1,4 +1,4 @@
-import { useState, useSyncExternalStore } from 'react'
+import { useState } from 'react'
 import { Alert, Keyboard, Pressable, ScrollView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
@@ -9,7 +9,7 @@ import { Colors } from '@/constants/colors'
 import { Input } from '@/components/ui/input'
 import { BuilderExerciseRow } from '@/components/catalog/builder-exercise-row'
 import { BuilderActions } from '@/components/catalog/builder-actions'
-import { useWorkoutBuilder } from '@/contexts/workout-builder-context'
+import { useBuilderVersion, useWorkoutBuilder } from '@/contexts/workout-builder-context'
 import { useCreateWorkoutMutation } from '@/hooks/use-api'
 import { useDraggableList } from '@/hooks/use-draggable-list'
 import { ApiError } from '@/utils/api'
@@ -23,8 +23,7 @@ const WorkoutBuilderScreen = () => {
   const builder = useWorkoutBuilder()
   const createMutation = useCreateWorkoutMutation()
 
-  // Subscribe to builder state changes via useSyncExternalStore
-  useSyncExternalStore(builder.subscribe, builder.getSnapshot)
+  useBuilderVersion()
 
   const [title, setTitle] = useState('')
 

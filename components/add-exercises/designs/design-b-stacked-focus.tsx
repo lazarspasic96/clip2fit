@@ -9,7 +9,7 @@ import { CatalogFilterChips } from '@/components/catalog/shared/catalog-filter-c
 import { CatalogSearchBar } from '@/components/catalog/shared/catalog-search-bar'
 import type { AddExercisesController } from '@/components/add-exercises/shared/use-add-exercises-controller'
 import { Colors } from '@/constants/colors'
-import { EQUIPMENT_LABELS, MUSCLE_GROUP_LABELS } from '@/types/catalog'
+import { BODY_REGION_LABELS, EQUIPMENT_LABELS, MUSCLE_GROUP_LABELS } from '@/types/catalog'
 
 interface DesignBStackedFocusProps {
   controller: AddExercisesController
@@ -17,12 +17,17 @@ interface DesignBStackedFocusProps {
   onOpenFilters: () => void
 }
 
-type FilterKey = 'muscle' | 'equipment' | 'difficulty' | 'category' | 'force' | 'mechanic'
+type FilterKey = 'muscle' | 'bodyPart' | 'equipment' | 'difficulty' | 'category' | 'force' | 'mechanic'
 
 const filterKeys: FilterKey[] = ['equipment', 'difficulty', 'category', 'force', 'mechanic']
 
-const getResultLabel = (total: number, muscle: string | null, equipment: string | null, activeCount: number): string => {
+const getResultLabel = (total: number, bodyPart: string | null, muscle: string | null, equipment: string | null, activeCount: number): string => {
   if (activeCount === 0) return `${total} exercises`
+
+  if (activeCount === 1 && bodyPart !== null) {
+    const label = BODY_REGION_LABELS[bodyPart]?.toLowerCase() ?? bodyPart
+    return `${total} ${label} exercises`
+  }
 
   if (activeCount === 1 && muscle !== null) {
     const label = MUSCLE_GROUP_LABELS[muscle]?.toLowerCase() ?? muscle
@@ -41,11 +46,13 @@ export const DesignBStackedFocus = ({ controller, bottomInset, onOpenFilters }: 
   const sheetFilterCount = filterKeys.filter((key) => controller.filters[key] !== null).length
   const hasAnyFilter =
     controller.filters.search.length > 0
+    || controller.filters.bodyPart !== null
     || controller.filters.muscle !== null
     || sheetFilterCount > 0
 
   const activeFilterCount =
     (controller.filters.search.length > 0 ? 1 : 0)
+    + (controller.filters.bodyPart !== null ? 1 : 0)
     + (controller.filters.muscle !== null ? 1 : 0)
     + sheetFilterCount
 
@@ -100,8 +107,8 @@ export const DesignBStackedFocus = ({ controller, bottomInset, onOpenFilters }: 
         </View>
 
         <CatalogFilterChips
-          selectedMuscle={controller.filters.muscle}
-          onSelectMuscle={(muscle) => controller.setFilters((prev) => ({ ...prev, muscle }))}
+          selectedBodyPart={controller.filters.bodyPart}
+          onSelectBodyPart={(bodyPart) => controller.setFilters((prev) => ({ ...prev, bodyPart, muscle: null }))}
         />
 
         <CatalogActiveFilters
@@ -111,7 +118,7 @@ export const DesignBStackedFocus = ({ controller, bottomInset, onOpenFilters }: 
         />
 
         <Text className="text-xs font-inter text-content-tertiary px-0.5">
-          {getResultLabel(controller.total, controller.filters.muscle, controller.filters.equipment, activeFilterCount)}
+          {getResultLabel(controller.total, controller.filters.bodyPart, controller.filters.muscle, controller.filters.equipment, activeFilterCount)}
         </Text>
       </View>
 

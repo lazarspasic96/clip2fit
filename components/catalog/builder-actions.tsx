@@ -1,4 +1,5 @@
-import { Alert, Pressable, Text, View } from 'react-native'
+import { BlurView } from 'expo-blur'
+import { Alert, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 
@@ -36,20 +37,25 @@ export const BuilderActions = ({ onSave, exerciseCount, saving }: BuilderActions
 
   return (
     <View
-      className="bg-background-primary border-t border-border-primary px-5 py-3"
-      style={{ paddingBottom: insets.bottom + 8 }}
+      className="border-t border-border-primary overflow-hidden"
+      style={{ paddingBottom: Math.max(insets.bottom, 12) }}
     >
-      <View className="flex-row items-center justify-between">
-        <Pressable onPress={handleDiscard} hitSlop={12}>
-          <Text className="text-sm font-inter-semibold text-content-secondary">Discard</Text>
-        </Pressable>
-
+      <BlurView
+        intensity={80}
+        tint="dark"
+        pointerEvents="none"
+        style={StyleSheet.absoluteFill}
+      />
+      <View className="flex-row gap-3 px-5 py-3">
         <Button
-          onPress={onSave}
-          loading={saving}
-          disabled={exerciseCount === 0}
-          className="px-8"
+          variant="ghost"
+          onPress={handleDiscard}
+          className="flex-1 border border-border-primary"
+          textClassName="text-content-primary"
         >
+          Discard
+        </Button>
+        <Button onPress={onSave} loading={saving} disabled={exerciseCount === 0} className="flex-1">
           Create Workout
         </Button>
       </View>
