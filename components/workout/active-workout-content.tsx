@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useEffect, useRef } from 'react'
-import { ActivityIndicator, Text, View } from 'react-native'
+import { ActivityIndicator, Alert, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { ActiveWorkoutShell } from '@/components/workout/active-workout-shell'
@@ -8,22 +8,24 @@ import { useActiveWorkout } from '@/contexts/active-workout-context'
 import { useWorkoutQuery } from '@/hooks/use-api'
 import { mapApiWorkout } from '@/types/api'
 
+const goBack = (router: ReturnType<typeof useRouter>) => {
+  if (router.canGoBack()) router.back()
+  else router.replace('/(protected)/(tabs)' as never)
+}
+
 export const ActiveWorkoutContent = () => {
   const { id } = useLocalSearchParams<{ id?: string }>()
   const router = useRouter()
   const insets = useSafeAreaInsets()
   const { session, startWorkout, clearSession } = useActiveWorkout()
   const hasStarted = useRef(false)
+  const alertShownRef = useRef(false)
 
   const { rawWorkout, isLoading, error } = useWorkoutQuery(id ?? null)
 
   useEffect(() => {
     if (id === undefined) {
-      if (router.canGoBack()) {
-        router.back()
-      } else {
-        router.replace('/(protected)/(tabs)' as never)
-      }
+      goBack(router)
       return
     }
 
@@ -35,10 +37,34 @@ export const ActiveWorkoutContent = () => {
       return
     }
 
-    // Different workout — silently clear old session, start fresh
+    // Different workout — confirm before discarding active session
     if (session !== null && session.plan.id !== id) {
-      clearSession()
-      hasStarted.current = false
+      if (alertShownRef.current) return
+      alertShownRef.current = true
+
+      // Completed sessions can be replaced without confirmation (already submitted)
+      if (session.status === 'completed') {
+        clearSession()
+        alertShownRef.current = false
+        return
+      }
+
+      Alert.alert(
+        'Workout in progress',
+        'Starting a new workout will discard your current progress.',
+        [
+          { text: 'Keep Current', style: 'cancel', onPress: () => goBack(router) },
+          {
+            text: 'Start New',
+            style: 'destructive',
+            onPress: () => {
+              clearSession()
+              alertShownRef.current = false
+            },
+          },
+        ],
+        { cancelable: false },
+      )
       return
     }
 

@@ -1,4 +1,4 @@
-import { ScrollView } from 'react-native'
+import Animated, { type ScrollHandlerProcessed } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { ScheduleDayRow } from '@/components/schedule/schedule-day-row'
@@ -9,20 +9,36 @@ import type { DayOfWeek, WeeklySchedule } from '@/types/schedule'
 import { getTodayDayOfWeek } from '@/utils/schedule'
 
 interface StackLayoutProps {
+  headerHeight: number
+  onScroll: ScrollHandlerProcessed<Record<string, never>>
   schedule: WeeklySchedule
   onDayPress: (day: DayOfWeek) => void
   flashDay: DayOfWeek | null
   flashAction: FlashAction
 }
 
-export const StackLayout = ({ schedule, onDayPress, flashDay, flashAction }: StackLayoutProps) => {
+export const StackLayout = ({
+  headerHeight,
+  onScroll,
+  schedule,
+  onDayPress,
+  flashDay,
+  flashAction,
+}: StackLayoutProps) => {
   const today = getTodayDayOfWeek()
   const insets = useSafeAreaInsets()
 
   return (
-    <ScrollView
+    <Animated.ScrollView
       className="flex-1"
-      contentContainerStyle={{ paddingTop: 16, paddingBottom: insets.bottom + TAB_CONTENT_BOTTOM_CLEARANCE }}
+      contentInsetAdjustmentBehavior="never"
+      contentContainerStyle={{
+        paddingTop: headerHeight + 12,
+        paddingBottom: insets.bottom + TAB_CONTENT_BOTTOM_CLEARANCE,
+      }}
+      onScroll={onScroll}
+      scrollEventThrottle={16}
+      scrollIndicatorInsets={{ top: headerHeight }}
       showsVerticalScrollIndicator={false}
     >
       {schedule.entries.map((entry, i) => {
@@ -39,6 +55,6 @@ export const StackLayout = ({ schedule, onDayPress, flashDay, flashAction }: Sta
           />
         )
       })}
-    </ScrollView>
+    </Animated.ScrollView>
   )
 }

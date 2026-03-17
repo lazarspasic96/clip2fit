@@ -1,7 +1,8 @@
 import { useRouter } from 'expo-router'
 import { Coffee, Info } from 'lucide-react-native'
-import { Pressable, Text, View } from 'react-native'
+import { Text, View } from 'react-native'
 
+import { Button } from '@/components/ui/button'
 import { Colors } from '@/constants/colors'
 
 export const RestDayCard = () => {
@@ -14,12 +15,11 @@ export const RestDayCard = () => {
           <Text className="text-lg font-inter-bold text-content-primary">It{`'`}s time for rest.</Text>
           <Text className="text-sm font-inter text-content-secondary mt-1">No workout for today!</Text>
 
-          <Pressable
-            onPress={() => router.push('/(protected)/(tabs)/schedule')}
-            className="bg-brand-accent rounded-md px-4 py-2 self-start mt-4"
-          >
-            <Text className="text-sm font-inter-semibold text-background-primary">Edit</Text>
-          </Pressable>
+          <View className="self-start mt-4">
+            <Button size="sm" onPress={() => router.push('/(protected)/(tabs)/schedule')}>
+              Edit
+            </Button>
+          </View>
         </View>
 
         <View

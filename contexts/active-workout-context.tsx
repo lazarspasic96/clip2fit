@@ -155,10 +155,14 @@ interface WorkoutContextValue {
   pauseWorkout: () => void
   resumeWorkout: () => void
   finishSession: () => void
+  markSubmitted: () => void
   clearSession: () => void
   finishResult: ApiSessionResponse | null
   setFinishResult: (result: ApiSessionResponse) => void
   clearFinishResult: () => void
+  editAction: 'saved' | 'discarded' | null
+  setEditAction: (action: 'saved' | 'discarded') => void
+  clearEditAction: () => void
 }
 
 const ActiveWorkoutContext = createContext<WorkoutContextValue | undefined>(undefined)
@@ -167,6 +171,8 @@ export const ActiveWorkoutProvider = ({ children }: { children: React.ReactNode 
   const [session, setSession] = useState<WorkoutSession | null>(() => loadSession())
   const finishResultRef = useRef<ApiSessionResponse | null>(null)
   const [, setFinishResultVersion] = useState(0)
+  const editActionRef = useRef<'saved' | 'discarded' | null>(null)
+  const [, setEditActionVersion] = useState(0)
 
   const updateAndPersist = (updater: (prev: WorkoutSession) => WorkoutSession) => {
     setSession((prev) => {
@@ -218,6 +224,10 @@ export const ActiveWorkoutProvider = ({ children }: { children: React.ReactNode 
     })
   }
 
+  const markSubmitted = () => {
+    updateAndPersist((prev) => ({ ...prev, submittedAt: Date.now() }))
+  }
+
   const clearSession = () => {
     clearPersistedSession()
     setSession(null)
@@ -247,6 +257,16 @@ export const ActiveWorkoutProvider = ({ children }: { children: React.ReactNode 
     setFinishResultVersion((v) => v + 1)
   }
 
+  const setEditActionValue = (action: 'saved' | 'discarded') => {
+    editActionRef.current = action
+    setEditActionVersion((v) => v + 1)
+  }
+
+  const clearEditAction = () => {
+    editActionRef.current = null
+    setEditActionVersion((v) => v + 1)
+  }
+
   const value: WorkoutContextValue = {
     session,
     activeWorkoutId,
@@ -262,10 +282,14 @@ export const ActiveWorkoutProvider = ({ children }: { children: React.ReactNode 
     pauseWorkout,
     resumeWorkout,
     finishSession,
+    markSubmitted,
     clearSession,
     finishResult: finishResultRef.current,
     setFinishResult: setFinishResultValue,
     clearFinishResult,
+    editAction: editActionRef.current,
+    setEditAction: setEditActionValue,
+    clearEditAction,
   }
 
   return <ActiveWorkoutContext.Provider value={value}>{children}</ActiveWorkoutContext.Provider>

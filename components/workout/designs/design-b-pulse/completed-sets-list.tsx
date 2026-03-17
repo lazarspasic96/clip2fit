@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Pressable, Text, View } from 'react-native'
 
 import { StepperButton } from '@/components/workout/shared/stepper-button'
+import { TappableValue } from '@/components/workout/shared/tappable-value'
 import { Colors } from '@/constants/colors'
 import { useActiveWorkout } from '@/contexts/active-workout-context'
 import type { WorkoutExercise } from '@/types/workout'
@@ -54,14 +55,14 @@ export const CompletedSetsList = ({ exercise }: CompletedSetsListProps) => {
               {!exercise.isBodyweight && (
                 <View className="flex-row items-center justify-between">
                   <StepperButton type="decrement" onPress={() => setEditWeight((w) => Math.max(0, w - WEIGHT_STEP))} />
-                  <Text className="text-lg font-inter-bold text-content-primary">{editWeight} kg</Text>
+                  <TappableValue value={editWeight} unit="kg" onChangeValue={setEditWeight} decimal />
                   <StepperButton type="increment" onPress={() => setEditWeight((w) => w + WEIGHT_STEP)} />
                 </View>
               )}
 
               <View className="flex-row items-center justify-between">
                 <StepperButton type="decrement" onPress={() => setEditReps((r) => Math.max(1, r - REPS_STEP))} />
-                <Text className="text-lg font-inter-bold text-content-primary">{editReps} reps</Text>
+                <TappableValue value={editReps} unit="reps" onChangeValue={setEditReps} />
                 <StepperButton type="increment" onPress={() => setEditReps((r) => r + REPS_STEP)} />
               </View>
 

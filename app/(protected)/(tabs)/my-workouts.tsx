@@ -1,11 +1,11 @@
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Trash2 } from 'lucide-react-native'
 import { useEffect, useRef } from 'react'
-import { ActivityIndicator, Alert, Pressable, RefreshControl, Text, View } from 'react-native'
-import { FlashList } from '@shopify/flash-list'
+import { ActivityIndicator, Alert, FlatList, Pressable, RefreshControl, Text, View } from 'react-native'
 import Animated, {
   FadeInUp,
   LinearTransition,
+  useAnimatedScrollHandler,
   useAnimatedStyle,
   useSharedValue,
   withSequence,
@@ -14,6 +14,11 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { EmptyState } from '@/components/my-workouts/empty-state'
+import { ScreenBlurTarget } from '@/components/ui/screen-blur-target'
+import {
+  BlurredScreenHeader,
+  getBlurredScreenHeaderHeight,
+} from '@/components/ui/blurred-screen-header'
 import { WorkoutCard } from '@/components/my-workouts/workout-card'
 import { SwipeableRow } from '@/components/ui/swipeable-row'
 import { Colors } from '@/constants/colors'
@@ -22,6 +27,7 @@ import { TAB_CONTENT_BOTTOM_CLEARANCE } from '@/constants/tab-bar'
 import { useDeleteWorkoutMutation, useWorkoutsQuery } from '@/hooks/use-api'
 
 const DELETE_ACTION_WIDTH = 80
+const AnimatedFlatList = Animated.createAnimatedComponent(FlatList<any>)
 
 const DeleteAction = () => (
   <View className="items-center justify-center w-[80px] h-full bg-red-600 rounded-2xl">
@@ -66,8 +72,16 @@ const MyWorkoutsScreen = () => {
   const { workouts, isLoading, isRefetching, refetch } = useWorkoutsQuery()
   const deleteMutation = useDeleteWorkoutMutation()
 
+  const blurTargetRef = useRef<View>(null)
   const mountedRef = useRef(true)
   const newWorkoutIdRef = useRef(newWorkoutId)
+  const headerHeight = getBlurredScreenHeaderHeight(insets.top)
+  const scrollY = useSharedValue(0)
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y
+    },
+  })
 
   // Clear URL param after 4s so highlight doesn't persist on tab revisit
   useEffect(() => {
@@ -98,58 +112,81 @@ const MyWorkoutsScreen = () => {
 
   if (isLoading && workouts.length === 0) {
     return (
-      <View className="flex-1 bg-background-primary justify-center items-center" style={{ paddingTop: insets.top }}>
-        <ActivityIndicator size="large" />
+      <View className="flex-1 bg-background-primary" collapsable={false}>
+        <ScreenBlurTarget targetRef={blurTargetRef} className="flex-1">
+          <View className="flex-1 items-center justify-center" style={{ paddingTop: headerHeight }}>
+            <ActivityIndicator size="large" />
+          </View>
+        </ScreenBlurTarget>
+        <BlurredScreenHeader blurTarget={blurTargetRef} title="My Workouts" scrollY={scrollY} />
       </View>
     )
   }
 
   return (
-    <View className="flex-1 bg-background-primary px-5" style={{ paddingTop: insets.top }} collapsable={false}>
-      {/* Header */}
-      <View className="pt-4 pb-6">
-        <Text className="text-2xl font-inter-bold text-content-primary">My Workouts</Text>
-      </View>
-      {workouts.length === 0 ? (
-        <EmptyState />
-      ) : (
-        <FlashList
-          data={workouts}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item, index }) => {
-            const isNew = item.id === newWorkoutIdRef.current
-            const entering = isNew
-              ? FadeInUp.duration(600).springify()
-              : mountedRef.current
-                ? FadeInUp.delay(index * 40).springify()
-                : undefined
+    <View className="flex-1 bg-background-primary" collapsable={false}>
+      <ScreenBlurTarget targetRef={blurTargetRef} className="flex-1">
+        {workouts.length === 0 ? (
+          <View className="flex-1 px-5" style={{ paddingTop: headerHeight + 12 }}>
+            <EmptyState />
+          </View>
+        ) : (
+          <AnimatedFlatList
+            data={workouts}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item, index }) => {
+              const isNew = item.id === newWorkoutIdRef.current
+              const entering = isNew
+                ? FadeInUp.duration(600).springify()
+                : mountedRef.current
+                  ? FadeInUp.delay(index * 40).springify()
+                  : undefined
 
-            const card = (
-              <SwipeableRow
-                actionWidth={DELETE_ACTION_WIDTH}
-                actionContent={<DeleteAction />}
-                onAction={() => confirmDelete(item)}
-              >
-                <Pressable onPress={() => router.push(`/(protected)/workout-detail?id=${item.id}`)}>
-                  <WorkoutCard workout={item} />
-                </Pressable>
-              </SwipeableRow>
-            )
+              const card = (
+                <SwipeableRow
+                  actionWidth={DELETE_ACTION_WIDTH}
+                  actionContent={<DeleteAction />}
+                  onAction={() => confirmDelete(item)}
+                >
+                  <Pressable onPress={() => router.push(`/(protected)/workout-detail?id=${item.id}`)}>
+                    <WorkoutCard workout={item} />
+                  </Pressable>
+                </SwipeableRow>
+              )
 
-            return (
-              <Animated.View entering={entering} layout={LinearTransition.springify()}>
-                {isNew ? <NewWorkoutHighlight>{card}</NewWorkoutHighlight> : card}
-              </Animated.View>
-            )
-          }}
-          ItemSeparatorComponent={() => <View className="h-3" />}
-          contentContainerStyle={{ paddingBottom: insets.bottom + TAB_CONTENT_BOTTOM_CLEARANCE }}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={Colors.content.secondary} />
-          }
-        />
-      )}
+              return (
+                <Animated.View entering={entering} layout={LinearTransition.springify()}>
+                  {isNew ? <NewWorkoutHighlight>{card}</NewWorkoutHighlight> : card}
+                </Animated.View>
+              )
+            }}
+            ItemSeparatorComponent={() => <View className="h-3" />}
+            contentContainerStyle={{
+              paddingTop: headerHeight + 12,
+              paddingHorizontal: 20,
+              paddingBottom: insets.bottom + TAB_CONTENT_BOTTOM_CLEARANCE,
+            }}
+            contentInsetAdjustmentBehavior="never"
+            onScroll={scrollHandler}
+            scrollEventThrottle={16}
+            scrollIndicatorInsets={{ top: headerHeight }}
+            showsVerticalScrollIndicator={false}
+            initialNumToRender={8}
+            maxToRenderPerBatch={8}
+            windowSize={7}
+            refreshControl={
+              <RefreshControl
+                refreshing={isRefetching}
+                onRefresh={refetch}
+                progressViewOffset={headerHeight}
+                tintColor={Colors.content.secondary}
+              />
+            }
+          />
+        )
+        }
+      </ScreenBlurTarget>
+      <BlurredScreenHeader blurTarget={blurTargetRef} title="My Workouts" scrollY={scrollY} />
     </View>
   )
 }

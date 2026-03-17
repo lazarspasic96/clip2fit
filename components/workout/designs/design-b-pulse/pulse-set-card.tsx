@@ -5,6 +5,7 @@ import { LogSetButton } from '@/components/workout/shared/log-set-button'
 import { PreviousPerformance } from '@/components/workout/previous-performance'
 import { SetDots } from '@/components/workout/shared/set-dots'
 import { StepperButton } from '@/components/workout/shared/stepper-button'
+import { TappableValue } from '@/components/workout/shared/tappable-value'
 import { useActiveSet } from '@/components/workout/shared/use-active-set'
 import { useSetInput } from '@/components/workout/shared/use-set-input'
 import { Colors } from '@/constants/colors'
@@ -42,9 +43,7 @@ export const PulseSetCard = () => {
           {!input.isBodyweight && (
             <View className="flex-row items-center justify-between">
               <StepperButton type="decrement" onPress={input.decrementWeight} />
-              <View className="items-center">
-                <Text className="text-xl font-inter-bold text-content-primary">{input.weight} kg</Text>
-              </View>
+              <TappableValue value={input.weight} unit="kg" onChangeValue={input.setWeight} decimal />
               <StepperButton type="increment" onPress={input.incrementWeight} />
             </View>
           )}
@@ -52,9 +51,7 @@ export const PulseSetCard = () => {
           {/* Reps stepper */}
           <View className="flex-row items-center justify-between">
             <StepperButton type="decrement" onPress={input.decrementReps} />
-            <View className="items-center">
-              <Text className="text-xl font-inter-bold text-content-primary">{input.reps} reps</Text>
-            </View>
+            <TappableValue value={input.reps} unit="reps" onChangeValue={input.setReps} />
             <StepperButton type="increment" onPress={input.incrementReps} />
           </View>
 

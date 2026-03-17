@@ -15,12 +15,10 @@ interface DashboardProps {
   onFinish: () => void
   isEditMode?: boolean
   learningPill?: React.ReactNode
-  headerSlot?: React.ReactNode
   ringSlot?: React.ReactNode
-  bottomOverlay?: React.ReactNode
 }
 
-export const PulseDashboard = ({ onBack, onFinish, isEditMode, learningPill, headerSlot, ringSlot, bottomOverlay }: DashboardProps) => {
+export const PulseDashboard = ({ onBack, onFinish, isEditMode, learningPill, ringSlot }: DashboardProps) => {
   const { session, currentExercise, navigateExercise } = useActiveWorkout()
   const { activeSetIndex, totalCount } = useActiveSet()
 
@@ -39,19 +37,17 @@ export const PulseDashboard = ({ onBack, onFinish, isEditMode, learningPill, hea
   return (
     <View className="flex-1">
       {/* Header */}
-      {headerSlot ?? (
-        <View className="flex-row items-center justify-between px-4 py-3">
-          <BackButton onPress={onBack} />
-          <Text className="text-base font-inter-bold text-content-primary flex-1 text-center" numberOfLines={1}>
-            {session.plan.title}
+      <View className="flex-row items-center justify-between px-4 py-3">
+        <BackButton onPress={onBack} />
+        <Text className="text-base font-inter-bold text-content-primary flex-1 text-center" numberOfLines={1}>
+          {session.plan.title}
+        </Text>
+        <Pressable onPress={onFinish} hitSlop={8}>
+          <Text className="text-sm font-inter-semibold text-brand-accent">
+            {isEditMode === true ? 'Save' : 'Finish'}
           </Text>
-          <Pressable onPress={onFinish} hitSlop={8}>
-            <Text className="text-sm font-inter-semibold text-brand-accent">
-              {isEditMode === true ? 'Save' : 'Finish'}
-            </Text>
-          </Pressable>
-        </View>
-      )}
+        </Pressable>
+      </View>
 
       <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 24 }} keyboardShouldPersistTaps="handled">
         {/* Pulse ring */}
@@ -103,8 +99,6 @@ export const PulseDashboard = ({ onBack, onFinish, isEditMode, learningPill, hea
           <PulseSetCard />
         </Animated.View>
       </ScrollView>
-
-      {bottomOverlay}
     </View>
   )
 }

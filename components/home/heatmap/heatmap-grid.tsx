@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import { ScrollView, Text, View } from 'react-native'
 
 import type { HeatmapDay } from '@/types/heatmap'
@@ -11,15 +12,18 @@ interface HeatmapGridProps {
 }
 
 export const HeatmapGrid = ({ days }: HeatmapGridProps) => {
+  const scrollRef = useRef<ScrollView>(null)
   const weeks = buildHeatmapGrid(days)
   const monthLabels = getMonthLabels(weeks)
   const totalWidth = weeks.length * (CELL_SIZE + GAP)
 
   return (
     <ScrollView
+      ref={scrollRef}
       horizontal
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={{ paddingRight: 8 }}
+      onLayout={() => scrollRef.current?.scrollToEnd({ animated: false })}
     >
       <View style={{ width: totalWidth }}>
         {/* Month labels — scroll with grid */}

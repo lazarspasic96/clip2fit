@@ -45,7 +45,7 @@ const WelcomeScreen = () => {
 
         <Animated.View className="flex-row gap-4 pb-10" entering={FadeInDown.delay(600).springify()}>
           <Button onPress={() => router.push('/(auth)/signup')} className="flex-1 shadow-ring rounded-3xl">
-            Sign up Free
+            Sign up
           </Button>
           <Button
             variant="secondary"
