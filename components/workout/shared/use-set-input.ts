@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useActiveWorkout } from '@/contexts/active-workout-context'
 import { useActiveSet } from '@/components/workout/shared/use-active-set'
 
-const WEIGHT_STEP = 2.5
+export const WEIGHT_STEP = 2.5
 const REPS_STEP = 1
 
 export const useSetInput = () => {

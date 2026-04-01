@@ -10,7 +10,9 @@
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.2",
@@ -73,7 +75,8 @@
     "eslint-config-expo": "~55.0.0",
     "postcss": "^8.5.0",
     "tailwindcss": "next",
-    "typescript": "~5.9.2"
+    "typescript": "~5.9.2",
+    "vitest": "^4.1.2"
   },
   "overrides": {
     "lightningcss": "1.30.1"
