@@ -1,11 +1,13 @@
 import { PreviousPerformance } from '@/components/workout/previous-performance'
 import { RepsInput } from '@/components/workout/reps-input'
 import { SetCheckButton } from '@/components/workout/set-check-button'
+import { SmartTargetChip } from '@/components/workout/smart-target-chip'
 import { WeightInput } from '@/components/workout/weight-input'
 import { useActiveWorkout } from '@/contexts/active-workout-context'
 import { Colors } from '@/constants/colors'
+import type { TargetResult } from '@/utils/progression'
 import type { WorkoutSet } from '@/types/workout'
-import { type ReactNode, useEffect, useState } from 'react'
+import { type ReactNode, useEffect, useRef, useState } from 'react'
 import { Pressable, Text, View } from 'react-native'
 import Animated, { useAnimatedStyle, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated'
 
@@ -60,13 +62,26 @@ interface SetTableRowProps {
   exerciseId: string
   isBodyweight: boolean
   isActiveSet: boolean
+  target?: TargetResult | null
+  onApplyTarget?: (weight: number) => void
+  weightUnit?: 'kg' | 'lbs'
 }
 
-export const SetTableRow = ({ set, exerciseId, isBodyweight, isActiveSet }: SetTableRowProps) => {
+export const SetTableRow = ({
+  set,
+  exerciseId,
+  isBodyweight,
+  isActiveSet,
+  target,
+  onApplyTarget,
+  weightUnit = 'kg',
+}: SetTableRowProps) => {
   const { completeSet, editSet } = useActiveWorkout()
   const [isEditing, setIsEditing] = useState(false)
   const [weight, setWeight] = useState('')
   const [reps, setReps] = useState('')
+  const [chipState, setChipState] = useState<'suggested' | 'applied' | 'overridden'>('suggested')
+  const appliedWeight = useRef<number | null>(null)
   const isCompleted = set.status === 'completed'
   const dotOpacity = useSharedValue(1)
 
@@ -74,7 +89,31 @@ export const SetTableRow = ({ set, exerciseId, isBodyweight, isActiveSet }: SetT
     setWeight(set.actualWeight?.toString() ?? '')
     setReps(set.actualReps?.toString() ?? '')
     setIsEditing(false)
+    setChipState('suggested')
+    appliedWeight.current = null
   }, [set.actualReps, set.actualWeight, set.id])
+
+  const handleWeightChange = (v: string) => {
+    setWeight(v)
+    if (appliedWeight.current !== null) {
+      const parsed = v.length > 0 ? parseFloat(v) : null
+      if (parsed !== appliedWeight.current) {
+        setChipState('overridden')
+      } else {
+        setChipState('applied')
+      }
+    }
+  }
+
+  const handleApplyTarget = () => {
+    if (target === undefined || target === null || onApplyTarget === undefined) return
+    setWeight(target.weight.toString())
+    setChipState('applied')
+    appliedWeight.current = target.weight
+    onApplyTarget(target.weight)
+  }
+
+  const showChip = target !== undefined && target !== null && !isBodyweight
 
   if (isActiveSet) {
     dotOpacity.value = withRepeat(withTiming(0.3, { duration: 800 }), -1, true)
@@ -129,7 +168,15 @@ export const SetTableRow = ({ set, exerciseId, isBodyweight, isActiveSet }: SetT
 
       {/* Weight */}
       <View className="w-20">
-        {renderWeightCell({ set, isActiveSet, isEditing, isBodyweight, weight, setWeight })}
+        {showChip && (isActiveSet || isCompleted || isEditing) && (
+          <SmartTargetChip
+            target={target}
+            state={chipState}
+            weightUnit={weightUnit}
+            onApply={handleApplyTarget}
+          />
+        )}
+        {renderWeightCell({ set, isActiveSet, isEditing, isBodyweight, weight, setWeight: handleWeightChange })}
       </View>
 
       {/* Reps */}

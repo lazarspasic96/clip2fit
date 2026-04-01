@@ -1,13 +1,13 @@
 import { useRouter } from 'expo-router'
-import { ActivityIndicator, Platform, Pressable, RefreshControl, Text, View } from 'react-native'
 import { useRef } from 'react'
+import { ActivityIndicator, Platform, Pressable, RefreshControl, Text, View } from 'react-native'
 import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { ProfileDashboard } from '@/components/profile/profile-dashboard'
 import { buildProfileScreenModel, type ProfileActionItem } from '@/components/profile/profile-data'
-import { ScreenBlurTarget } from '@/components/ui/screen-blur-target'
 import { BlurredScreenHeader, getBlurredScreenHeaderHeight } from '@/components/ui/blurred-screen-header'
+import { ScreenBlurTarget } from '@/components/ui/screen-blur-target'
 import { Colors } from '@/constants/colors'
 import { useAuth } from '@/contexts/auth-context'
 import { useProfileQuery } from '@/hooks/use-profile-query'
@@ -64,7 +64,7 @@ const ProfileScreen = () => {
           className="flex-1 bg-background-primary"
           contentInsetAdjustmentBehavior="never"
           contentContainerStyle={{
-            paddingTop: Platform.OS === 'android' ? insets.top + 74 : insets.top + 24,
+            paddingTop: Platform.OS === 'android' ? insets.top + 74 : insets.top + 64,
             paddingHorizontal: 20,
             paddingBottom: Platform.OS === 'android' ? insets.bottom + 64 : insets.bottom,
             gap: 16,

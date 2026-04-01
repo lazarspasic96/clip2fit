@@ -1,135 +1,234 @@
-# Handoff: Form Coach — Pose Detection Camera
+# Handoff: Smart Targets Phase 1 — Uncommitted, Ready to Ship
+
+## For the Next Agent
+
+**Status:** Phase 1 Smart Targets is code-complete (Phases A–E all done). All changes are **uncommitted on `main`**. Tests verified passing (56/56) as of 2026-04-02.
+
+**Your first task:** Create a feature branch, commit all changes, and ship via PR. The user has reviewed the work and understands what was built — no re-explanation needed.
+
+**Do NOT re-debate architecture decisions** — they were locked in prior sessions (see table below).
+
+Full implementation plan: `plans/plan-smart-targets-phase1.md`
+
+---
 
 ## Goal
 
-Add a real-time exercise form feedback screen. User taps "Form Coach" on home screen → exercise selection bottom sheet → camera opens full-screen → skeleton overlay (dots + connecting lines) drawn on top of live camera via Skia, driven by Reanimated SharedValue updated on the UI thread via `runOnUI`. Foundation for later LLM-powered form coaching.
+Build formula-based weight suggestions ("smart targets") on the active workout screen. When a user starts a workout, eligible exercises show a chip suggesting the next weight based on their performance history. No LLM, pure progression logic.
 
-Full spec: `plans/plan-form-coach-pose-camera.md`
+This is Phase 1 of the AI Personal Trainer feature (5 phases total). Phase 1 must ship before any LLM-powered features.
 
-## Current Progress
+---
 
-### Phase 0: Dependencies & Smoke Tests — DONE
+## Current Progress — ALL PHASES DONE
 
-- Installed `@shopify/react-native-skia`, `expo-camera`, `expo-screen-orientation`
-- Camera permissions added to `app.json` (iOS `NSCameraUsageDescription` + Android `CAMERA`)
-- Skia + Reanimated v4 smoke test passed (SharedValues read by Skia Canvas on UI thread at 60 FPS, zero React re-renders)
+### Phase B: Progression Utils + Tests — DONE
 
-### Phase 1: Entry Point & Navigation — DONE
+**Files created:**
+- `utils/progression.ts` — 6 exported functions: `parseTargetReps`, `getProgressionTarget`, `muscleGroupCategory`, `getIncrement`, `isEligible`, `computeTarget`
+- `__tests__/progression.test.ts` — 56 test cases, all passing
+- `vitest.config.ts` — Vitest configured with `@/` path alias
+- `package.json` — Added `test` and `test:watch` scripts (vitest)
 
-- "Form Coach" 3rd tile added to `components/home/bottom-action-buttons.tsx` (ScanLine icon, lime #84cc16)
-- `form-coach` screen registered in `app/(protected)/_layout.tsx` as `fullScreenModal`, `slide_from_bottom`, `gestureEnabled: false`
-- Placeholder `app/(protected)/form-coach.tsx` created with close button, exercise label
+**Run tests:** `npm test`
 
-### Phase 2: Exercise Selection Sheet — DONE
+### Phase A: Backend Endpoint — DONE
 
-- `components/form-coach/exercise-sheet.tsx` — BottomSheetModal with deduplicated exercise names from user workouts. Supports two modes: navigation (from home) and in-place selection (from camera via `onSelect` prop)
-- Wired into home screen via ref, skips sheet if no workouts
-- Exercise label at bottom of camera screen is tappable → reopens sheet
+**File created (in clip2fit-api repo):**
+- `/Users/lazarspasic/git/clip2fit-api/src/app/api/stats/exercise-history/route.ts`
 
-### Phase 3: Local Expo Module Scaffold — DONE
+**Endpoint:** `GET /api/stats/exercise-history?ids=uuid1,uuid2,uuid3`
 
-- `modules/expo-pose-camera/` created manually (not via `create-expo-module` — interactive prompt doesn't work in CI)
-- TypeScript types: `PoseLandmark`, `PoseDetectedEvent`, `ExposePoseCameraViewProps`
-- `requireNativeView('ExposePoseCamera')` wrapper
-- `expo-module.config.json` with iOS + Android module definitions
-- `package.json` added (required for proper module resolution)
-- `expo-pose-camera.podspec` with `source_files = 'ios/*.{h,m,mm,swift}', 'ios/**/*.{h,m,mm,swift}'`
+Returns `Record<catalogExerciseId, { sessionCount, lastSession: { sets: [{ setNumber, actualWeight, actualReps }] } }>`
 
-### Phase 4: iOS Native (Swift) — DONE
+### Phase C: Frontend Hook — DONE
 
-- `ios/ExposePoseCameraModule.swift` — Module definition with View, Events("onPoseDetected"), Prop("isActive")
-- `ios/PoseCameraView.swift` — ExpoView subclass:
-  - AVCaptureSession + AVCaptureVideoPreviewLayer (back camera, portrait)
-  - AVCaptureVideoDataOutputSampleBufferDelegate on dedicated serial queue
-  - VNDetectHumanBodyPoseRequest per frame
-  - Multi-person: picks highest confidence sum
-  - Normalizes coordinates (flips Y for Vision's bottom-left origin)
-  - Filters confidence ≤ 0.3, throttles to ~20 FPS
-  - Fires `onPoseDetected` event with landmarks array
-  - `isActive` prop controls session start/stop
+**Files created/modified:**
+- `hooks/use-smart-targets-history.ts` — `useSmartTargetsHistory(catalogExerciseIds: string[])` hook
+- `constants/query-keys.ts` — Added `stats.exerciseHistoryBulk(ids)` key
 
-### Phase 5: Skeleton Overlay — DONE
+### Phase D: UI Components + Wiring — DONE
 
-- `constants/pose-skeleton.ts` — 19 joint names, 15 bone connections, drawing constants
-- `components/form-coach/skeleton-overlay.tsx` — Skia Canvas reading `SharedValue<PoseLandmark[]>` on UI thread via `useDerivedValue`. Extracted `Bone` and `JointDot` sub-components to avoid hooks-in-loops lint errors. Draws lime lines (strokeWidth 3) and circles (radius 6)
+**Files created:**
+- `components/workout/smart-target-chip.tsx` — 3-state chip (suggested/applied/overridden)
+- `hooks/use-smart-target.ts` — Orchestrator hook: fetch → eligible → compute
 
-### Phase 6: Form Coach Screen Polish — DONE
+**Files modified:**
+- `components/workout/designs/design-b-pulse/pulse-set-card.tsx` — **PRIMARY** integration (actual active workout UI)
+- `components/workout/command-center/set-table-row.tsx` — Secondary integration (unused CommandCenter design, future-proof)
 
-- `components/form-coach/permission-denied-view.tsx` — Camera denied fallback with "Open Settings" button
-- `app/(protected)/form-coach.tsx` — Full screen with:
-  - `useCameraPermissions()` from expo-camera for permission gate
-  - `ExposePoseCameraView` (absoluteFill) with `isActive={isFocused}`
-  - `SkeletonOverlay` (absoluteFill, pointerEvents=none)
-  - `runOnUI` event bridge from `onPoseDetected` → SharedValue
-  - Close button (top-right), exercise label (bottom-center)
-  - Portrait lock via `expo-screen-orientation`
+### Phase E: Integration Testing, Edge Cases, Polish — DONE
 
-### Phase 7: Android Native (Kotlin) — DONE (code written, not tested)
+- **Hardcoded WEIGHT_STEP fixed**: `pulse-set-card.tsx` imports `WEIGHT_STEP` from `use-set-input.ts` instead of duplicating `2.5`
+- **Exported `WEIGHT_STEP`** from `components/workout/shared/use-set-input.ts`
+- **hitSlop increased to 12pt**: Chip ~20pt + 12pt each side = 44pt minimum touch target
+- **All edge cases verified** — every degradation path returns `{ target: null }`, workout unaffected:
+  - History loading / API error / no catalogExerciseId / bodyweight / exotic reps / 1 session / null data / all sets done → no chip shown
+- **TypeScript clean** (only pre-existing `TAG` error in `use-api.ts:195`)
+- **56/56 tests pass**
 
-- `android/build.gradle` — CameraX 1.4.1 + ML Kit pose-detection-accurate 18.0.0-beta5
-- `android/src/main/java/expo/modules/posecamera/ExposePoseCameraModule.kt`
-- `android/src/main/java/expo/modules/posecamera/PoseCameraView.kt` — CameraX + ML Kit, same event format as iOS
-
-### Build Status — iOS BUILD SUCCEEDS, NEEDS RUNTIME VERIFICATION
-
-- `npx expo run:ios` completed successfully (0 errors, 1165 warnings — mostly Skia linker warnings)
-- Swift files confirmed compiled (`.swiftdeps` present in DerivedData)
-- App installed on iPhone 17 Pro Max simulator
-
-### Runtime Blocker Found and Fixed (Native View Registration)
-
-- Symptom at runtime:
-  - `Unimplemented component: <ViewManagerAdapter_ExposePoseCamera>`
-- Root cause:
-  - Local module autolinking metadata for Apple platform was incomplete, so `ExpoModulesProvider.swift` did not register `ExposePoseCameraModule`.
-- Fix:
-  - Updated `modules/expo-pose-camera/expo-module.config.json` to:
-    - use `platforms: ["apple", "android"]`
-    - define `apple.modules`
-    - define `apple.podspecPath`
-    - define `apple.swiftModuleName`
-  - Re-ran `pod install` so `expo-pose-camera` is included in generated module provider and package list.
+---
 
 ## What Worked
 
-- **Custom Expo Module over VisionCamera** — Avoids worklets-core conflict with Reanimated v4
-- **`runOnUI` event bridge** — Public API only, no Reanimated internal C++ headers
-- **Skia reads SharedValues directly** — Proven in smoke test, circle animated at 60 FPS
-- **Sub-components for Skia elements** — Extracted `Bone` and `JointDot` to fix hooks-in-loops ESLint errors
-- **`useCameraPermissions()` from expo-camera** — Cleaner than manual permission checking
+- **Vitest for unit testing** pure TS functions — fast, zero config beyond path alias
+- **`normalizeMuscleGroup()`** from `utils/muscle-color.ts` handles all alias resolution (no new alias map needed)
+- **`MuscleGroupKey` type** ensures the increment map is exhaustive at compile time
+- **Exotic rep pattern detection** via single regex (covers AMRAP, failure, sec, min, /side, per side, each side, hold)
+- **`useSmartTarget()` hook** cleanly encapsulates: fetch history → check eligibility → compute target
+- **Chip state tracking via `useRef<number | null>`** for applied weight comparison (avoids stale closure issues with stepper)
+- **Resetting chip state by comparing `activeSet.id`** to a ref (no useEffect needed, runs during render — React-sanctioned pattern)
+- **TanStack Query with `staleTime: 5min`** — history doesn't refetch mid-workout
 
 ## What Didn't Work / Watch Out For
 
-- **`npx create-expo-module --local` interactive prompt** — Fails in non-TTY environments. Had to scaffold manually
-- **Missing podspec** — Local Expo modules MUST have a `.podspec` file for CocoaPods to compile Swift files. Without it, autolinking detects the module but CocoaPods only compiles the dummy .m stub
-- **Podspec `source_files` glob** — `'ios/**/*.{h,m,mm,swift}'` alone did NOT match files in `ios/` directory on this CocoaPods version. Fixed by using BOTH patterns: `'ios/*.{h,m,mm,swift}', 'ios/**/*.{h,m,mm,swift}'`
-- **`videoRotationAngle`** — iOS 17+ only. Project targets iOS 15.1. Fixed with `if #available(iOS 17.0, *)` fallback to `videoOrientation = .portrait`
-- **`prebuild` ≠ `run:ios`** — `prebuild` only generates native project files. `run:ios` actually compiles Swift and installs the binary. User must run `npx expo run:ios` after any native code change
-- **Missing `package.json` in module** — Added for proper module resolution
+- **The plan targets wrong files.** Plan says modify `set-table-row.tsx` and `active-workout-content.tsx`, but the ACTUAL active workout UI renders through:
+  ```
+  ActiveWorkoutContent → ActiveWorkoutShell → OrbitDashboard → PulseDashboard → PulseSetCard
+  ```
+  `PulseSetCard` uses stepper-based input (not table rows). The `SetTableRow` / `CommandCenterWorkout` is an **unused** older design. Both were modified, but `PulseSetCard` is where users see the chip.
 
-## Key Files Reference
+- **`package.json` gets auto-modified** by linters/formatters between reads — always re-read before editing.
 
-| File | Purpose |
-|------|---------|
-| `plans/plan-form-coach-pose-camera.md` | Full implementation spec |
-| `app/(protected)/form-coach.tsx` | Main camera screen |
-| `components/form-coach/exercise-sheet.tsx` | Exercise selection bottom sheet |
-| `components/form-coach/skeleton-overlay.tsx` | Skia canvas skeleton (Bone/JointDot sub-components) |
-| `components/form-coach/permission-denied-view.tsx` | Camera denied fallback |
-| `components/home/bottom-action-buttons.tsx` | Home screen tiles (3rd = Form Coach) |
-| `constants/pose-skeleton.ts` | Joint names, connections, drawing constants |
-| `modules/expo-pose-camera/` | Local Expo module (entire directory) |
-| `modules/expo-pose-camera/ios/PoseCameraView.swift` | iOS camera + Vision pose detection |
-| `modules/expo-pose-camera/ios/ExposePoseCameraModule.swift` | iOS module definition |
-| `modules/expo-pose-camera/android/.../PoseCameraView.kt` | Android CameraX + ML Kit |
-| `modules/expo-pose-camera/android/.../ExposePoseCameraModule.kt` | Android module definition |
-| `modules/expo-pose-camera/expo-pose-camera.podspec` | CocoaPods spec (critical for iOS) |
+- **Stepper weight tracking is inherently racy** — `input.incrementWeight()` uses a state setter (`w => w + STEP`) but chip tracking needs the new value immediately. Solved by computing `input.weight + WEIGHT_STEP` inline (works because both use same baseline before React re-renders).
 
-## Next Steps
+- **5 chip states was too many** — earlier iterations had `loading`, `error`, `suggested`, `applied`, `overridden`. Simplified to 3 (loading/error just show no chip).
 
-1. **Runtime verification on iOS** — Open app on simulator/device, tap Form Coach → select exercise → verify camera opens and skeleton draws on a person. The build succeeds but runtime behavior hasn't been verified yet.
-2. **Test on physical iOS device** — Simulator has no real camera. Need a device build via `npx expo run:ios --device` to verify actual pose detection with Apple Vision.
-3. **Android testing** — Run `npx expo run:android`, verify CameraX + ML Kit pose detection works. The Kotlin code is written but completely untested.
-4. **Verify skeleton tracking quality** — Check that skeleton tracks at ≥15 FPS, joints/bones appear at correct positions, multi-person picks correct body, empty frame clears skeleton instantly.
-5. **Edge cases** — Test: deny camera permission → PermissionDeniedView with "Open Settings"; exercise label tap → sheet reopens over live camera; close button → returns to home; camera stops when screen unfocused.
-6. **Performance profiling** — Verify via React DevTools Profiler that FormCoachScreen has zero re-renders during skeleton drawing (only SharedValue mutations on UI thread).
+---
+
+## What Remains Before Shipping
+
+1. **Create feature branch + commit** — all changes are uncommitted on `main`
+2. **On-device QA** — test the full flow on iOS simulator with real workout data:
+   - Exercise WITH catalogExerciseId + 2+ sessions → chip shows
+   - Exercise WITHOUT catalogExerciseId → no chip
+   - Bodyweight exercise → no chip
+   - AMRAP/exotic reps exercise → no chip
+   - Tap chip → weight fills → chip becomes "applied"
+   - Use stepper/manual input → chip becomes "overridden"
+   - Complete set → chip resets to "suggested" for next set
+   - All sets done → no chip
+3. **Optional: `/design-review`** for visual QA on chip styling
+4. **Optional: `/review`** for pre-landing code review
+
+---
+
+## Uncommitted Changes (as of 2026-04-02)
+
+**Modified:**
+- `.gitignore`, `CLAUDE.md`, `HANDOFF.md`
+- `app/(protected)/(tabs)/profile/index.tsx`
+- `components/workout/command-center/set-table-row.tsx`
+- `components/workout/designs/design-b-pulse/pulse-set-card.tsx`
+- `components/workout/shared/use-set-input.ts`
+- `constants/query-keys.ts`
+- `package-lock.json`, `package.json`, `skills-lock.json`
+
+**New (untracked):**
+- `TODOS.md`
+- `__tests__/progression.test.ts`
+- `components/workout/smart-target-chip.tsx`
+- `docs/founder-verdicts.md`
+- `hooks/use-smart-target.ts`, `hooks/use-smart-targets-history.ts`
+- `plans/plan-smart-targets-phase1.md`
+- `utils/progression.ts`
+- `vitest.config.ts`
+
+---
+
+## Key Architecture Decisions (Locked)
+
+All decisions were reviewed and locked in a prior session. Do NOT re-debate:
+
+| Decision | Choice | Why |
+|----------|--------|-----|
+| Scope | Weighted exercises only, 2+ sessions, catalogExerciseId required | Narrow = correct |
+| Deloads | None in Phase 1 | One bad session ≠ regression |
+| Rep ranges | Upper bound ("8-12" → progress at 12) | Prevents premature progression |
+| Chip states | 3 only: suggested/applied/overridden | 5 was too many |
+| Chip copy | `75kg +2.5` (not "AI: 75kg") | Utility, not marketing |
+| Free tier | No chip shown (no blurred paywall) | Mid-workout paywall is hostile |
+| Analytics | On set completion, not chip tap | Tap ≠ final decision |
+| Chip placement | Above weight stepper in PulseSetCard | Plan said table row, but actual UI uses stepper |
+
+---
+
+## What NOT to Build (Phase 1)
+
+- No bodyweight targets (Phase 1.5)
+- No deloads (Phase 2+)
+- No fuzzy name matching (catalogExerciseId only)
+- No LLM calls (pure formula)
+- No swipe-to-dismiss
+- No free-tier blurred chip
+- No PostHog events yet
+- No "AI:" prefix on chips
+- No manual `useMemo`/`useCallback` (React Compiler)
+
+---
+
+## Key Files
+
+| File | Why |
+|------|-----|
+| `plans/plan-smart-targets-phase1.md` | Full implementation plan with SQL, types, specs |
+| `utils/progression.ts` | Core logic — `isEligible`, `computeTarget` |
+| `__tests__/progression.test.ts` | 56 test cases |
+| `hooks/use-smart-targets-history.ts` | TanStack Query hook for bulk history fetch |
+| `hooks/use-smart-target.ts` | Orchestrator: fetch → eligible → compute for current exercise |
+| `components/workout/smart-target-chip.tsx` | 3-state chip component |
+| `components/workout/designs/design-b-pulse/pulse-set-card.tsx` | Primary integration point (actual active workout UI) |
+| `components/workout/shared/use-set-input.ts` | Weight/reps stepper state (exports `WEIGHT_STEP`) |
+| `components/workout/command-center/set-table-row.tsx` | Secondary integration (unused CommandCenter layout) |
+| `contexts/active-workout-context.tsx` | Session state, completeSet(), currentExercise |
+| `constants/query-keys.ts` | exerciseHistoryBulk key |
+| `clip2fit-api/src/app/api/stats/exercise-history/route.ts` | Backend endpoint |
+
+---
+
+## Component Tree (Active Workout Flow)
+
+```
+ActiveWorkoutContent
+  └─ ActiveWorkoutShell
+       └─ OrbitDashboard
+            └─ PulseDashboard
+                 ├─ OrbitRing (timer/progress)
+                 ├─ ExerciseLearningPill
+                 └─ PulseSetCard  ← SMART TARGET CHIP LIVES HERE
+                      ├─ SetDots
+                      ├─ SmartTargetChip (when eligible)
+                      ├─ Weight stepper (StepperButton + TappableValue)
+                      ├─ Reps stepper
+                      ├─ PreviousPerformance
+                      ├─ LogSetButton
+                      └─ Skip exercise
+```
+
+---
+
+## Broader Context
+
+### AI Personal Trainer Roadmap (5 phases)
+1. **Smart Targets** (formula-based) — CODE COMPLETE, UNCOMMITTED
+2. **AI Weekly Plan** (LLM generates weekly plans)
+3. **Mascot + Chat** (bottom sheet chat with AI trainer)
+4. **Routine Evolution** (AI proposes permanent template changes)
+5. **Content Discovery** (AI recommends videos to convert)
+
+### Next After Shipping Phase 1
+- **Phase 1.5** (see `TODOS.md`): Fuzzy exercise name matching + bodyweight progression
+- **Phase 2**: AI Weekly Plan + schema fix (`override_of` column on `planned_workouts`)
+
+### Other In-Progress Work
+
+- **Form Coach** (pose detection camera): Code complete through Phase 7. Needs runtime verification on physical device. Independent from AI Trainer. See `plans/plan-form-coach-pose-camera.md`.
+
+### Review Status (Prior Sessions)
+
+```
+Eng Review:    CLEARED (2026-03-23)
+Design Review: CLEARED (2026-03-23, score 5/10 → 8/10)
+Outside Voices: Codex + Claude subagent — all issues resolved
+Tests:         56/56 passing (verified 2026-04-02)
+```

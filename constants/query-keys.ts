@@ -25,6 +25,8 @@ export const queryKeys = {
     prs: (catalogExerciseId: string | null) => ['stats', 'prs', catalogExerciseId ?? 'all'] as const,
     exerciseHistory: (catalogExerciseId: string | null, exerciseName: string | null, period: string) =>
       ['stats', 'exercise-history', catalogExerciseId ?? 'none', exerciseName ?? '', period] as const,
+    exerciseHistoryBulk: (ids: string[]) =>
+      ['stats', 'exercise-history-bulk', ...ids.sort()] as const,
   },
   ui: {
     addExercisesRequest: (requestId: string) => ['ui', 'add-exercises', 'request', requestId] as const,

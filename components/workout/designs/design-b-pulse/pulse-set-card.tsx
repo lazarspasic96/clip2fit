@@ -1,24 +1,68 @@
+import { useRef, useState } from 'react'
 import { Pressable, Text, View } from 'react-native'
 
 import { CompletedSetsList } from '@/components/workout/designs/design-b-pulse/completed-sets-list'
 import { LogSetButton } from '@/components/workout/shared/log-set-button'
 import { PreviousPerformance } from '@/components/workout/previous-performance'
 import { SetDots } from '@/components/workout/shared/set-dots'
+import { SmartTargetChip } from '@/components/workout/smart-target-chip'
 import { StepperButton } from '@/components/workout/shared/stepper-button'
 import { TappableValue } from '@/components/workout/shared/tappable-value'
 import { useActiveSet } from '@/components/workout/shared/use-active-set'
-import { useSetInput } from '@/components/workout/shared/use-set-input'
+import { useSetInput, WEIGHT_STEP } from '@/components/workout/shared/use-set-input'
 import { Colors } from '@/constants/colors'
 import { useActiveWorkout } from '@/contexts/active-workout-context'
+import { useSmartTarget } from '@/hooks/use-smart-target'
 
 export const PulseSetCard = () => {
   const { currentExercise, skipExercise } = useActiveWorkout()
   const { activeSet, activeSetIndex } = useActiveSet()
   const input = useSetInput()
+  const { target } = useSmartTarget()
+  const [chipState, setChipState] = useState<'suggested' | 'applied' | 'overridden'>('suggested')
+  const appliedWeight = useRef<number | null>(null)
+  const lastActiveSetId = useRef<string | null>(null)
+
+  // Reset chip state when active set changes
+  if (activeSet !== null && activeSet.id !== lastActiveSetId.current) {
+    lastActiveSetId.current = activeSet.id
+    setChipState('suggested')
+    appliedWeight.current = null
+  }
 
   if (currentExercise === null) return null
 
   const allDone = activeSet === null
+  const showChip = target !== null && !input.isBodyweight && !allDone
+
+  const handleApplyTarget = () => {
+    if (target === null) return
+    input.setWeight(target.weight)
+    setChipState('applied')
+    appliedWeight.current = target.weight
+  }
+
+  const updateChipAfterWeightChange = (newWeight: number) => {
+    if (appliedWeight.current !== null) {
+      setChipState(newWeight === appliedWeight.current ? 'applied' : 'overridden')
+    }
+  }
+
+  const handleWeightChange = (v: number) => {
+    input.setWeight(v)
+    updateChipAfterWeightChange(v)
+  }
+
+  const handleIncrementWeight = () => {
+    input.incrementWeight()
+    updateChipAfterWeightChange(input.weight + WEIGHT_STEP)
+  }
+
+  const handleDecrementWeight = () => {
+    input.decrementWeight()
+    const newWeight = Math.max(0, input.weight - WEIGHT_STEP)
+    updateChipAfterWeightChange(newWeight)
+  }
 
   return (
     <View
@@ -39,12 +83,24 @@ export const PulseSetCard = () => {
         <CompletedSetsList exercise={currentExercise} />
       ) : (
         <>
+          {/* Smart target chip */}
+          {showChip && (
+            <View className="items-center">
+              <SmartTargetChip
+                target={target}
+                state={chipState}
+                weightUnit="kg"
+                onApply={handleApplyTarget}
+              />
+            </View>
+          )}
+
           {/* Weight stepper */}
           {!input.isBodyweight && (
             <View className="flex-row items-center justify-between">
-              <StepperButton type="decrement" onPress={input.decrementWeight} />
-              <TappableValue value={input.weight} unit="kg" onChangeValue={input.setWeight} decimal />
-              <StepperButton type="increment" onPress={input.incrementWeight} />
+              <StepperButton type="decrement" onPress={handleDecrementWeight} />
+              <TappableValue value={input.weight} unit="kg" onChangeValue={handleWeightChange} decimal />
+              <StepperButton type="increment" onPress={handleIncrementWeight} />
             </View>
           )}
 

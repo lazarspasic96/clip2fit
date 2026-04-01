@@ -131,6 +131,20 @@ npm run lint       # Run ESLint
 
 - `@/*` maps to project root (e.g., `@/components/...`, `@/hooks/...`)
 
+## Product Decision Framework
+
+Before proposing, prioritizing, or building any feature, release, pricing change, marketing strategy, or growth initiative, **always read and apply** [`docs/founder-verdicts.md`](docs/founder-verdicts.md). This file contains 19 validated founder verdicts (9 Do / 10 Don't) extracted from 125 founders, each with a "Applied to Clip2Fit" section.
+
+**When to reference it:**
+- Feature prioritization and scoping
+- Release planning and MVP decisions
+- Pricing and monetization discussions
+- Marketing and distribution strategy
+- Growth channel selection
+- Any "should we build X?" conversation
+
+**Use the Quick Reference Checklist** at the bottom of that file before greenlighting any feature.
+
 ## MVP Phases
 
 ### Phase 1 — Core
@@ -159,3 +173,21 @@ npm run lint       # Run ESLint
 - Multimodal video analysis (on-screen text + visual exercises)
 - AI workout suggestions
 - Training program builder
+
+## Skill routing
+
+When the user's request matches an available skill, ALWAYS invoke it using the Skill
+tool as your FIRST action. Do NOT answer directly, do NOT use other tools first.
+The skill has specialized workflows that produce better results than ad-hoc answers.
+
+Key routing rules:
+- Product ideas, "is this worth building", brainstorming → invoke office-hours
+- Bugs, errors, "why is this broken", 500 errors → invoke investigate
+- Ship, deploy, push, create PR → invoke ship
+- QA, test the site, find bugs → invoke qa
+- Code review, check my diff → invoke review
+- Update docs after shipping → invoke document-release
+- Weekly retro → invoke retro
+- Design system, brand → invoke design-consultation
+- Visual audit, design polish → invoke design-review
+- Architecture review → invoke plan-eng-review
