@@ -81,7 +81,6 @@ export interface ProfileScreenModel {
   goalValue: string
   scheduleValue: string
   locationValue: string
-  quickActions: ProfileActionItem[]
   sections: ProfileSection[]
   accountActions: ProfileActionItem[]
 }
@@ -103,6 +102,9 @@ const withFallback = (value?: string): string => {
   const trimmed = value.trim()
   return trimmed.length > 0 ? trimmed : DEFAULT_VALUE
 }
+
+const toneForValue = (value?: string): ProfileActionTone =>
+  value !== undefined && value.trim().length > 0 ? 'accent' : 'default'
 
 export const buildProfileScreenModel = ({
   profile,
@@ -146,7 +148,7 @@ export const buildProfileScreenModel = ({
       value: withFallback(profile?.fullName),
       description: 'How you show up around the app.',
       icon: UserRound,
-      tone: 'default',
+      tone: toneForValue(profile?.fullName),
       route: '/(protected)/sheets/edit-name',
     },
     gender: {
@@ -155,7 +157,7 @@ export const buildProfileScreenModel = ({
       value: withFallback(gender),
       description: 'Used for a more personal profile.',
       icon: UserRound,
-      tone: 'default',
+      tone: toneForValue(gender),
       route: '/(protected)/sheets/edit-gender',
     },
     dob: {
@@ -164,7 +166,7 @@ export const buildProfileScreenModel = ({
       value: withFallback(dateOfBirth),
       description: 'Your age and birthday details.',
       icon: CalendarDays,
-      tone: 'default',
+      tone: toneForValue(dateOfBirth),
       route: '/(protected)/sheets/edit-date-of-birth',
     },
     height: {
@@ -173,7 +175,7 @@ export const buildProfileScreenModel = ({
       value: withFallback(height),
       description: 'Used in plans and progress context.',
       icon: Ruler,
-      tone: 'default',
+      tone: toneForValue(height),
       route: '/(protected)/sheets/edit-height',
     },
     weight: {
@@ -182,7 +184,7 @@ export const buildProfileScreenModel = ({
       value: withFallback(weight),
       description: 'Bodyweight tracking baseline.',
       icon: Scale,
-      tone: 'default',
+      tone: toneForValue(weight),
       route: '/(protected)/sheets/edit-weight',
     },
     goal: {
@@ -191,7 +193,7 @@ export const buildProfileScreenModel = ({
       value: withFallback(goal),
       description: 'What your training should optimize for.',
       icon: Target,
-      tone: 'accent',
+      tone: toneForValue(goal),
       route: '/(protected)/sheets/edit-fitness-goal',
     },
     experience: {
@@ -200,7 +202,7 @@ export const buildProfileScreenModel = ({
       value: withFallback(experience),
       description: experienceLabel ?? 'Your current training familiarity.',
       icon: ChartColumn,
-      tone: 'default',
+      tone: toneForValue(experience),
       route: '/(protected)/sheets/edit-experience',
     },
     activity: {
@@ -209,7 +211,7 @@ export const buildProfileScreenModel = ({
       value: withFallback(activity),
       description: 'How active you are outside the gym.',
       icon: Activity,
-      tone: 'default',
+      tone: toneForValue(activity),
       route: '/(protected)/sheets/edit-activity-level',
     },
     location: {
@@ -218,7 +220,7 @@ export const buildProfileScreenModel = ({
       value: withFallback(location),
       description: 'Home, gym, both, or outdoors.',
       icon: MapPin,
-      tone: 'default',
+      tone: toneForValue(location),
       route: '/(protected)/sheets/edit-workout-location',
     },
     equipment: {
@@ -227,7 +229,7 @@ export const buildProfileScreenModel = ({
       value: withFallback(equipment),
       description: 'What gear you have available.',
       icon: Dumbbell,
-      tone: 'default',
+      tone: toneForValue(equipment),
       route: '/(protected)/sheets/edit-equipment',
     },
     schedule: {
@@ -236,7 +238,7 @@ export const buildProfileScreenModel = ({
       value: withFallback(schedule),
       description: 'Weekly frequency and session duration.',
       icon: Clock3,
-      tone: 'accent',
+      tone: toneForValue(schedule),
       route: '/(protected)/sheets/edit-schedule',
     },
     styles: {
@@ -245,7 +247,7 @@ export const buildProfileScreenModel = ({
       value: withFallback(trainingStyles),
       description: 'The methods you like to train with.',
       icon: Activity,
-      tone: 'default',
+      tone: toneForValue(trainingStyles),
       route: '/(protected)/sheets/edit-training-style',
     },
     focus: {
@@ -254,7 +256,7 @@ export const buildProfileScreenModel = ({
       value: withFallback(focusAreas),
       description: 'Muscle groups and priorities.',
       icon: HeartPulse,
-      tone: 'default',
+      tone: toneForValue(focusAreas),
       route: '/(protected)/sheets/edit-focus-areas',
     },
     injuries: {
@@ -263,7 +265,7 @@ export const buildProfileScreenModel = ({
       value: withFallback(injuries),
       description: 'Flags any limitations that affect programming.',
       icon: ShieldAlert,
-      tone: 'default',
+      tone: toneForValue(injuries),
       route: '/(protected)/sheets/edit-injuries',
     },
     'delete-account': {
@@ -286,32 +288,6 @@ export const buildProfileScreenModel = ({
     goalValue: withFallback(goal),
     scheduleValue: withFallback(schedule),
     locationValue: withFallback(location),
-    quickActions: [
-      {
-        ...actions.stats,
-        label: 'Open Stats',
-      },
-      {
-        ...actions.schedule,
-        label: 'Update Schedule',
-      },
-      {
-        ...actions.goal,
-        label: 'Adjust Goal',
-      },
-      {
-        ...actions.location,
-        label: 'Workout Setup',
-      },
-      {
-        ...actions.equipment,
-        label: 'Equipment',
-      },
-      {
-        ...actions.focus,
-        label: 'Focus Areas',
-      },
-    ],
     sections: [
       {
         key: 'identity',

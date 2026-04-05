@@ -11,21 +11,12 @@ import { BlurredScreenHeader, getBlurredScreenHeaderHeight } from '@/components/
 import { Colors } from '@/constants/colors'
 import { useAuth } from '@/contexts/auth-context'
 import { useProfileQuery } from '@/hooks/use-profile-query'
-import { useStatsSummary } from '@/hooks/use-stats'
 
 const ProfileScreen = () => {
   const { user, signOut } = useAuth()
   const router = useRouter()
   const insets = useSafeAreaInsets()
   const { profile, isLoading, isRefetching, error, refetch } = useProfileQuery()
-  const {
-    summary,
-    isLoading: isStatsLoading,
-    isRefetching: isStatsRefetching,
-    error: statsError,
-    refetch: refetchStats,
-  } = useStatsSummary('all')
-
   const model = buildProfileScreenModel({ profile, email: user?.email })
   const blurTargetRef = useRef<View>(null)
   const headerHeight = getBlurredScreenHeaderHeight(insets.top)
@@ -45,7 +36,7 @@ const ProfileScreen = () => {
     if (item.route !== undefined) router.push(item.route as never)
   }
 
-  if (isLoading || isStatsLoading) {
+  if (isLoading) {
     return (
       <View
         className="flex-1 bg-background-primary items-center justify-center"
@@ -77,10 +68,9 @@ const ProfileScreen = () => {
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl
-              refreshing={isRefetching || isStatsRefetching}
+              refreshing={isRefetching}
               onRefresh={() => {
                 void refetch()
-                void refetchStats()
               }}
               progressViewOffset={headerHeight}
               tintColor={Colors.content.secondary}
@@ -107,8 +97,6 @@ const ProfileScreen = () => {
           ) : (
             <ProfileDashboard
               model={model}
-              statsSummary={statsError === null ? summary : null}
-              statsLoading={isStatsLoading}
               onPressAction={handlePressAction}
             />
           )}

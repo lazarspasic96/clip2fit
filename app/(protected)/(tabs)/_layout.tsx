@@ -1,7 +1,7 @@
 import { BlurView } from 'expo-blur'
 import { Tabs } from 'expo-router'
 import { NativeTabs } from 'expo-router/unstable-native-tabs'
-import { CalendarDays, Dumbbell, House, UserRound } from 'lucide-react-native'
+import { CalendarDays, ChartNoAxesCombined, Dumbbell, House, UserRound } from 'lucide-react-native'
 import { Platform, StyleSheet, View } from 'react-native'
 
 import { Colors } from '@/constants/colors'
@@ -94,6 +94,15 @@ const TabLayout = () => {
           }}
         />
         <Tabs.Screen
+          name="stats"
+          options={{
+            title: 'Stats',
+            tabBarIcon: ({ color, focused }) => (
+              <ChartNoAxesCombined color={color} size={focused ? 24 : 22} strokeWidth={focused ? 2.4 : 2} />
+            ),
+          }}
+        />
+        <Tabs.Screen
           name="profile"
           options={{
             title: 'Profile',
@@ -127,6 +136,11 @@ const TabLayout = () => {
       <NativeTabs.Trigger name="my-workouts">
         <NativeTabs.Trigger.Label>Library</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf={{ default: 'dumbbell', selected: 'dumbbell.fill' }} />
+      </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="stats">
+        <NativeTabs.Trigger.Label>Stats</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf={{ default: 'chart.bar', selected: 'chart.bar.fill' }} />
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="profile">

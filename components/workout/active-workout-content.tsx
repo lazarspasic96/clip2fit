@@ -1,5 +1,5 @@
-import { useLocalSearchParams, useRouter } from 'expo-router'
-import { useEffect, useRef } from 'react'
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router'
+import { useCallback, useEffect, useRef } from 'react'
 import { ActivityIndicator, Alert, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -17,11 +17,24 @@ export const ActiveWorkoutContent = () => {
   const { id } = useLocalSearchParams<{ id?: string }>()
   const router = useRouter()
   const insets = useSafeAreaInsets()
-  const { session, startWorkout, clearSession } = useActiveWorkout()
+  const { session, startWorkout, clearSession, pauseWorkout } = useActiveWorkout()
   const hasStarted = useRef(false)
   const alertShownRef = useRef(false)
 
   const { rawWorkout, isLoading, error } = useWorkoutQuery(id ?? null)
+  const workoutRef = useRef({ pauseWorkout, status: session?.status })
+  workoutRef.current = { pauseWorkout, status: session?.status }
+
+  // Auto-pause timer when user leaves this screen
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        if (workoutRef.current.status === 'in_progress') {
+          workoutRef.current.pauseWorkout()
+        }
+      }
+    }, [])
+  )
 
   useEffect(() => {
     if (id === undefined) {

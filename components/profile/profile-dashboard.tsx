@@ -1,16 +1,12 @@
-import { ArrowUpRight, ChevronRight } from 'lucide-react-native'
+import { ChevronRight } from 'lucide-react-native'
 import { Pressable, Text, View } from 'react-native'
 
-import { formatCompactNumber } from '@/components/stats/shared/stats-formatters'
 import { Colors } from '@/constants/colors'
-import type { StatsSummary } from '@/types/stats'
 
 import type { ProfileActionItem, ProfileScreenModel } from './profile-data'
 
 interface ProfileDashboardProps {
   model: ProfileScreenModel
-  statsSummary: StatsSummary | null
-  statsLoading: boolean
   onPressAction: (item: ProfileActionItem) => void
 }
 
@@ -76,62 +72,9 @@ const ActionRow = ({
   )
 }
 
-const QuickActionCard = ({
-  item,
-  onPress,
-}: {
-  item: ProfileActionItem
-  onPress: () => void
-}) => {
-  const Icon = item.icon
-  const color = toneColor(item.tone)
-
-  return (
-    <Pressable
-      onPress={onPress}
-      className="w-[48.5%] rounded-[28px] border border-border-primary bg-background-secondary px-4 py-4"
-      style={{ borderCurve: 'continuous', minHeight: 184 }}
-    >
-      <View className="gap-5">
-        <View
-          className="h-12 w-12 items-center justify-center rounded-[18px]"
-          style={{
-            backgroundColor: item.tone === 'accent' ? 'rgba(132,204,22,0.12)' : 'rgba(9,9,11,0.92)',
-            borderCurve: 'continuous',
-          }}
-        >
-          <Icon color={color} size={20} />
-        </View>
-
-        <View className="gap-2">
-          <Text className="text-sm font-inter-medium text-content-secondary">{item.label}</Text>
-          <Text className="text-lg font-inter-bold text-content-primary">{item.value}</Text>
-          <Text className="text-sm font-inter text-content-tertiary leading-5">{item.description}</Text>
-        </View>
-
-        <View className="flex-row items-center gap-1.5">
-          <Text className="text-xs font-inter-semibold uppercase tracking-[1.2px]" style={{ color }}>
-            Edit
-          </Text>
-          <ArrowUpRight size={14} color={color} />
-        </View>
-      </View>
-    </Pressable>
-  )
-}
-
-export const ProfileDashboard = ({ model, statsSummary, statsLoading, onPressAction }: ProfileDashboardProps) => (
+export const ProfileDashboard = ({ model, onPressAction }: ProfileDashboardProps) => (
   <View className="gap-4">
-    <ProfileHeroCard model={model} statsSummary={statsSummary} statsLoading={statsLoading} />
-
-    <View className="gap-3">
-      <SectionTitle eyebrow="Quick actions" title="Update the fields that shape your training most" />
-      <View className="flex-row flex-wrap gap-3">
-        {model.quickActions.map((item) => (
-          <QuickActionCard key={item.key} item={item} onPress={() => onPressAction(item)} />
-        ))}
-      </View>
-    </View>
+    <ProfileHeroCard model={model} />
 
     {model.sections.map((section) => (
       <View
@@ -162,50 +105,11 @@ export const ProfileDashboard = ({ model, statsSummary, statsLoading, onPressAct
   </View>
 )
 
-const formatWholeNumber = (value: number) => Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(value)
-
 const ProfileHeroCard = ({
   model,
-  statsSummary,
-  statsLoading,
 }: {
   model: ProfileScreenModel
-  statsSummary: StatsSummary | null
-  statsLoading: boolean
 }) => {
-  const hasStats = !statsLoading && statsSummary !== null && statsSummary.totalSessions > 0
-  const estimatedMinutes = hasStats
-    ? Math.max(0, Math.round((statsSummary.avgDurationSeconds * statsSummary.totalSessions) / 60))
-    : 0
-  const statColumns = hasStats
-    ? [
-        {
-          label: 'Minutes Trained',
-          value: formatWholeNumber(estimatedMinutes),
-        },
-        {
-          label: 'Total Volume',
-          value: formatCompactNumber(statsSummary.totalVolume),
-        },
-        {
-          label: 'Sessions',
-          value: formatWholeNumber(statsSummary.totalSessions),
-        },
-      ]
-    : [
-        {
-          label: 'Goal',
-          value: model.goalValue,
-        },
-        {
-          label: 'Schedule',
-          value: model.scheduleValue,
-        },
-        {
-          label: 'Setup',
-          value: model.locationValue,
-        },
-      ]
   const footerLine =
     model.scheduleValue !== 'Not set' || model.locationValue !== 'Not set'
       ? `${model.scheduleValue} · ${model.locationValue}`
@@ -231,28 +135,6 @@ const ProfileHeroCard = ({
         </View>
 
         <View className="h-px bg-border-primary" />
-
-        <View className="flex-row gap-3">
-          {statColumns.map((item) => (
-            <View
-              key={item.label}
-              className="flex-1 rounded-[22px] bg-background-primary px-3 py-4"
-              style={{ borderCurve: 'continuous', minHeight: 104 }}
-            >
-              <Text className="text-[10px] font-inter-semibold uppercase tracking-[1.3px] text-content-tertiary">
-                {item.label}
-              </Text>
-              <Text
-                className="mt-3 text-[22px] font-inter-bold text-content-primary"
-                numberOfLines={1}
-                adjustsFontSizeToFit
-                minimumFontScale={0.75}
-              >
-                {item.value}
-              </Text>
-            </View>
-          ))}
-        </View>
 
         <Text className="text-sm font-inter text-content-secondary leading-5">
           {footerLine}
