@@ -80,6 +80,7 @@ const ProtectedLayout = () => {
           <Stack.Screen name="sheets/edit-focus-areas" options={{ ...sheetOptions, sheetAllowedDetents: 'fitToContents' }} />
           <Stack.Screen name="sheets/edit-injuries" options={{ ...sheetOptions, sheetAllowedDetents: [0.6, 0.85] }} />
           <Stack.Screen name="sheets/delete-account" options={{ ...sheetOptions, sheetAllowedDetents: [0.45] }} />
+          <Stack.Screen name="sheets/paywall" options={{ ...sheetOptions, sheetAllowedDetents: [0.85, 1] }} />
         </Stack>
       </ActiveWorkoutProvider>
     </WorkoutBuilderProvider>

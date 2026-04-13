@@ -16,8 +16,10 @@ import '../global.css'
 import { AuthProvider, useAuth } from '@/contexts/auth-context'
 import { ConversionProvider, useConversion } from '@/contexts/conversion-context'
 import { AppQueryClientProvider } from '@/contexts/query-client'
+import { SubscriptionProvider, useSubscription } from '@/contexts/subscription-context'
 import { FloatingConversionPill } from '@/components/processing/floating-conversion-pill'
 import { Colors } from '@/constants/colors'
+import { getReachedPaywall } from '@/utils/onboarding-storage'
 
 SplashScreen.preventAutoHideAsync()
 SystemUI.setBackgroundColorAsync(Colors.background.primary)
@@ -34,7 +36,9 @@ export const unstable_settings = {
 const ShareIntentHandler = () => {
   const { session, onboardingComplete } = useAuth()
   const { state, startConversion } = useConversion()
+  const { isPremium } = useSubscription()
   const { sharedPayloads, clearSharedPayloads } = useIncomingShare()
+  const router = useRouter()
 
   useEffect(() => {
     if (
@@ -46,12 +50,16 @@ const ShareIntentHandler = () => {
       const firstPayload = sharedPayloads[0]
       const sharedUrl = firstPayload?.value
       if (sharedUrl !== undefined && sharedUrl !== null) {
-        startConversion(sharedUrl)
         clearSharedPayloads()
+        if (isPremium) {
+          startConversion(sharedUrl)
+        } else {
+          router.push('/(protected)/sheets/paywall')
+        }
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only react to new shared payloads
-  }, [sharedPayloads, session, onboardingComplete])
+  }, [sharedPayloads, session, onboardingComplete, isPremium])
 
   return null
 }
@@ -73,7 +81,10 @@ const RootNavigator = () => {
     }
 
     if (session && !onboardingComplete && !inOnboarding) {
-      router.replace('/(protected)/onboarding/goal')
+      const route = getReachedPaywall()
+        ? '/(protected)/onboarding/paywall'
+        : '/(protected)/onboarding/goal'
+      router.replace(route as never)
       return
     }
 
@@ -121,11 +132,13 @@ const RootLayout = () => {
       <AppQueryClientProvider>
         <KeyboardProvider>
           <AuthProvider>
-            <ConversionProvider>
-              <RootNavigator />
-              <ShareIntentHandler />
-              <FloatingConversionPill />
-            </ConversionProvider>
+            <SubscriptionProvider>
+              <ConversionProvider>
+                <RootNavigator />
+                <ShareIntentHandler />
+                <FloatingConversionPill />
+              </ConversionProvider>
+            </SubscriptionProvider>
           </AuthProvider>
         </KeyboardProvider>
       </AppQueryClientProvider>

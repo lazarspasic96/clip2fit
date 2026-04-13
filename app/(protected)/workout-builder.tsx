@@ -10,8 +10,10 @@ import { Input } from '@/components/ui/input'
 import { BuilderExerciseRow } from '@/components/catalog/builder-exercise-row'
 import { BuilderActions } from '@/components/catalog/builder-actions'
 import { useBuilderVersion, useWorkoutBuilder } from '@/contexts/workout-builder-context'
-import { useCreateWorkoutMutation } from '@/hooks/use-api'
+import { useCreateWorkoutMutation, useWorkoutsQuery } from '@/hooks/use-api'
 import { useDraggableList } from '@/hooks/use-draggable-list'
+import { usePremiumGate } from '@/hooks/use-premium-gate'
+import { FREE_WORKOUT_LIMIT } from '@/types/subscription'
 import { ApiError } from '@/utils/api'
 import type { CreateWorkoutPayload } from '@/types/catalog'
 
@@ -22,6 +24,8 @@ const WorkoutBuilderScreen = () => {
   const router = useRouter()
   const builder = useWorkoutBuilder()
   const createMutation = useCreateWorkoutMutation()
+  const { workouts } = useWorkoutsQuery()
+  const { isPremium, requirePremium } = usePremiumGate()
 
   useBuilderVersion()
 
@@ -40,12 +44,7 @@ const WorkoutBuilderScreen = () => {
     builder.removeExercise(id)
   }
 
-  const handleCreate = () => {
-    if (exercises.length === 0) {
-      Alert.alert('No exercises', 'Add at least one exercise to create a workout.')
-      return
-    }
-
+  const saveWorkout = () => {
     const payload: CreateWorkoutPayload = {
       title: title.trim() || 'My Workout',
       exercises: exercises.map((e, index) => ({
@@ -73,6 +72,20 @@ const WorkoutBuilderScreen = () => {
         Alert.alert('Failed to create workout', message)
       },
     })
+  }
+
+  const handleCreate = () => {
+    if (exercises.length === 0) {
+      Alert.alert('No exercises', 'Add at least one exercise to create a workout.')
+      return
+    }
+
+    if (!isPremium && workouts.length >= FREE_WORKOUT_LIMIT) {
+      requirePremium(() => {})
+      return
+    }
+
+    saveWorkout()
   }
 
   const handleAddMore = () => {

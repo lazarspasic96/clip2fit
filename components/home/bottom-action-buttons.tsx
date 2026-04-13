@@ -3,14 +3,16 @@ import { Download, Video } from 'lucide-react-native'
 import { Pressable, Text, View } from 'react-native'
 
 import { Colors } from '@/constants/colors'
+import { usePremiumGate } from '@/hooks/use-premium-gate'
 
 export const BottomActionButtons = () => {
   const router = useRouter()
+  const { requirePremium } = usePremiumGate()
 
   return (
     <View className="flex-row mx-5 gap-3">
       <Pressable
-        onPress={() => router.push('/(protected)/add-workout')}
+        onPress={() => requirePremium(() => router.push('/(protected)/add-workout'))}
         className="flex-1 bg-background-tertiary rounded-2xl p-4 items-center gap-2"
       >
         <Video size={24} color={Colors.brand.accent} pointerEvents="none" />

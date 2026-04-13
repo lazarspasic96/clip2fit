@@ -32,8 +32,9 @@ export const FloatingConversionPill = () => {
   const isOnProcessUrl = segments.includes('process-url' as never)
   const isOnProposal = segments.includes('workout-proposal' as never)
   const isOnAddExercises = segments.includes('add-exercises' as never)
+  const isInOnboarding = segments.includes('onboarding' as never)
   const isVisible =
-    !isOnProcessUrl && !isOnProposal && !isOnAddExercises && state.jobState !== 'idle' && state.jobState !== 'existing'
+    !isOnProcessUrl && !isOnProposal && !isOnAddExercises && !isInOnboarding && state.jobState !== 'idle' && state.jobState !== 'existing'
   const isCompleted = state.jobState === 'completed'
   const isError = state.jobState === 'error'
 

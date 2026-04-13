@@ -4,13 +4,15 @@ import { Pressable, Text, View } from 'react-native'
 
 import { Colors } from '@/constants/colors'
 import { TikTokIcon, InstagramIcon, YouTubeIcon } from '@/components/ui/platform-icons'
+import { usePremiumGate } from '@/hooks/use-premium-gate'
 
 export const ImportFromSocialsCard = () => {
   const router = useRouter()
+  const { requirePremium } = usePremiumGate()
 
   return (
     <Pressable
-      onPress={() => router.push('/(protected)/process-url')}
+      onPress={() => requirePremium(() => router.push('/(protected)/process-url'))}
       className="mx-5 bg-background-tertiary rounded-2xl p-4"
     >
       <View className="flex-row items-center gap-4">

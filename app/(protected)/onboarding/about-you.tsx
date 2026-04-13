@@ -4,7 +4,6 @@ import { FormRadioGroup } from '@/components/ui/form-radio-group'
 import { FormSegmentedControl } from '@/components/ui/form-segmented-control'
 import { Label } from '@/components/ui/label'
 import { DateOfBirthPicker } from '@/components/ui/native-ui/date-of-birth-picker'
-import { useCompleteOnboarding } from '@/hooks/use-complete-onboarding'
 import { useProfileForm } from '@/contexts/profile-form-context'
 import { useZodForm } from '@/hooks/use-zod-form'
 import type { Gender, HeightUnit, WeightUnit } from '@/types/profile'
@@ -30,7 +29,6 @@ type AboutYouValues = z.infer<typeof aboutYouSchema>
 const AboutYouScreen = () => {
   const router = useRouter()
   const { updateField } = useProfileForm()
-  const { complete, loading } = useCompleteOnboarding()
   const [dateOfBirth, setDateOfBirth] = useState<DobIsoDate | undefined>()
   const form = useZodForm({
     schema: aboutYouSchema,
@@ -47,7 +45,7 @@ const AboutYouScreen = () => {
   const heightUnit = form.watch('heightUnit') as HeightUnit
   const weightUnit = form.watch('weightUnit') as WeightUnit
 
-  const handleComplete = async (data: AboutYouValues) => {
+  const handleNext = (data: AboutYouValues) => {
     if (data.fullName) updateField('fullName', data.fullName)
     if (data.gender) updateField('gender', data.gender as Gender)
     if (dateOfBirth !== undefined) updateField('dateOfBirth', dateOfBirth)
@@ -59,7 +57,7 @@ const AboutYouScreen = () => {
       updateField('weight', parseFloat(data.weight))
       updateField('weightUnit', data.weightUnit as WeightUnit)
     }
-    await complete()
+    router.push('/(protected)/onboarding/demo-conversion')
   }
 
   return (
@@ -67,10 +65,9 @@ const AboutYouScreen = () => {
       <OnboardingScreen
         title="One last thing — tell us about yourself"
         subtitle="All fields are optional."
-        onNext={form.handleSubmit(handleComplete)}
+        onNext={form.handleSubmit(handleNext)}
         onBack={() => router.back()}
-        nextLabel="Complete"
-        loading={loading}
+        onSkip={() => router.push('/(protected)/onboarding/demo-conversion')}
         keyboardAware
       >
         <View className="gap-6">

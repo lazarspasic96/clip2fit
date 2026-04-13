@@ -9,10 +9,12 @@ import { Download, Link2, Video } from 'lucide-react-native'
 import { Button } from '@/components/ui/button'
 import { DismissButton } from '@/components/ui/dismiss-button'
 import { Colors } from '@/constants/colors'
+import { usePremiumGate } from '@/hooks/use-premium-gate'
 
 const AddWorkoutScreen = () => {
   const insets = useSafeAreaInsets()
   const router = useRouter()
+  const { requirePremium } = usePremiumGate()
 
   const [selectedVideo, setSelectedVideo] = useState<ImagePicker.ImagePickerAsset | null>(null)
   const [processing, setProcessing] = useState(false)
@@ -97,8 +99,10 @@ const AddWorkoutScreen = () => {
 
         <Pressable
           onPress={() => {
-            router.back()
-            setTimeout(() => router.push('/(protected)/process-url'), 300)
+            requirePremium(() => {
+              router.back()
+              setTimeout(() => router.push('/(protected)/process-url'), 300)
+            })
           }}
           className="bg-background-secondary rounded-2xl p-6 flex-row items-center gap-4"
         >
@@ -116,7 +120,7 @@ const AddWorkoutScreen = () => {
         </Pressable>
 
         <Pressable
-          onPress={pickVideo}
+          onPress={() => requirePremium(pickVideo)}
           className="bg-background-secondary rounded-2xl p-6 flex-row items-center gap-4"
         >
           <View

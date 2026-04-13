@@ -25,6 +25,8 @@ import { Colors } from '@/constants/colors'
 import { TAB_CONTENT_BOTTOM_CLEARANCE } from '@/constants/tab-bar'
 
 import { useDeleteWorkoutMutation, useWorkoutsQuery } from '@/hooks/use-api'
+import { useSubscription } from '@/contexts/subscription-context'
+import { FREE_WORKOUT_LIMIT } from '@/types/subscription'
 
 const DELETE_ACTION_WIDTH = 80
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList<any>)
@@ -71,6 +73,7 @@ const MyWorkoutsScreen = () => {
   const { newWorkoutId } = useLocalSearchParams<{ newWorkoutId?: string }>()
   const { workouts, isLoading, isRefetching, refetch } = useWorkoutsQuery()
   const deleteMutation = useDeleteWorkoutMutation()
+  const { isPremium } = useSubscription()
 
   const blurTargetRef = useRef<View>(null)
   const mountedRef = useRef(true)
@@ -134,6 +137,20 @@ const MyWorkoutsScreen = () => {
           <AnimatedFlatList
             data={workouts}
             keyExtractor={(item) => item.id}
+            ListHeaderComponent={
+              !isPremium && workouts.length > 0 ? (
+                <View className="flex-row items-center justify-between mb-3">
+                  <Text className="text-xs font-inter text-content-tertiary">
+                    {workouts.length}/{FREE_WORKOUT_LIMIT} workouts
+                  </Text>
+                  {workouts.length >= FREE_WORKOUT_LIMIT && (
+                    <Text className="text-xs font-inter-semibold text-brand-accent">
+                      Upgrade for unlimited
+                    </Text>
+                  )}
+                </View>
+              ) : undefined
+            }
             renderItem={({ item, index }) => {
               const isNew = item.id === newWorkoutIdRef.current
               const entering = isNew

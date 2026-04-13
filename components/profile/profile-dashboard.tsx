@@ -4,6 +4,7 @@ import { Pressable, Text, View } from 'react-native'
 import { Colors } from '@/constants/colors'
 
 import type { ProfileActionItem, ProfileScreenModel } from './profile-data'
+import { SubscriptionCard } from './subscription-card'
 
 interface ProfileDashboardProps {
   model: ProfileScreenModel
@@ -75,6 +76,7 @@ const ActionRow = ({
 export const ProfileDashboard = ({ model, onPressAction }: ProfileDashboardProps) => (
   <View className="gap-4">
     <ProfileHeroCard model={model} />
+    <SubscriptionCard />
 
     {model.sections.map((section) => (
       <View

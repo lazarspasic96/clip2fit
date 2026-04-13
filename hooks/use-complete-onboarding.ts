@@ -1,6 +1,7 @@
 import { useAuth } from '@/contexts/auth-context'
 import { useProfileForm } from '@/contexts/profile-form-context'
 import type { UserProfile } from '@/types/profile'
+import { clearReachedPaywall } from '@/utils/onboarding-storage'
 import { useRouter } from 'expo-router'
 import { Alert } from 'react-native'
 
@@ -30,6 +31,7 @@ export const useCompleteOnboarding = () => {
 
     const result = await completeOnboarding()
     if (result.success) {
+      clearReachedPaywall()
       resetData()
       router.replace('/(protected)/(tabs)' as never)
     } else {
