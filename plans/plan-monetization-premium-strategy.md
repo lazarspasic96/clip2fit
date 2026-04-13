@@ -97,7 +97,7 @@ Combined with: unlimited conversions, AI workout generator, recovery intelligenc
 ### Pricing (future — Apple Developer account in progress)
 | Plan | Price |
 |------|-------|
-| Monthly | $5.99/mo |
+| Weekly | $7.99/week |
 | Annual | $29.99/yr ($2.50/mo) — 7-day free trial |
 | Lifetime | $79.99 |
 
